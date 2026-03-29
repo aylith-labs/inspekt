@@ -10,12 +10,11 @@ export interface TransformOptions {
   exclude: string[];
 }
 
-// Match JSX opening tags: <Component or <div
-// Captures self-closing and regular opening tags
-const JSX_OPEN_TAG_RE = /(<(?:[A-Z][a-zA-Z0-9.]*|[a-z][a-z0-9]*(?:-[a-z0-9]+)*))((?:\s+[\s\S]*?)?)(\s*\/?>)/g;
+// Match JSX opening tag start: <Component or <div (but not closing tags like </div>)
+const JSX_TAG_START_RE = /<(?!\/|!--)([A-Z][a-zA-Z0-9.]*|[a-z][a-z0-9]*(?:-[a-z0-9]+)*)/g;
 
 // Skip tags that shouldn't get attributes
-const SKIP_TAGS = new Set(['Fragment', 'React.Fragment', '<>', 'Suspense', 'StrictMode']);
+const SKIP_TAGS = new Set(['Fragment', 'React.Fragment', 'Suspense', 'StrictMode']);
 
 export function transformJSX(
   code: string,
@@ -58,7 +57,6 @@ export function transformJSX(
 
   // Find component name from context
   function findComponentName(offset: number): string {
-    // Look backwards for function/const declaration
     const before = code.slice(Math.max(0, offset - 500), offset);
 
     // function ComponentName
@@ -67,32 +65,116 @@ export function transformJSX(
 
     // const ComponentName = ...
     const constMatch = before.match(/(?:const|let|var)\s+([A-Z][a-zA-Z0-9]*)\s*[^=]*?=\s/);
-
     if (constMatch) return constMatch[1]!;
 
     return '';
   }
 
-  // Track if we're inside a string, template literal, or comment
+  /**
+   * Given the position right after `<TagName`, find the position of the
+   * closing `>` or `/>` for this JSX opening tag, properly handling:
+   * - Nested braces `{...}` (JSX expressions)
+   * - String literals (single, double, template)
+   * - Parentheses `(...)`
+   */
+  function findTagClose(startPos: number): { closePos: number; selfClosing: boolean } | null {
+    let i = startPos;
+    let braceDepth = 0;
+    let parenDepth = 0;
+    let inString: string | null = null; // '"', "'", or '`'
+
+    while (i < code.length) {
+      const ch = code[i]!;
+      // Handle escape sequences in strings
+      if (inString && ch === '\\') {
+        i += 2;
+        continue;
+      }
+
+      // String handling
+      if (inString) {
+        if (ch === inString) {
+          // Template literal handles ${} nesting, but for our purposes
+          // we just track the outer string boundaries
+          inString = null;
+        }
+        i++;
+        continue;
+      }
+
+      // Start string
+      if (ch === '"' || ch === "'" || ch === '`') {
+        inString = ch;
+        i++;
+        continue;
+      }
+
+      // Brace tracking
+      if (ch === '{') {
+        braceDepth++;
+        i++;
+        continue;
+      }
+      if (ch === '}') {
+        braceDepth--;
+        i++;
+        continue;
+      }
+
+      // Paren tracking
+      if (ch === '(') {
+        parenDepth++;
+        i++;
+        continue;
+      }
+      if (ch === ')') {
+        parenDepth--;
+        i++;
+        continue;
+      }
+
+      // Only match closing > when not inside any nesting
+      if (braceDepth === 0 && parenDepth === 0) {
+        if (ch === '/' && code[i + 1] === '>') {
+          return { closePos: i, selfClosing: true };
+        }
+        if (ch === '>') {
+          return { closePos: i, selfClosing: false };
+        }
+        // If we hit a `<` that isn't part of `<=`, it's a nested JSX — bail
+        if (ch === '<' && code[i + 1] !== '=' && i > startPos) {
+          return null;
+        }
+      }
+
+      i++;
+    }
+
+    return null;
+  }
+
   let match: RegExpExecArray | null;
-  JSX_OPEN_TAG_RE.lastIndex = 0;
+  JSX_TAG_START_RE.lastIndex = 0;
 
-  while ((match = JSX_OPEN_TAG_RE.exec(code)) !== null) {
-    const tagOpen = match[1]!;      // e.g., "<div" or "<Button"
-    const attrs = match[2] ?? '';    // existing attributes
-
-    const tagName = tagOpen.slice(1); // Remove '<'
+  while ((match = JSX_TAG_START_RE.exec(code)) !== null) {
+    const tagName = match[1]!;
 
     // Skip fragments and special tags
     if (SKIP_TAGS.has(tagName)) continue;
 
-    // Skip if already has the attribute
-    if (attrs.includes(options.attribute)) continue;
-    if (attrs.includes('data-insp-path')) continue;
+    // Quick check: skip if inside a string (look at surrounding context)
+    const charBefore = match.index > 0 ? code[match.index - 1] : '';
+    if (charBefore === '"' || charBefore === "'" || charBefore === '`') continue;
 
-    // Check we're not inside a string or comment (simple heuristic)
-    const beforeMatch = code.slice(Math.max(0, match.index - 10), match.index);
-    if (beforeMatch.includes('`') || beforeMatch.endsWith('"') || beforeMatch.endsWith("'")) continue;
+    // Find the actual closing > or /> for this tag
+    const afterTagName = match.index + match[0].length;
+    const tagClose = findTagClose(afterTagName);
+    if (!tagClose) continue;
+
+    // Check if existing attributes already include our attribute
+    const attrRegion = code.slice(afterTagName, tagClose.closePos);
+    if (attrRegion.includes(options.attribute)) continue;
+    if (attrRegion.includes('data-insp-path')) continue;
 
     const { line, col } = getLineCol(match.index);
     const componentName = findComponentName(match.index) || tagName;
@@ -100,9 +182,8 @@ export function transformJSX(
     const attrValue = `${filePath}:${line}:${col}:${componentName}`;
     const injection = ` ${options.attribute}="${attrValue}"`;
 
-    // Insert before the closing > or />
-    const insertPos = match.index + tagOpen.length + attrs.length;
-    s.appendLeft(insertPos, injection);
+    // Insert just before the closing > or />
+    s.appendLeft(tagClose.closePos, injection);
     hasChanges = true;
   }
 

@@ -17,6 +17,7 @@ export interface DevLensViteOptions {
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
+const INIT_PATH = '/@devlens/init.js';
 
 export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
   const options = {
@@ -33,6 +34,22 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
 
   let resolvedRoot: string;
   let pathMapping: Record<string, string>;
+  let serverPort = 5173;
+
+  function buildInitScript(): string {
+    const runtimeOptions = {
+      ...options.runtimeOptions,
+      serverUrl: `http://localhost:${serverPort}`,
+      editor: options.editor,
+      pathMapping: pathMapping ?? options.pathMapping,
+    };
+    return `
+import { createDevLens } from '@devlens/core';
+const devlens = createDevLens(${JSON.stringify(runtimeOptions)});
+devlens.enable();
+window.__DEVLENS_INSTANCE__ = devlens;
+`;
+  }
 
   return {
     name: 'devlens',
@@ -41,6 +58,7 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
     configResolved(config) {
       resolvedRoot = config.root;
       options.root = resolvedRoot;
+      if (config.server?.port) serverPort = config.server.port;
 
       // Auto-detect Docker path mappings
       pathMapping = { ...options.pathMapping };
@@ -54,14 +72,28 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
     },
 
     configureServer(server) {
-      // CORS preflight
+      // Serve the DevLens init script as a Vite-transformed module
       server.middlewares.use((req, res, next) => {
-        if (corsMiddleware(req, res)) return;
-        next();
-      });
+        if (req.url === INIT_PATH) {
+          // Let Vite transform the module (resolves @devlens/core import)
+          server.transformRequest(INIT_PATH).then((result) => {
+            if (result) {
+              res.writeHead(200, {
+                'Content-Type': 'application/javascript',
+                'Cache-Control': 'no-cache',
+              });
+              res.end(result.code);
+            } else {
+              next();
+            }
+          }).catch(() => next());
+          return;
+        }
 
-      // Open-in-editor endpoint
-      server.middlewares.use((req, res, next) => {
+        // CORS preflight
+        if (corsMiddleware(req, res)) return;
+
+        // Open-in-editor endpoint
         const handled = handleDevLensRequest(req, res, {
           editor: options.editor,
           pathMapping,
@@ -69,6 +101,14 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
         });
         if (!handled) next();
       });
+    },
+
+    resolveId(id) {
+      if (id === INIT_PATH) return id;
+    },
+
+    load(id) {
+      if (id === INIT_PATH) return buildInitScript();
     },
 
     transform(code, id) {
@@ -97,25 +137,10 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
     },
 
     transformIndexHtml() {
-      // Inject runtime initialization script
-      const serverUrl = `http://localhost:${5173}`;
-      const runtimeOptions = {
-        ...options.runtimeOptions,
-        serverUrl,
-        editor: options.editor,
-        pathMapping,
-      };
-
       return [
         {
           tag: 'script',
-          attrs: { type: 'module' },
-          children: `
-            import { createDevLens } from '@devlens/core';
-            const devlens = createDevLens(${JSON.stringify(runtimeOptions)});
-            devlens.enable();
-            window.__DEVLENS_INSTANCE__ = devlens;
-          `,
+          attrs: { type: 'module', src: INIT_PATH },
           injectTo: 'body' as const,
         },
       ];

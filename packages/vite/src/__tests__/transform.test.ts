@@ -97,4 +97,44 @@ export function Layout() {
     expect(matches).not.toBeNull();
     expect(matches!.length).toBeGreaterThanOrEqual(3);
   });
+
+  it('handles JSX with arrow functions in attributes', () => {
+    const code = `
+export function SearchBar() {
+  const [query, setQuery] = useState('');
+  return (
+    <div style={{ display: 'flex' }}>
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        style={{ flex: 1, padding: '8px' }}
+      />
+      <button onClick={() => console.log('click')}>
+        Search
+      </button>
+    </div>
+  );
+}
+`;
+    const result = transformJSX(code, '/home/user/project/src/SearchBar.tsx', defaultOptions);
+    expect(result).not.toBeNull();
+    // Must not break arrow function syntax
+    expect(result!.code).not.toContain('= data-devlens-path');
+    // Should have injected attributes on div, input, and button
+    const matches = result!.code.match(/data-devlens-path=/g);
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('handles JSX with template literals in attributes', () => {
+    const code = `
+export function Tag({ name }) {
+  return <span className={\`tag-\${name}\`}>{name}</span>;
+}
+`;
+    const result = transformJSX(code, '/home/user/project/src/Tag.tsx', defaultOptions);
+    expect(result).not.toBeNull();
+    expect(result!.code).toContain('data-devlens-path=');
+  });
 });
