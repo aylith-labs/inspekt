@@ -1,0 +1,303 @@
+import type {
+  DevLensOptions,
+  DevLensInstance,
+  DevLensAction,
+  DevLensEventMap,
+  InspectedElement,
+} from './types.js';
+import { findClosestSource, elementToInspected } from './detection/source-detector.js';
+import { Highlighter } from './highlight/highlighter.js';
+import { Popover } from './popover/popover.js';
+import { Overlay } from './overlay/overlay.js';
+import {
+  createOpenEditorAction,
+  createCopyPathAction,
+  createOpenGithubAction,
+  createConsoleLogAction,
+} from './actions/built-in.js';
+import { STYLES } from './styles.js';
+
+export type {
+  DevLensOptions,
+  DevLensInstance,
+  DevLensAction,
+  DevLensEventMap,
+  InspectedElement,
+};
+export type { ShortcutConfig, HighlightConfig, BadgeConfig, TreePanelConfig } from './types.js';
+
+const DEFAULT_OPTIONS: DevLensOptions = {
+  activation: 'click',
+  shortcut: { key: 'click', modifiers: ['ctrl', 'alt'] },
+  toggleShortcut: { key: 'i', modifiers: ['ctrl', 'alt'] },
+  theme: 'auto',
+  highlight: {
+    color: '#3b82f6',
+    style: 'glow',
+    animation: 'pulse',
+  },
+  badge: {
+    show: true,
+    position: 'auto',
+    showPath: false,
+  },
+  borders: false,
+  actions: ['open-editor', 'copy-path', 'open-github', 'console-log'],
+  editor: 'cursor',
+  editorPathBase: '',
+  githubRepo: '',
+  githubBranch: 'main',
+  pathMapping: {},
+  treePanel: {
+    enabled: true,
+    position: 'right',
+    showProps: true,
+    showLineNumbers: true,
+  },
+  sourceAttribute: 'data-devlens-path',
+  serverUrl: '',
+};
+
+export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLensInstance {
+  const options: DevLensOptions = { ...DEFAULT_OPTIONS, ...userOptions };
+
+  // Merge nested objects
+  if (userOptions.highlight) options.highlight = { ...DEFAULT_OPTIONS.highlight, ...userOptions.highlight };
+  if (userOptions.badge) options.badge = { ...DEFAULT_OPTIONS.badge, ...userOptions.badge };
+  if (userOptions.treePanel) options.treePanel = { ...DEFAULT_OPTIONS.treePanel, ...userOptions.treePanel };
+  if (userOptions.shortcut) options.shortcut = { ...DEFAULT_OPTIONS.shortcut, ...userOptions.shortcut };
+  if (userOptions.toggleShortcut) options.toggleShortcut = { ...DEFAULT_OPTIONS.toggleShortcut, ...userOptions.toggleShortcut };
+
+  let enabled = false;
+  const listeners = new Map<string, Set<Function>>();
+  const customActions = new Map<string, DevLensAction>();
+
+  // Create Shadow DOM host
+  const host = document.createElement('devlens-root');
+  const shadow = host.attachShadow({ mode: 'open' });
+
+  // Inject styles
+  const style = document.createElement('style');
+  style.textContent = STYLES;
+  shadow.appendChild(style);
+
+  // Apply theme
+  applyTheme(host, options.theme);
+
+  // Components
+  const highlighter = new Highlighter(options.highlight);
+  const popover = new Popover(shadow);
+  const overlay = new Overlay(shadow);
+
+  // Build actions list
+  function getActions(): DevLensAction[] {
+    const builtInMap: Record<string, () => DevLensAction> = {
+      'open-editor': () => createOpenEditorAction(options.serverUrl, options.editor),
+      'copy-path': () => createCopyPathAction(),
+      'open-github': () => createOpenGithubAction(options.githubRepo, options.githubBranch),
+      'console-log': () => createConsoleLogAction(),
+    };
+
+    const result: DevLensAction[] = [];
+    for (const id of options.actions) {
+      const factory = builtInMap[id];
+      if (factory) {
+        result.push(factory());
+      }
+    }
+    for (const action of customActions.values()) {
+      result.push(action);
+    }
+    return result;
+  }
+
+  // Event handlers
+  function handleClick(e: MouseEvent): void {
+    if (!enabled) return;
+
+    const modifiers = options.shortcut.modifiers;
+    const needCtrl = modifiers.includes('ctrl') || modifiers.includes('meta');
+    const needAlt = modifiers.includes('alt');
+    const needShift = modifiers.includes('shift');
+
+    const ctrlOk = !needCtrl || e.ctrlKey || e.metaKey;
+    const altOk = !needAlt || e.altKey;
+    const shiftOk = !needShift || e.shiftKey;
+
+    // Shift+Alt+Click = direct open in editor
+    if (e.shiftKey && e.altKey && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = e.target as HTMLElement;
+      const result = findClosestSource(target);
+      if (result) {
+        const inspected = elementToInspected(result.element, result.source, options.pathMapping);
+        const editorAction = getActions().find((a) => a.id === 'open-editor');
+        if (editorAction) editorAction.handler(inspected);
+        emit('action', 'open-editor', inspected);
+      }
+      return;
+    }
+
+    if (ctrlOk && altOk && shiftOk && options.shortcut.key === 'click') {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const target = e.target as HTMLElement;
+      const result = findClosestSource(target);
+
+      if (result) {
+        const inspected = elementToInspected(result.element, result.source, options.pathMapping);
+        highlighter.unhighlightAll();
+        highlighter.highlight(result.element, 'selected');
+        popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
+        emit('inspect', inspected);
+      }
+    }
+  }
+
+  function handleKeydown(e: KeyboardEvent): void {
+    // Toggle shortcut
+    if (matchesShortcut(e, options.toggleShortcut)) {
+      e.preventDefault();
+      instance.toggle();
+      return;
+    }
+
+    // Escape to close popover
+    if (e.key === 'Escape' && popover.isVisible()) {
+      popover.hide();
+      highlighter.unhighlightAll();
+    }
+
+    // Ctrl+Alt+O = toggle overlay
+    if (e.key === 'o' && e.ctrlKey && e.altKey) {
+      e.preventDefault();
+      overlay.toggle();
+    }
+  }
+
+  function matchesShortcut(e: KeyboardEvent, shortcut: { key: string; modifiers: Array<'ctrl' | 'alt' | 'shift' | 'meta'> }): boolean {
+    if (e.key.toLowerCase() !== shortcut.key.toLowerCase()) return false;
+    const needCtrl = shortcut.modifiers.includes('ctrl');
+    const needAlt = shortcut.modifiers.includes('alt');
+    const needShift = shortcut.modifiers.includes('shift');
+    const needMeta = shortcut.modifiers.includes('meta');
+    return (
+      (needCtrl ? e.ctrlKey || e.metaKey : true) &&
+      (needAlt ? e.altKey : true) &&
+      (needShift ? e.shiftKey : true) &&
+      (needMeta ? e.metaKey : true)
+    );
+  }
+
+  function handleMouseMove(e: MouseEvent): void {
+    if (!enabled || options.activation !== 'hover') return;
+    // Hover mode — highlight on mouseover
+    const target = e.target as HTMLElement;
+    const result = findClosestSource(target);
+    highlighter.unhighlightAll();
+    if (result) {
+      highlighter.highlight(result.element, 'selected');
+    }
+  }
+
+  // Event emitter
+  function emit(event: string, ...args: unknown[]): void {
+    const handlers = listeners.get(event);
+    if (handlers) {
+      for (const handler of handlers) {
+        (handler as Function)(...args);
+      }
+    }
+  }
+
+  function applyTheme(el: HTMLElement, theme: 'light' | 'dark' | 'auto'): void {
+    el.classList.remove('devlens-light', 'devlens-dark');
+    if (theme === 'auto') {
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (!isDark) el.classList.add('devlens-light');
+    } else if (theme === 'light') {
+      el.classList.add('devlens-light');
+    }
+  }
+
+  // Listen for theme changes
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  const themeHandler = () => applyTheme(host, options.theme);
+  mediaQuery.addEventListener('change', themeHandler);
+
+  // Listen for settings from Chrome extension
+  document.addEventListener('devlens:settings-update', ((e: CustomEvent) => {
+    const newSettings = e.detail;
+    Object.assign(options, newSettings);
+    if (newSettings.highlight) highlighter.updateConfig(options.highlight);
+    applyTheme(host, options.theme);
+  }) as EventListener);
+
+  const instance: DevLensInstance = {
+    enable() {
+      if (enabled) return;
+      enabled = true;
+      document.body.appendChild(host);
+      document.addEventListener('click', handleClick, true);
+      document.addEventListener('keydown', handleKeydown, true);
+      document.addEventListener('mousemove', handleMouseMove);
+
+      // Signal to Chrome extension
+      (window as unknown as Record<string, unknown>).__DEVLENS__ = { version: '0.1.0', options };
+      document.dispatchEvent(new CustomEvent('devlens:status', { detail: { enabled: true } }));
+
+      emit('enable');
+    },
+
+    disable() {
+      if (!enabled) return;
+      enabled = false;
+      popover.hide();
+      overlay.hide();
+      highlighter.unhighlightAll();
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('keydown', handleKeydown, true);
+      document.removeEventListener('mousemove', handleMouseMove);
+      host.remove();
+
+      document.dispatchEvent(new CustomEvent('devlens:status', { detail: { enabled: false } }));
+      emit('disable');
+    },
+
+    toggle() {
+      if (enabled) instance.disable();
+      else instance.enable();
+    },
+
+    destroy() {
+      instance.disable();
+      popover.destroy();
+      overlay.destroy();
+      mediaQuery.removeEventListener('change', themeHandler);
+      listeners.clear();
+      customActions.clear();
+      delete (window as unknown as Record<string, unknown>).__DEVLENS__;
+    },
+
+    registerAction(action: DevLensAction) {
+      customActions.set(action.id, action);
+    },
+
+    unregisterAction(id: string) {
+      customActions.delete(id);
+    },
+
+    on<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]) {
+      if (!listeners.has(event)) listeners.set(event, new Set());
+      listeners.get(event)!.add(handler);
+    },
+
+    off<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]) {
+      listeners.get(event)?.delete(handler);
+    },
+  };
+
+  return instance;
+}
