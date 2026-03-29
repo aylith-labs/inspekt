@@ -1,0 +1,36 @@
+{
+  "name": "@devlens/webpack",
+  "version": "0.1.0",
+  "description": "DevLens Webpack plugin — injects source location attributes at build time",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@devlens/vite": "*"
+  },
+  "peerDependencies": {
+    "webpack": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webpack": { "optional": true }
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT"
+}

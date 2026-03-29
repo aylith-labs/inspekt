@@ -11,6 +11,21 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./webpack": {
+      "import": "./dist/unplugin.js",
+      "require": "./dist/unplugin.cjs",
+      "types": "./dist/unplugin.d.ts"
+    },
+    "./rspack": {
+      "import": "./dist/unplugin.js",
+      "require": "./dist/unplugin.cjs",
+      "types": "./dist/unplugin.d.ts"
+    },
+    "./esbuild": {
+      "import": "./dist/unplugin.js",
+      "require": "./dist/unplugin.cjs",
+      "types": "./dist/unplugin.d.ts"
     }
   },
   "files": ["dist"],
@@ -23,20 +38,23 @@
   },
   "dependencies": {
     "@devlens/core": "*",
-    "@devlens/cli": "*"
+    "@devlens/cli": "*",
+    "unplugin": "^2.2.0",
+    "magic-string": "^0.30.0"
   },
   "devDependencies": {
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",
     "vite": "^6.0.0",
-    "unplugin": "^2.2.0",
-    "magic-string": "^0.30.0",
     "@swc/core": "^1.10.0",
     "@types/node": "^22.0.0"
   },
   "peerDependencies": {
     "vite": ">=4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": { "optional": true }
   },
   "license": "MIT"
 }
