@@ -12,8 +12,8 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@devlens/core": "workspace:*",
-    "@devlens/vite": "workspace:*"
+    "@devlens/core": "*",
+    "@devlens/vite": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

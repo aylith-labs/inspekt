@@ -2,10 +2,10 @@
   "name": "devlens",
   "private": true,
   "description": "Framework-agnostic element inspector for developers",
-  "packageManager": "pnpm@9.15.4",
-  "engines": {
-    "node": ">=18"
-  },
+  "workspaces": [
+    "packages/*",
+    "playground"
+  ],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
