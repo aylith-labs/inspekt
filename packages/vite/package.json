@@ -22,7 +22,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@devlens/core": "workspace:*"
+    "@devlens/core": "workspace:*",
+    "@devlens/cli": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.3.0",
