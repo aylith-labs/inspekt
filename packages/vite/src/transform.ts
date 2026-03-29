@@ -14,7 +14,15 @@ export interface TransformOptions {
 const JSX_TAG_START_RE = /<(?!\/|!--)([A-Z][a-zA-Z0-9.]*|[a-z][a-z0-9]*(?:-[a-z0-9]+)*)/g;
 
 // Skip tags that shouldn't get attributes
-const SKIP_TAGS = new Set(['Fragment', 'React.Fragment', 'Suspense', 'StrictMode']);
+const SKIP_TAGS = new Set([
+  // React
+  'Fragment', 'React.Fragment', 'Suspense', 'StrictMode',
+  // Vue
+  'template', 'script', 'style', 'slot', 'Teleport', 'Transition', 'TransitionGroup', 'KeepAlive',
+  // Svelte
+  'svelte:head', 'svelte:body', 'svelte:window', 'svelte:document', 'svelte:fragment',
+  'svelte:options', 'svelte:self', 'svelte:component', 'svelte:element',
+]);
 
 export function transformJSX(
   code: string,

@@ -137,4 +137,49 @@ export function Tag({ name }) {
     expect(result).not.toBeNull();
     expect(result!.code).toContain('data-devlens-path=');
   });
+
+  it('transforms Vue SFC template elements', () => {
+    const code = `
+<template>
+  <div class="container">
+    <h1>{{ title }}</h1>
+    <MyButton @click="handleClick">Submit</MyButton>
+  </div>
+</template>
+<script setup>
+const title = 'Hello';
+</script>
+`;
+    const result = transformJSX(code, '/home/user/project/src/Page.vue', defaultOptions);
+    expect(result).not.toBeNull();
+    // Should inject on div, h1, MyButton — not template/script/style
+    const matches = result!.code.match(/data-devlens-path=/g);
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBeGreaterThanOrEqual(3);
+    // template and script tags should NOT have the attribute
+    expect(result!.code).not.toMatch(/<template[^>]*data-devlens-path/);
+    expect(result!.code).not.toMatch(/<script[^>]*data-devlens-path/);
+  });
+
+  it('transforms Svelte template elements', () => {
+    const code = `
+<div class="wrapper">
+  <h1>{title}</h1>
+  <button on:click={handleClick}>Click me</button>
+</div>
+<script>
+  let title = 'Hello';
+</script>
+<style>
+  .wrapper { padding: 8px; }
+</style>
+`;
+    const result = transformJSX(code, '/home/user/project/src/Page.svelte', defaultOptions);
+    expect(result).not.toBeNull();
+    const matches = result!.code.match(/data-devlens-path=/g);
+    expect(matches).not.toBeNull();
+    expect(matches!.length).toBeGreaterThanOrEqual(3);
+    expect(result!.code).not.toMatch(/<script[^>]*data-devlens-path/);
+    expect(result!.code).not.toMatch(/<style[^>]*data-devlens-path/);
+  });
 });
