@@ -1,0 +1,21 @@
+{
+  "name": "@devlens/chrome",
+  "version": "0.1.0",
+  "private": true,
+  "description": "DevLens Chrome extension — global settings and standalone inspector",
+  "type": "module",
+  "scripts": {
+    "build": "tsup && cp -r public/* dist/ && cp src/popup/popup.html dist/popup/ && cp src/options/options.html dist/options/",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@devlens/core": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "@types/chrome": "^0.0.287"
+  },
+  "license": "MIT"
+}

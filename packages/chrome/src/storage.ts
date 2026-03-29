@@ -1,0 +1,75 @@
+export interface DevLensSettings {
+  enabled: boolean;
+  editor: string;
+  activation: 'click' | 'hover' | 'manual';
+  theme: 'light' | 'dark' | 'auto';
+  highlightColor: string;
+  highlightStyle: 'solid' | 'dashed' | 'glow';
+  animation: 'pulse' | 'none';
+  treePanelEnabled: boolean;
+  treePanelPosition: 'left' | 'right';
+  showProps: boolean;
+  showLineNumbers: boolean;
+  enabledActions: string[];
+  siteOverrides: Record<string, Partial<DevLensSettings>>;
+  pathMappings: Record<string, Record<string, string>>;
+  githubDefaults: Record<string, { repo: string; branch: string }>;
+}
+
+const DEFAULTS: DevLensSettings = {
+  enabled: true,
+  editor: 'cursor',
+  activation: 'click',
+  theme: 'auto',
+  highlightColor: '#3b82f6',
+  highlightStyle: 'glow',
+  animation: 'pulse',
+  treePanelEnabled: true,
+  treePanelPosition: 'right',
+  showProps: true,
+  showLineNumbers: true,
+  enabledActions: ['open-editor', 'copy-path', 'open-github', 'console-log'],
+  siteOverrides: {},
+  pathMappings: {},
+  githubDefaults: {},
+};
+
+export async function getSettings(): Promise<DevLensSettings> {
+  const result = await chrome.storage.sync.get(DEFAULTS);
+  return result as DevLensSettings;
+}
+
+export async function updateSettings(updates: Partial<DevLensSettings>): Promise<void> {
+  await chrome.storage.sync.set(updates);
+}
+
+export async function getSiteSettings(url: string): Promise<DevLensSettings> {
+  const settings = await getSettings();
+  const hostname = new URL(url).hostname;
+
+  // Find matching site override
+  for (const [pattern, overrides] of Object.entries(settings.siteOverrides)) {
+    if (matchPattern(hostname, pattern)) {
+      return { ...settings, ...overrides };
+    }
+  }
+
+  return settings;
+}
+
+function matchPattern(hostname: string, pattern: string): boolean {
+  if (pattern.startsWith('*.')) {
+    return hostname.endsWith(pattern.slice(1)) || hostname === pattern.slice(2);
+  }
+  return hostname === pattern || hostname.includes(pattern);
+}
+
+export async function exportSettings(): Promise<string> {
+  const settings = await getSettings();
+  return JSON.stringify(settings, null, 2);
+}
+
+export async function importSettings(json: string): Promise<void> {
+  const settings = JSON.parse(json) as Partial<DevLensSettings>;
+  await updateSettings(settings);
+}
