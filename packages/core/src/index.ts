@@ -15,8 +15,11 @@ import {
   createOpenGithubAction,
   createConsoleLogAction,
 } from './actions/built-in.js';
+import { TreePanel } from './tree-panel/tree-panel.js';
+import { detectAdapter, type ComponentNode } from './adapters/index.js';
 import { STYLES } from './styles.js';
 
+export type { ComponentNode } from './adapters/index.js';
 export type {
   DevLensOptions,
   DevLensInstance,
@@ -88,6 +91,37 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
   const highlighter = new Highlighter(options.highlight);
   const popover = new Popover(shadow);
   const overlay = new Overlay(shadow);
+  const adapter = detectAdapter();
+
+  let treePanel: TreePanel | null = null;
+  if (options.treePanel.enabled) {
+    treePanel = new TreePanel(shadow, {
+      position: options.treePanel.position,
+      showProps: options.treePanel.showProps,
+      showLineNumbers: options.treePanel.showLineNumbers,
+      onSelect(node: ComponentNode) {
+        if (node.domElement) {
+          highlighter.unhighlightAll();
+          highlighter.highlight(node.domElement, 'selected');
+          node.domElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        emit('tree-select', node);
+      },
+      onHover(node: ComponentNode | null) {
+        highlighter.unhighlightAll();
+        if (node?.domElement) {
+          highlighter.highlight(node.domElement, 'hovered');
+        }
+      },
+    });
+  }
+
+  function refreshTree(): void {
+    if (!treePanel) return;
+    const root = document.getElementById('root') ?? document.getElementById('app') ?? document.body;
+    const tree = adapter.getComponentTree(root);
+    treePanel.updateTree(tree);
+  }
 
   // Build actions list
   function getActions(): DevLensAction[] {
@@ -151,6 +185,7 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
         highlighter.unhighlightAll();
         highlighter.highlight(result.element, 'selected');
         popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
+        treePanel?.selectElement(inspected);
         emit('inspect', inspected);
       }
     }
@@ -174,6 +209,15 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
     if (e.key === 'o' && e.ctrlKey && e.altKey) {
       e.preventDefault();
       overlay.toggle();
+    }
+
+    // Ctrl+Alt+T = toggle tree panel
+    if (e.key === 't' && e.ctrlKey && e.altKey) {
+      e.preventDefault();
+      if (treePanel) {
+        treePanel.toggle();
+        if (treePanel.isVisible()) refreshTree();
+      }
     }
   }
 
@@ -248,6 +292,12 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       (window as unknown as Record<string, unknown>).__DEVLENS__ = { version: '0.1.0', options };
       document.dispatchEvent(new CustomEvent('devlens:status', { detail: { enabled: true } }));
 
+      // Initialize tree panel with current component tree
+      if (treePanel && options.treePanel.enabled) {
+        // Delay to let the DOM settle after React/Vue renders
+        setTimeout(() => refreshTree(), 100);
+      }
+
       emit('enable');
     },
 
@@ -256,6 +306,7 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       enabled = false;
       popover.hide();
       overlay.hide();
+      treePanel?.hide();
       highlighter.unhighlightAll();
       document.removeEventListener('click', handleClick, true);
       document.removeEventListener('keydown', handleKeydown, true);
@@ -275,6 +326,7 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       instance.disable();
       popover.destroy();
       overlay.destroy();
+      treePanel?.destroy();
       mediaQuery.removeEventListener('change', themeHandler);
       listeners.clear();
       customActions.clear();

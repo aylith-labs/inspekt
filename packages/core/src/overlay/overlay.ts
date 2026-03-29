@@ -4,11 +4,15 @@ export interface Badge {
   element: HTMLElement;
   componentName: string;
   badgeElement: HTMLElement;
+  visible: boolean;
 }
+
+const MAX_VISIBLE_BADGES = 200;
 
 export class Overlay {
   private badges: Badge[] = [];
   private mutationObserver: MutationObserver | null = null;
+  private intersectionObserver: IntersectionObserver | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private container: HTMLElement;
   private visible = false;
@@ -68,7 +72,30 @@ export class Overlay {
       if (!isNested) outermost.push(el);
     }
 
-    for (const el of outermost) {
+    // Limit badge count for performance on large pages
+    const toRender = outermost.slice(0, MAX_VISIBLE_BADGES);
+
+    // Set up IntersectionObserver for visibility-based rendering
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const badge = this.badges.find((b) => b.element === entry.target);
+          if (!badge) continue;
+
+          if (entry.isIntersecting) {
+            badge.visible = true;
+            badge.badgeElement.style.display = 'block';
+            this.positionBadge(badge.badgeElement, badge.element);
+          } else {
+            badge.visible = false;
+            badge.badgeElement.style.display = 'none';
+          }
+        }
+      },
+      { rootMargin: '50px' },
+    );
+
+    for (const el of toRender) {
       const attrValue = findSourceAttribute(el);
       if (!attrValue) continue;
 
@@ -112,18 +139,49 @@ export class Overlay {
     this.container.appendChild(badge);
     this.positionBadge(badge, element);
 
-    this.badges.push({ element, componentName, badgeElement: badge });
+    const badgeEntry: Badge = { element, componentName, badgeElement: badge, visible: true };
+    this.badges.push(badgeEntry);
+
+    // Track visibility
+    this.intersectionObserver?.observe(element);
   }
 
   private positionBadge(badge: HTMLElement, target: HTMLElement): void {
     const rect = target.getBoundingClientRect();
-    badge.style.left = `${rect.left + window.scrollX}px`;
-    badge.style.top = `${rect.top + window.scrollY - 20}px`;
+    const badgeHeight = 18;
+    const badgeWidth = badge.offsetWidth || 60;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+
+    let left = rect.left + scrollX;
+    let top = rect.top + scrollY - badgeHeight - 2;
+
+    // Clamp to viewport — keep badge visible
+    const vpWidth = window.innerWidth;
+
+    // Prevent badge from going off-screen right
+    if (left + badgeWidth > vpWidth + scrollX) {
+      left = vpWidth + scrollX - badgeWidth - 4;
+    }
+    // Prevent going off-screen left
+    if (left < scrollX + 4) {
+      left = scrollX + 4;
+    }
+
+    // If badge would be above viewport, place below the element
+    if (top < scrollY) {
+      top = rect.bottom + scrollY + 2;
+    }
+
+    badge.style.left = `${left}px`;
+    badge.style.top = `${top}px`;
   }
 
   updatePositions(): void {
-    for (const { badgeElement, element } of this.badges) {
-      this.positionBadge(badgeElement, element);
+    for (const { badgeElement, element, visible } of this.badges) {
+      if (visible) {
+        this.positionBadge(badgeElement, element);
+      }
     }
   }
 
@@ -145,6 +203,8 @@ export class Overlay {
   private stopObserving(): void {
     this.mutationObserver?.disconnect();
     this.mutationObserver = null;
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = null;
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
@@ -159,6 +219,7 @@ export class Overlay {
   };
 
   private clear(): void {
+    this.intersectionObserver?.disconnect();
     for (const { badgeElement } of this.badges) {
       badgeElement.remove();
     }

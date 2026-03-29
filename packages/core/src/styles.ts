@@ -151,4 +151,185 @@ export const STYLES = /* css */ `
     0%, 100% { box-shadow: 0 0 0 0 var(--dl-accent-dim); }
     50% { box-shadow: 0 0 8px 4px var(--dl-accent-dim); }
   }
+
+  /* Tree Panel */
+  .devlens-tree-panel {
+    position: fixed;
+    top: 0;
+    height: 100vh;
+    width: 320px;
+    background: var(--dl-bg);
+    border-left: 1px solid var(--dl-border);
+    color: var(--dl-text);
+    display: flex;
+    flex-direction: column;
+    pointer-events: auto;
+    z-index: 2147483647;
+    box-shadow: var(--dl-shadow);
+    animation: devlens-slide-in 0.2s ease;
+  }
+
+  .devlens-tree-right { right: 0; border-left: 1px solid var(--dl-border); border-right: none; }
+  .devlens-tree-left { left: 0; border-right: 1px solid var(--dl-border); border-left: none; }
+
+  @keyframes devlens-slide-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .devlens-tree-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--dl-border);
+    flex-shrink: 0;
+  }
+
+  .devlens-tree-title {
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .devlens-tree-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--dl-text-dim);
+    cursor: pointer;
+  }
+
+  .devlens-tree-close:hover {
+    background: var(--dl-bg-hover);
+    color: var(--dl-text);
+  }
+
+  .devlens-tree-search {
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--dl-border);
+    flex-shrink: 0;
+  }
+
+  .devlens-tree-search-input {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid var(--dl-border);
+    border-radius: 6px;
+    background: var(--dl-bg-hover);
+    color: var(--dl-text);
+    font-size: 12px;
+    outline: none;
+    font-family: inherit;
+  }
+
+  .devlens-tree-search-input:focus {
+    border-color: var(--dl-accent);
+  }
+
+  .devlens-tree-search-input::placeholder {
+    color: var(--dl-text-dim);
+  }
+
+  .devlens-tree-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--dl-border) transparent;
+  }
+
+  .devlens-tree-content::-webkit-scrollbar { width: 6px; }
+  .devlens-tree-content::-webkit-scrollbar-thumb { background: var(--dl-border); border-radius: 3px; }
+
+  .devlens-tree-node {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    min-height: 26px;
+    transition: background 0.1s ease;
+  }
+
+  .devlens-tree-node:hover {
+    background: var(--dl-bg-hover);
+  }
+
+  .devlens-tree-node-selected {
+    background: var(--dl-accent-dim) !important;
+  }
+
+  .devlens-tree-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+
+  .devlens-tree-arrow svg { color: var(--dl-text-dim); }
+
+  .devlens-tree-arrow-expanded { transform: rotate(0deg); }
+  .devlens-tree-arrow-collapsed { transform: rotate(-90deg); }
+
+  .devlens-tree-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #c792ea;
+  }
+
+  :host(.devlens-light) .devlens-tree-name {
+    color: #7c3aed;
+  }
+
+  .devlens-tree-line {
+    font-size: 11px;
+    color: var(--dl-text-dim);
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  .devlens-tree-props {
+    font-size: 10px;
+    color: var(--dl-text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  .devlens-tree-children.devlens-tree-collapsed {
+    display: none;
+  }
+
+  .devlens-tree-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--dl-text-dim);
+    font-size: 12px;
+  }
+
+  /* Resize handle */
+  .devlens-tree-resize {
+    position: absolute;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+  }
+
+  .devlens-tree-resize-left { left: 0; }
+  .devlens-tree-resize-right { right: 0; }
+
+  .devlens-tree-resize:hover {
+    background: var(--dl-accent);
+    opacity: 0.5;
+  }
 `;
