@@ -7,6 +7,7 @@ export default defineConfig([
       content: 'src/content.ts',
       'popup/popup': 'src/popup/popup.ts',
       'options/options': 'src/options/options.ts',
+      'welcome/welcome': 'src/welcome/welcome.ts',
     },
     format: ['esm'],
     sourcemap: true,

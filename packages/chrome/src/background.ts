@@ -4,8 +4,16 @@ import type { MessageType } from './messaging.js';
 // Track per-tab state
 const tabState = new Map<number, { enabled: boolean; standalone: boolean }>();
 
+// Resolve the target tab ID: use sender.tab.id for content scripts,
+// fall back to querying the active tab for popup/options page messages.
+async function resolveTabId(senderTabId: number | undefined): Promise<number | undefined> {
+  if (senderTabId) return senderTabId;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab?.id;
+}
+
 chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse) => {
-  const tabId = sender.tab?.id;
+  const senderTabId = sender.tab?.id;
 
   switch (message.type) {
     case 'GET_SETTINGS':
@@ -34,37 +42,54 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       return true;
 
     case 'TOGGLE_DEVLENS':
-      if (tabId) {
-        const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
-        state.enabled = !state.enabled;
-        tabState.set(tabId, state);
-        chrome.tabs.sendMessage(tabId, {
-          type: state.enabled ? 'ENABLE' : 'DISABLE',
-        }).catch(() => {});
-        sendResponse({ enabled: state.enabled });
-      }
+      resolveTabId(senderTabId).then((tabId) => {
+        if (tabId) {
+          const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
+          state.enabled = !state.enabled;
+          tabState.set(tabId, state);
+          chrome.tabs.sendMessage(tabId, {
+            type: state.enabled ? 'ENABLE' : 'DISABLE',
+          }).catch(() => {});
+          sendResponse({ enabled: state.enabled });
+        } else {
+          sendResponse({ enabled: false });
+        }
+      });
       return true;
 
     case 'INJECT_STANDALONE':
-      if (tabId) {
-        const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
-        state.standalone = true;
-        state.enabled = true;
-        tabState.set(tabId, state);
-        sendResponse({ ok: true });
-      }
+      resolveTabId(senderTabId).then((tabId) => {
+        if (tabId) {
+          const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
+          state.standalone = true;
+          state.enabled = true;
+          tabState.set(tabId, state);
+          sendResponse({ ok: true });
+        } else {
+          sendResponse({ ok: false });
+        }
+      });
       return true;
 
     case 'GET_STATUS':
-      if (tabId) {
-        const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
-        sendResponse({
-          type: 'STATUS_RESPONSE',
-          enabled: state.enabled,
-          standalone: state.standalone,
-          hasPlugin: false,
-        });
-      }
+      resolveTabId(senderTabId).then((tabId) => {
+        if (tabId) {
+          const state = tabState.get(tabId) ?? { enabled: false, standalone: false };
+          sendResponse({
+            type: 'STATUS_RESPONSE',
+            enabled: state.enabled,
+            standalone: state.standalone,
+            hasPlugin: false,
+          });
+        } else {
+          sendResponse({
+            type: 'STATUS_RESPONSE',
+            enabled: false,
+            standalone: false,
+            hasPlugin: false,
+          });
+        }
+      });
       return true;
   }
 });

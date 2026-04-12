@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Welcome to DevLens</title>
+  <style>
+    :root {
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-soft: rgba(59, 130, 246, 0.1);
+      --text-strong: #0f172a;
+      --text: #475569;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f9;
+      --code-bg: #f1f5f9;
+      --shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.05);
+      --shadow-lg: 0 4px 8px rgba(15, 23, 42, 0.06), 0 16px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text-strong: #f1f5f9;
+        --text: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --border-strong: #475569;
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-hover: #334155;
+        --code-bg: #0b1220;
+        --primary-soft: rgba(59, 130, 246, 0.18);
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25);
+        --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.35), 0 16px 32px rgba(0, 0, 0, 0.35);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.55;
+      min-height: 100vh;
+    }
+
+    .shell {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 64px;
+    }
+
+    header.topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border-strong);
+      transition: background 0.2s, transform 0.2s, width 0.2s;
+    }
+
+    .dot.active {
+      background: var(--primary);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    .dot.past {
+      background: var(--primary);
+      opacity: 0.5;
+    }
+
+    main.card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: var(--shadow);
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    section.step {
+      display: none;
+      flex: 1;
+      flex-direction: column;
+    }
+
+    section.step.active { display: flex; }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-strong);
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .lede {
+      font-size: 15px;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin-bottom: 28px;
+    }
+
+    .lede strong { color: var(--text); font-weight: 600; }
+
+    kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      color: var(--text-strong);
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 1px 0 var(--border-strong);
+    }
+
+    /* ---- Step 1: Welcome ---- */
+    .hero-visual {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .hero-crosshair {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--primary-soft) 0%, transparent 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-crosshair::before,
+    .hero-crosshair::after {
+      content: '';
+      position: absolute;
+      background: var(--primary);
+    }
+
+    .hero-crosshair::before {
+      width: 2px;
+      height: 36px;
+    }
+
+    .hero-crosshair::after {
+      height: 2px;
+      width: 36px;
+    }
+
+    .hero-crosshair span {
+      width: 18px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px var(--surface), 0 0 0 6px var(--primary);
+      z-index: 1;
+    }
+
+    /* ---- Step 2: Try it ---- */
+    .try-instructions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--primary-soft);
+      border: 1px solid var(--primary);
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--text-strong);
+    }
+
+    .try-instructions-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .sandbox {
+      flex: 1;
+      border: 2px dashed var(--border-strong);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 260px;
+    }
+
+    .sandbox-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .sandbox-nav-title {
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .sandbox-nav-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f472b6, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .sandbox-card {
+      flex: 1;
+      padding: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .sandbox-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .sandbox-card-body {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .sandbox-button {
+      align-self: flex-start;
+      padding: 8px 16px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .sandbox-button:hover { background: var(--primary-hover); }
+
+    /* ---- Step 3: Two modes ---- */
+    .modes-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 640px) {
+      .modes-grid { grid-template-columns: 1fr; }
+    }
+
+    .mode-card {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .mode-card.best {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+    }
+
+    .mode-label {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      align-self: flex-start;
+    }
+
+    .mode-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    .mode-body {
+      font-size: 13px;
+      color: var(--text-muted);
+      flex: 1;
+    }
+
+    .mode-body code {
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 12px;
+      background: var(--code-bg);
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: var(--text);
+    }
+
+    /* ---- Step 4: Editor picker ---- */
+    .picker-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-width: 420px;
+    }
+
+    .picker-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-strong);
+    }
+
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text-strong);
+      font-size: 14px;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+
+    select:focus {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+      border-color: var(--primary);
+    }
+
+    .picker-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .saved-indicator {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #16a34a;
+    }
+
+    .saved-indicator.show { display: inline-flex; }
+
+    @media (prefers-color-scheme: dark) {
+      .saved-indicator { color: #4ade80; }
+    }
+
+    /* ---- Footer nav ---- */
+    .step-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .step-footer-left a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 8px 0;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: var(--font);
+    }
+
+    .step-footer-left a:hover { color: var(--text); }
+
+    .step-footer-right {
+      display: flex;
+      gap: 10px;
+    }
+
+    button.btn {
+      padding: 10px 20px;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    button.btn:hover { background: var(--surface-hover); }
+
+    button.btn[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    button.btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    button.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+    /* Footer below card */
+    .page-footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">&#x25C9;</div>
+        DevLens
+      </div>
+      <div class="dots" id="dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+    </header>
+
+    <main class="card">
+      <!-- Step 1 -->
+      <section class="step active" data-step="1">
+        <h1>Click any UI element. See where it lives.</h1>
+        <p class="lede">DevLens turns your browser into an X-ray for components. Click a button, card, or nav item on any page — DevLens shows you the exact file and component that drew it.</p>
+        <div class="hero-visual">
+          <div class="hero-crosshair"><span></span></div>
+        </div>
+      </section>
+
+      <!-- Step 2: Try it right here -->
+      <section class="step" data-step="2">
+        <h1>Try the inspector right here</h1>
+        <p class="lede">This sandbox is using <strong>real DevLens</strong> — the same thing that runs on your app. Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click any element below.</p>
+        <div class="try-instructions">
+          <span class="try-instructions-icon">i</span>
+          <span>Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click. A popover will show the (fake) source path — on a real app it would open the file in your editor.</span>
+        </div>
+        <div class="sandbox" id="sandbox">
+          <div class="sandbox-nav" data-devlens-path="welcome/demo.tsx:4:3:SandboxNav">
+            <span class="sandbox-nav-title" data-devlens-path="welcome/demo.tsx:5:5:SandboxNavTitle">Sample App</span>
+            <div class="sandbox-nav-avatar" data-devlens-path="welcome/demo.tsx:6:5:SandboxAvatar">SP</div>
+          </div>
+          <div class="sandbox-card" data-devlens-path="welcome/demo.tsx:12:3:SandboxCard">
+            <div class="sandbox-card-title" data-devlens-path="welcome/demo.tsx:13:5:CardTitle">This is a Card</div>
+            <div class="sandbox-card-body" data-devlens-path="welcome/demo.tsx:14:5:CardBody">Click me, or the button below, or anything in the nav above. DevLens will show you where I'm defined.</div>
+            <button class="sandbox-button" data-devlens-path="welcome/demo.tsx:15:5:PrimaryButton" type="button">Primary Button</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Two modes -->
+      <section class="step" data-step="3">
+        <h1>Two ways to use DevLens</h1>
+        <p class="lede">DevLens works on any site, but it really shines when you wire it into your own project's build tool.</p>
+        <div class="modes-grid">
+          <div class="mode-card best">
+            <span class="mode-label">Best experience</span>
+            <div class="mode-title">On your own projects</div>
+            <p class="mode-body">Add the DevLens plugin to your build tool (<code>Vite</code>, <code>Webpack</code>, <code>Rspack</code>, <code>esbuild</code>). Click anything on your running app — jump straight to the source file in your editor.</p>
+          </div>
+          <div class="mode-card">
+            <div class="mode-title">On any other website</div>
+            <p class="mode-body">Click the DevLens icon in the Chrome toolbar. Click elements to explore their DOM structure. Source-jumping is disabled (the site doesn't have the breadcrumbs baked in), but you can still poke around.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Editor picker -->
+      <section class="step" data-step="4">
+        <h1>Pick your editor</h1>
+        <p class="lede">When you click an element on your project, DevLens will open its source file in the editor you choose here. You can change this anytime in Settings.</p>
+        <div class="picker-wrap">
+          <label class="picker-label" for="editor-select">Open source files in</label>
+          <select id="editor-select">
+            <option value="cursor">Cursor</option>
+            <option value="vscode">VS Code</option>
+            <option value="vscode-insiders">VS Code Insiders</option>
+            <option value="windsurf">Windsurf</option>
+            <option value="webstorm">WebStorm</option>
+            <option value="phpstorm">PhpStorm</option>
+            <option value="idea">IntelliJ IDEA</option>
+            <option value="sublime">Sublime Text</option>
+            <option value="zed">Zed</option>
+          </select>
+          <div class="picker-hint">
+            <span class="saved-indicator" id="saved-indicator">&#x2713; Saved</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="step-footer">
+        <div class="step-footer-left">
+          <button type="button" id="skip-link">Skip the tour</button>
+        </div>
+        <div class="step-footer-right">
+          <button type="button" class="btn" id="back-btn">Back</button>
+          <button type="button" class="btn btn-primary" id="next-btn">Next</button>
+        </div>
+      </div>
+    </main>
+
+    <div class="page-footer">
+      You can reopen this tour anytime from <strong>Settings &rarr; Open welcome tour</strong>.
+    </div>
+  </div>
+
+  <script type="module" src="welcome.js"></script>
+</body>
+</html>

@@ -14,6 +14,7 @@ export interface DevLensSettings {
   siteOverrides: Record<string, Partial<DevLensSettings>>;
   pathMappings: Record<string, Record<string, string>>;
   githubDefaults: Record<string, { repo: string; branch: string }>;
+  popupIntroSeen: boolean;
 }
 
 const DEFAULTS: DevLensSettings = {
@@ -32,6 +33,7 @@ const DEFAULTS: DevLensSettings = {
   siteOverrides: {},
   pathMappings: {},
   githubDefaults: {},
+  popupIntroSeen: false,
 };
 
 export async function getSettings(): Promise<DevLensSettings> {

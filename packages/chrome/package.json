@@ -5,7 +5,7 @@
   "description": "DevLens Chrome extension — global settings and standalone inspector",
   "type": "module",
   "scripts": {
-    "build": "tsup && cp -r public/* dist/ && cp src/popup/popup.html dist/popup/ && cp src/options/options.html dist/options/",
+    "build": "tsup && cp -r public/* dist/ && cp src/popup/popup.html dist/popup/ && cp src/options/options.html dist/options/ && cp src/welcome/welcome.html dist/welcome/",
     "dev": "tsup --watch",
     "clean": "rm -rf dist"
   },

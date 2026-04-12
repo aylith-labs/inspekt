@@ -63,10 +63,31 @@
       font-size: 12px;
       resize: vertical;
     }
+    .subheader {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .subheader h1 { margin-bottom: 0; }
+    .welcome-link {
+      font-size: 13px;
+      color: #3b82f6;
+      text-decoration: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 0;
+    }
+    .welcome-link:hover { color: #2563eb; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1>DevLens Settings</h1>
+  <div class="subheader">
+    <h1>DevLens Settings</h1>
+    <button type="button" class="welcome-link" id="open-welcome">Open welcome tour &rarr;</button>
+  </div>
 
   <h2>General</h2>
   <div class="field">
