@@ -184,8 +184,8 @@ VS Code, VS Code Insiders, Cursor, Windsurf, WebStorm, PhpStorm, PyCharm, Intell
 
 ## How It Works
 
-1. **Build time** — The bundler plugin injects `data-inspekt-path` attributes onto every component's root element with the source file path, line, and column
-2. **Runtime** — When you `Ctrl+Alt+Click`, Inspekt walks up the DOM to find the nearest `data-inspekt-path`, shows a popover with actions, and highlights the element
+1. **Build time** — The bundler plugin injects `data-insp-path` attributes onto every component's root element with the source file path, line, and column
+2. **Runtime** — When you `Ctrl+Alt+Click`, Inspekt walks up the DOM to find the nearest `data-insp-path`, shows a popover with actions, and highlights the element
 3. **Component tree** — Framework-specific adapters (React Fiber, Vue instances, Svelte context, Solid owner) build the full component hierarchy for the tree panel
 
 All Inspekt UI renders inside Shadow DOM to prevent any style conflicts with your app.

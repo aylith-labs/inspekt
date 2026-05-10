@@ -40,7 +40,7 @@ export const genericAdapter: FrameworkAdapter = {
   name: 'generic',
 
   detect(): boolean {
-    return document.querySelector('[data-inspekt-path], [data-insp-path]') !== null;
+    return document.querySelector('[data-insp-path], [data-insp-path]') !== null;
   },
 
   getComponentTree(root: HTMLElement): ComponentNode | null {

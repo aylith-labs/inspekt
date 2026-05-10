@@ -1,6 +1,9 @@
 import type { InspectedElement } from '../types.js';
 
-const SOURCE_ATTRIBUTES = ['data-inspekt-path', 'data-insp-path'];
+// Single source attribute, aligned with @code-inspector/core's hardcoded
+// constant. Anything emitting the older `data-inspekt-path` (the rename
+// transition) must update — we don't carry a back-compat shim.
+const SOURCE_ATTRIBUTE = 'data-insp-path';
 
 export interface SourceInfo {
   filePath: string;
@@ -42,11 +45,7 @@ export function parseSourceAttribute(value: string): SourceInfo | null {
 }
 
 export function findSourceAttribute(element: HTMLElement): string | null {
-  for (const attr of SOURCE_ATTRIBUTES) {
-    const value = element.getAttribute(attr);
-    if (value) return value;
-  }
-  return null;
+  return element.getAttribute(SOURCE_ATTRIBUTE);
 }
 
 export function findClosestSource(element: HTMLElement): { element: HTMLElement; source: SourceInfo } | null {
@@ -68,6 +67,7 @@ export function elementToInspected(
   domElement: HTMLElement,
   source: SourceInfo,
   pathMapping: Record<string, string> = {},
+  detectionSource: 'fiber' | 'attribute' = 'attribute',
 ): InspectedElement {
   let resolvedPath = source.filePath;
   for (const [containerPath, hostPath] of Object.entries(pathMapping)) {
@@ -91,6 +91,39 @@ export function elementToInspected(
     ancestors: [],
     children: [],
     props: null,
-    framework: 'unknown',
+    framework: detectionSource === 'fiber' ? 'react' : 'unknown',
+    detectionSource,
   };
+}
+
+/**
+ * Resolves source for a DOM element using the strategy chain:
+ *   1. React fiber `_debugSource` (zero-config for React/Preact)
+ *   2. `data-insp-path` / `data-inspekt-path` DOM attribute
+ *   3. null (no source available)
+ *
+ * Returns the matching element AND the source info. The element may be
+ * an ancestor of the input when only ancestors carry the attribute.
+ */
+export async function resolveElementSource(
+  element: HTMLElement,
+): Promise<{ element: HTMLElement; source: SourceInfo; from: 'fiber' | 'attribute' } | null> {
+  // Tier 1 — fiber. Lazy-import keeps bippy out of bundles that don't need it.
+  try {
+    const { fiberSourceFor } = await import('./fiber-detector.js');
+    const fiberSource = await fiberSourceFor(element);
+    if (fiberSource) {
+      return { element, source: fiberSource, from: 'fiber' };
+    }
+  } catch {
+    // bippy unavailable or threw — fall through silently
+  }
+
+  // Tier 2 — DOM attribute on element or ancestor.
+  const attrHit = findClosestSource(element);
+  if (attrHit) {
+    return { element: attrHit.element, source: attrHit.source, from: 'attribute' };
+  }
+
+  return null;
 }

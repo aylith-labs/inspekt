@@ -44,8 +44,8 @@
   "dependencies": {
     "@inspekt/core": "*",
     "@inspekt/cli": "*",
-    "unplugin": "^2.2.0",
-    "magic-string": "^0.30.0"
+    "@code-inspector/core": "^1.5.1",
+    "unplugin": "^2.2.0"
   },
   "devDependencies": {
     "tsup": "^8.3.0",

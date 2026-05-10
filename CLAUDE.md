@@ -53,19 +53,19 @@ Bun workspaces + Turborepo. All packages use tsup for bundling and output dual E
 
 ### How It Works End-to-End
 
-**Build time**: The Vite plugin (`packages/vite/src/transform.ts`) runs a regex-based JSX/template transform that injects `data-inspekt-path="filePath:line:col:componentName"` attributes onto every element's opening tag. Uses `magic-string` for source-map-safe string manipulation. The `findTagClose()` function properly tracks brace/paren/string depth to avoid breaking arrow functions in JSX attributes.
+**Build time**: The Vite plugin (`packages/vite/src/transform.ts`) runs a regex-based JSX/template transform that injects `data-insp-path="filePath:line:col:componentName"` attributes onto every element's opening tag. Uses `magic-string` for source-map-safe string manipulation. The `findTagClose()` function properly tracks brace/paren/string depth to avoid breaking arrow functions in JSX attributes.
 
 **Runtime injection**: The Vite plugin serves a virtual module at `/@inspekt/init.js` via dev server middleware + `resolveId`/`load` hooks. This module imports `@inspekt/core`, calls `createInspekt()`, and enables the inspector. The `transformIndexHtml` hook injects a `<script>` tag pointing to this virtual module.
 
 **Runtime**: `createInspekt()` in `packages/core/src/index.ts` creates a `<inspekt-root>` custom element with Shadow DOM (`attachShadow({ mode: 'open' })`). All UI (popover, tree panel, overlay badges) renders inside this shadow root, preventing CSS conflicts with the host app. Highlights are applied as inline styles on the actual DOM elements.
 
-**Framework detection**: `detectAdapter()` tries adapters in order: React (checks `__reactFiber$`/`__reactContainer$`) → Vue (`__vue__`/`__vue_app__`) → Svelte (`svelte:` markers) → Solid (`data-hk`) → generic fallback (DOM walking via `data-inspekt-path` attributes).
+**Framework detection**: `detectAdapter()` tries adapters in order: React (checks `__reactFiber$`/`__reactContainer$`) → Vue (`__vue__`/`__vue_app__`) → Svelte (`svelte:` markers) → Solid (`data-hk`) → generic fallback (DOM walking via `data-insp-path` attributes).
 
 **Chrome extension**: Content script detects whether the build plugin is present (`<inspekt-root>` or `window.__INSPEKT__`). If present, it pushes chrome.storage.sync settings via `CustomEvent('inspekt:settings-update')`. If absent (standalone mode), it creates its own `createInspekt()` instance. Background service worker manages per-tab state and broadcasts settings changes.
 
 ### Key Patterns
 
-- **Source detection**: `findClosestSource()` walks up the DOM looking for `data-inspekt-path` or `data-insp-path` (backward compat with code-inspector-plugin)
+- **Source detection**: `findClosestSource()` walks up the DOM looking for `data-insp-path` or `data-insp-path` (backward compat with code-inspector-plugin)
 - **Actions**: Built-in (open-editor, copy-path, open-github, console-log) + custom via `registerAction()`. Editor opening uses dev server POST to `/__inspekt/open` with fallback to protocol handlers (`cursor://file/...`)
 - **Multi-bundler**: `packages/vite/src/unplugin.ts` wraps the transform in `createUnplugin()`. `@inspekt/bundlers` re-exports webpack/rspack/esbuild/rollup variants as named exports
 - **Docker path mapping**: Parses `docker-compose.yaml` volume mounts to map container paths → host paths. Manual override via `pathMapping` config option

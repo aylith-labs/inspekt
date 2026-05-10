@@ -51,7 +51,7 @@ export class Overlay {
     this.clear();
 
     const elements = document.querySelectorAll<HTMLElement>(
-      '[data-inspekt-path], [data-insp-path]',
+      '[data-insp-path], [data-insp-path]',
     );
 
     // Track which elements are children of other detected elements

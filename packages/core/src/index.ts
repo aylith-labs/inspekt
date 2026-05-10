@@ -57,7 +57,7 @@ const DEFAULT_OPTIONS: InspektOptions = {
     showProps: true,
     showLineNumbers: true,
   },
-  sourceAttribute: 'data-inspekt-path',
+  sourceAttribute: 'data-insp-path',
   serverUrl: '',
 };
 

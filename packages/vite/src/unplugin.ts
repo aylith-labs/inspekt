@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin';
 import path from 'node:path';
-import { transformJSX, type TransformOptions } from './transform.js';
+import { transformInspekt, type TransformOptions } from './transform-adapter.js';
 import { findComposeFile, parsePathMappings } from './docker.js';
 
 export interface InspektPluginOptions {
@@ -11,6 +11,7 @@ export interface InspektPluginOptions {
   dockerCompose?: boolean;
   include?: string[];
   exclude?: string[];
+  escapeTags?: string[];
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
@@ -33,6 +34,7 @@ export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions
     dockerCompose: false,
     include: ['**/*.{tsx,jsx,vue,svelte,astro}'],
     exclude: ['node_modules/**', '**/*.test.*', '**/*.spec.*', '**/*.stories.*'],
+    escapeTags: [] as string[],
     ...userOptions,
   };
 
@@ -57,16 +59,14 @@ export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions
       return !options.exclude.some((p) => minimatch(rel, p));
     },
 
-    transform(code: string, id: string) {
+    async transform(code: string, id: string) {
       const transformOptions: TransformOptions = {
         framework: options.framework,
         root: resolvedRoot,
         pathType: options.pathType,
-        attribute: 'data-inspekt-path',
-        include: options.include,
-        exclude: options.exclude,
+        escapeTags: options.escapeTags,
       };
-      return transformJSX(code, id, transformOptions);
+      return transformInspekt(code, id, transformOptions);
     },
   };
 });

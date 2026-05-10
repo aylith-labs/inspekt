@@ -41,6 +41,23 @@ export interface InspektOptions {
   serverUrl: string;
 }
 
+export interface SourceSnippet {
+  startLine: number;
+  endLine: number;
+  targetLine: number;
+  lines: string[];
+  language: string;
+  source: 'devserver' | 'sourcemap' | 'fiber';
+}
+
+export interface PageCapabilities {
+  instrumented: boolean;
+  snippetSource: 'devserver' | 'sourcemap' | null;
+  serverReachable: boolean;
+  sourceMapAvailable: boolean;
+  agentConnected: boolean;
+}
+
 export interface InspectedElement {
   filePath: string;
   line: number;
@@ -58,6 +75,13 @@ export interface InspectedElement {
   children: InspectedElement[];
   props: Record<string, unknown> | null;
   framework: 'react' | 'vue' | 'svelte' | 'solid' | 'unknown';
+
+  /** Populated by snippet-resolver when source is fetchable (Phase 1+). */
+  snippet?: SourceSnippet;
+  /** User-entered note (Phase 3+). */
+  comment?: string;
+  /** Detection origin — fiber means we read it via bippy, not a DOM attribute. */
+  detectionSource?: 'fiber' | 'attribute';
 }
 
 export interface InspektAction {

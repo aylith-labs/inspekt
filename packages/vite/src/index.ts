@@ -1,6 +1,6 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
-import { transformJSX, type TransformOptions } from './transform.js';
+import { transformInspekt, type TransformOptions } from './transform-adapter.js';
 import { handleInspektRequest, corsMiddleware } from './server.js';
 import { findComposeFile, parsePathMappings } from './docker.js';
 
@@ -14,6 +14,7 @@ export interface InspektViteOptions {
   runtimeOptions?: Record<string, unknown>;
   include?: string[];
   exclude?: string[];
+  escapeTags?: string[];
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
@@ -29,6 +30,7 @@ export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
     editor: 'cursor',
     include: ['**/*.{tsx,jsx,vue,svelte,astro}'],
     exclude: ['node_modules/**', '**/*.test.*', '**/*.spec.*', '**/*.stories.*'],
+    escapeTags: [] as string[],
     ...userOptions,
   };
 
@@ -111,7 +113,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
       if (id === INIT_PATH) return buildInitScript();
     },
 
-    transform(code, id) {
+    async transform(code, id) {
       // Skip in production
       if (process.env['NODE_ENV'] === 'production') return null;
 
@@ -128,12 +130,10 @@ window.__INSPEKT_INSTANCE__ = inspekt;
         framework: options.framework,
         root: resolvedRoot,
         pathType: options.pathType,
-        attribute: 'data-inspekt-path',
-        include: options.include,
-        exclude: options.exclude,
+        escapeTags: options.escapeTags,
       };
 
-      return transformJSX(code, id, transformOptions);
+      return transformInspekt(code, id, transformOptions);
     },
 
     transformIndexHtml() {
@@ -158,5 +158,5 @@ function minimatch(path: string, pattern: string): boolean {
   return new RegExp(`^${re}$`).test(path);
 }
 
-export { transformJSX } from './transform.js';
-export type { TransformOptions } from './transform.js';
+export { transformInspekt } from './transform-adapter.js';
+export type { TransformOptions } from './transform-adapter.js';
