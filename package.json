@@ -5,7 +5,8 @@
   "packageManager": "bun@1.3.13",
   "workspaces": [
     "packages/*",
-    "playground"
+    "playground",
+    "site"
   ],
   "scripts": {
     "build": "turbo run build",
@@ -13,7 +14,9 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "site:dev": "cd site && bun run docs:dev",
+    "site:build": "cd site && bun run docs:build"
   },
   "devDependencies": {
     "turbo": "^2.4.0",

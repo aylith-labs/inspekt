@@ -7,3 +7,5 @@ coverage/
 .env
 .env.local
 
+site/.vitepress/dist
+site/.vitepress/cache
