@@ -1,0 +1,44 @@
+{
+  "name": "@inspekt/daemon",
+  "version": "0.1.0",
+  "description": "Inspekt daemon — localhost HTTP server with grab queue for agent integration",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "inspekt-daemon": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./queue": {
+      "import": "./dist/queue.js",
+      "types": "./dist/queue.d.ts"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@inspekt/cli": "*",
+    "hono": "^4.12.18",
+    "@hono/node-server": "^1.13.0",
+    "proper-lockfile": "^4.1.2"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "@types/node": "^22.0.0",
+    "@types/proper-lockfile": "^4.1.4"
+  },
+  "license": "MIT"
+}

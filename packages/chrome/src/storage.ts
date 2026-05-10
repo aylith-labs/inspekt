@@ -19,6 +19,12 @@ export interface InspektSettings {
   defaultSnippetExpanded: boolean;
   /** Lines of context above/below the target line. Clamped to 0..30 by the server. */
   snippetContext: number;
+  /** Token used to authenticate against the local daemon. Set by `npx inspekt setup`. */
+  inspektToken: string;
+  /** Daemon HTTP base URL (default http://127.0.0.1:5678). */
+  agentEndpoint: string;
+  /** Currently selected agent for "Send to Agent" — informational; daemon routes to all. */
+  selectedAgent: 'claude-code' | 'cursor' | 'codex' | 'gemini-cli' | 'antigravity' | null;
 }
 
 const DEFAULTS: InspektSettings = {
@@ -40,6 +46,9 @@ const DEFAULTS: InspektSettings = {
   popupIntroSeen: false,
   defaultSnippetExpanded: false,
   snippetContext: 5,
+  inspektToken: '',
+  agentEndpoint: 'http://127.0.0.1:5678',
+  selectedAgent: null,
 };
 
 export async function getSettings(): Promise<InspektSettings> {
