@@ -1,4 +1,4 @@
-import type { DevLensAction, InspectedElement } from '../types.js';
+import type { InspektAction, InspectedElement } from '../types.js';
 
 export class Popover {
   private container: HTMLElement;
@@ -6,25 +6,25 @@ export class Popover {
 
   constructor(private shadowRoot: ShadowRoot) {
     this.container = document.createElement('div');
-    this.container.className = 'devlens-popover';
+    this.container.className = 'inspekt-popover';
     this.container.style.display = 'none';
     this.shadowRoot.appendChild(this.container);
   }
 
-  show(element: InspectedElement, actions: DevLensAction[], position: { x: number; y: number }): void {
+  show(element: InspectedElement, actions: InspektAction[], position: { x: number; y: number }): void {
     this.container.innerHTML = '';
 
     // Header: file path + line
     const header = document.createElement('div');
-    header.className = 'devlens-popover-header';
+    header.className = 'inspekt-popover-header';
 
     const pathDir = document.createElement('div');
-    pathDir.className = 'devlens-popover-path-dir';
+    pathDir.className = 'inspekt-popover-path-dir';
     const parts = element.filePath.split('/');
     pathDir.textContent = parts.slice(0, -1).join('/') + '/';
 
     const pathFile = document.createElement('div');
-    pathFile.className = 'devlens-popover-path-file';
+    pathFile.className = 'inspekt-popover-path-file';
     pathFile.textContent = `${parts[parts.length - 1]}:${element.line}`;
 
     header.appendChild(pathDir);
@@ -33,11 +33,11 @@ export class Popover {
 
     // Actions bar
     const actionsBar = document.createElement('div');
-    actionsBar.className = 'devlens-popover-actions';
+    actionsBar.className = 'inspekt-popover-actions';
 
     for (const action of actions) {
       const btn = document.createElement('button');
-      btn.className = 'devlens-popover-action';
+      btn.className = 'inspekt-popover-action';
       btn.title = action.label;
       btn.innerHTML = action.icon;
       btn.addEventListener('click', (e) => {

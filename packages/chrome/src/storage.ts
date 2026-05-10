@@ -1,7 +1,7 @@
-export interface DevLensSettings {
+export interface InspektSettings {
   enabled: boolean;
   editor: string;
-  activation: 'click' | 'hover' | 'manual';
+  activation: 'click' | 'hover-mod' | 'hover' | 'manual';
   theme: 'light' | 'dark' | 'auto';
   highlightColor: string;
   highlightStyle: 'solid' | 'dashed' | 'glow';
@@ -11,13 +11,13 @@ export interface DevLensSettings {
   showProps: boolean;
   showLineNumbers: boolean;
   enabledActions: string[];
-  siteOverrides: Record<string, Partial<DevLensSettings>>;
+  siteOverrides: Record<string, Partial<InspektSettings>>;
   pathMappings: Record<string, Record<string, string>>;
   githubDefaults: Record<string, { repo: string; branch: string }>;
   popupIntroSeen: boolean;
 }
 
-const DEFAULTS: DevLensSettings = {
+const DEFAULTS: InspektSettings = {
   enabled: true,
   editor: 'cursor',
   activation: 'click',
@@ -36,16 +36,16 @@ const DEFAULTS: DevLensSettings = {
   popupIntroSeen: false,
 };
 
-export async function getSettings(): Promise<DevLensSettings> {
+export async function getSettings(): Promise<InspektSettings> {
   const result = await chrome.storage.sync.get(DEFAULTS);
-  return result as DevLensSettings;
+  return result as InspektSettings;
 }
 
-export async function updateSettings(updates: Partial<DevLensSettings>): Promise<void> {
+export async function updateSettings(updates: Partial<InspektSettings>): Promise<void> {
   await chrome.storage.sync.set(updates);
 }
 
-export async function getSiteSettings(url: string): Promise<DevLensSettings> {
+export async function getSiteSettings(url: string): Promise<InspektSettings> {
   const settings = await getSettings();
   const hostname = new URL(url).hostname;
 
@@ -72,6 +72,6 @@ export async function exportSettings(): Promise<string> {
 }
 
 export async function importSettings(json: string): Promise<void> {
-  const settings = JSON.parse(json) as Partial<DevLensSettings>;
+  const settings = JSON.parse(json) as Partial<InspektSettings>;
   await updateSettings(settings);
 }

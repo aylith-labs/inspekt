@@ -41,7 +41,7 @@ export const solidAdapter: FrameworkAdapter = {
       for (const child of Array.from(el.children)) {
         if (!(child instanceof HTMLElement)) continue;
 
-        // Try devlens data attribute first
+        // Try inspekt data attribute first
         const attr = findSourceAttribute(child);
         if (attr) {
           const source = parseSourceAttribute(attr);

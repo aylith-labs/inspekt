@@ -1,4 +1,4 @@
-import { createDevLens, type DevLensInstance } from '@devlens/core';
+import { createInspekt, type InspektInstance } from '@inspekt/core';
 import { getSettings, updateSettings } from '../storage.js';
 
 const steps = Array.from(document.querySelectorAll<HTMLElement>('section.step'));
@@ -13,7 +13,7 @@ const TOTAL_STEPS = steps.length;
 const DEMO_STEP = 2;
 const FINAL_STEP = TOTAL_STEPS;
 let currentStep = 1;
-let demoInstance: DevLensInstance | null = null;
+let demoInstance: InspektInstance | null = null;
 let savedTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function init(): Promise<void> {
@@ -50,7 +50,7 @@ function renderStep(): void {
 
 function startDemo(): void {
   if (demoInstance) return;
-  demoInstance = createDevLens({
+  demoInstance = createInspekt({
     activation: 'click',
     theme: 'auto',
     highlight: {
@@ -64,11 +64,33 @@ function startDemo(): void {
       showProps: false,
       showLineNumbers: true,
     },
-    // No-op server URL — clicks show the popover but "open in editor"
-    // actions won't connect to anything. That's intentional for the demo.
+    actions: ['open-editor', 'copy-path', 'open-github', 'console-log'],
     serverUrl: '',
+    githubRepo: '',
+  });
+  demoInstance.on('action', (actionId) => {
+    if (actionId === 'open-editor' || actionId === 'open-github') {
+      showToast(actionId === 'open-editor'
+        ? 'On a real project, this opens the file in your editor'
+        : 'On a real project, this opens the file on GitHub');
+    }
   });
   demoInstance.enable();
+}
+
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
+function showToast(message: string): void {
+  let el = document.getElementById('demo-toast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'demo-toast';
+    el.className = 'demo-toast';
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el!.classList.remove('show'), 3000);
 }
 
 function stopDemo(): void {

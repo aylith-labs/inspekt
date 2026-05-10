@@ -19,7 +19,7 @@ export class Overlay {
 
   constructor(private shadowRoot: ShadowRoot) {
     this.container = document.createElement('div');
-    this.container.className = 'devlens-overlay';
+    this.container.className = 'inspekt-overlay';
     this.container.style.display = 'none';
     this.shadowRoot.appendChild(this.container);
   }
@@ -51,7 +51,7 @@ export class Overlay {
     this.clear();
 
     const elements = document.querySelectorAll<HTMLElement>(
-      '[data-devlens-path], [data-insp-path]',
+      '[data-inspekt-path], [data-insp-path]',
     );
 
     // Track which elements are children of other detected elements
@@ -108,12 +108,12 @@ export class Overlay {
 
   private createBadge(element: HTMLElement, componentName: string): void {
     const badge = document.createElement('div');
-    badge.className = 'devlens-badge';
+    badge.className = 'inspekt-badge';
     badge.textContent = componentName;
     badge.addEventListener('click', (e) => {
       e.stopPropagation();
       element.dispatchEvent(
-        new CustomEvent('devlens:badge-click', {
+        new CustomEvent('inspekt:badge-click', {
           bubbles: true,
           detail: { element },
         }),
@@ -121,7 +121,7 @@ export class Overlay {
     });
     badge.addEventListener('mouseenter', () => {
       element.dispatchEvent(
-        new CustomEvent('devlens:badge-hover', {
+        new CustomEvent('inspekt:badge-hover', {
           bubbles: true,
           detail: { element },
         }),
@@ -129,7 +129,7 @@ export class Overlay {
     });
     badge.addEventListener('mouseleave', () => {
       element.dispatchEvent(
-        new CustomEvent('devlens:badge-leave', {
+        new CustomEvent('inspekt:badge-leave', {
           bubbles: true,
           detail: { element },
         }),

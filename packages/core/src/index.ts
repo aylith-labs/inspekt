@@ -1,8 +1,8 @@
 import type {
-  DevLensOptions,
-  DevLensInstance,
-  DevLensAction,
-  DevLensEventMap,
+  InspektOptions,
+  InspektInstance,
+  InspektAction,
+  InspektEventMap,
   InspectedElement,
 } from './types.js';
 import { findClosestSource, elementToInspected } from './detection/source-detector.js';
@@ -21,15 +21,15 @@ import { STYLES } from './styles.js';
 
 export type { ComponentNode } from './adapters/index.js';
 export type {
-  DevLensOptions,
-  DevLensInstance,
-  DevLensAction,
-  DevLensEventMap,
+  InspektOptions,
+  InspektInstance,
+  InspektAction,
+  InspektEventMap,
   InspectedElement,
 };
 export type { ShortcutConfig, HighlightConfig, BadgeConfig, TreePanelConfig } from './types.js';
 
-const DEFAULT_OPTIONS: DevLensOptions = {
+const DEFAULT_OPTIONS: InspektOptions = {
   activation: 'click',
   shortcut: { key: 'click', modifiers: ['ctrl', 'alt'] },
   toggleShortcut: { key: 'i', modifiers: ['ctrl', 'alt'] },
@@ -57,12 +57,12 @@ const DEFAULT_OPTIONS: DevLensOptions = {
     showProps: true,
     showLineNumbers: true,
   },
-  sourceAttribute: 'data-devlens-path',
+  sourceAttribute: 'data-inspekt-path',
   serverUrl: '',
 };
 
-export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLensInstance {
-  const options: DevLensOptions = { ...DEFAULT_OPTIONS, ...userOptions };
+export function createInspekt(userOptions: Partial<InspektOptions> = {}): InspektInstance {
+  const options: InspektOptions = { ...DEFAULT_OPTIONS, ...userOptions };
 
   // Merge nested objects
   if (userOptions.highlight) options.highlight = { ...DEFAULT_OPTIONS.highlight, ...userOptions.highlight };
@@ -73,10 +73,10 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
 
   let enabled = false;
   const listeners = new Map<string, Set<Function>>();
-  const customActions = new Map<string, DevLensAction>();
+  const customActions = new Map<string, InspektAction>();
 
   // Create Shadow DOM host
-  const host = document.createElement('devlens-root');
+  const host = document.createElement('inspekt-root');
   const shadow = host.attachShadow({ mode: 'open' });
 
   // Inject styles
@@ -124,15 +124,15 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
   }
 
   // Build actions list
-  function getActions(): DevLensAction[] {
-    const builtInMap: Record<string, () => DevLensAction> = {
+  function getActions(): InspektAction[] {
+    const builtInMap: Record<string, () => InspektAction> = {
       'open-editor': () => createOpenEditorAction(options.serverUrl, options.editor),
       'copy-path': () => createCopyPathAction(),
       'open-github': () => createOpenGithubAction(options.githubRepo, options.githubBranch),
       'console-log': () => createConsoleLogAction(),
     };
 
-    const result: DevLensAction[] = [];
+    const result: InspektAction[] = [];
     for (const id of options.actions) {
       const factory = builtInMap[id];
       if (factory) {
@@ -236,13 +236,28 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
   }
 
   function handleMouseMove(e: MouseEvent): void {
-    if (!enabled || options.activation !== 'hover') return;
-    // Hover mode — highlight on mouseover
+    if (!enabled) return;
+    if (options.activation === 'hover-mod') {
+      // Hover with Ctrl+Alt held — highlight + popover
+      if (!((e.ctrlKey || e.metaKey) && e.altKey)) {
+        highlighter.unhighlightAll();
+        popover.hide();
+        return;
+      }
+    } else if (options.activation !== 'hover') {
+      return;
+    }
     const target = e.target as HTMLElement;
     const result = findClosestSource(target);
     highlighter.unhighlightAll();
     if (result) {
       highlighter.highlight(result.element, 'selected');
+      const inspected = elementToInspected(result.element, result.source, options.pathMapping);
+      popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
+      treePanel?.selectElement(inspected);
+      emit('inspect', inspected);
+    } else {
+      popover.hide();
     }
   }
 
@@ -257,12 +272,12 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
   }
 
   function applyTheme(el: HTMLElement, theme: 'light' | 'dark' | 'auto'): void {
-    el.classList.remove('devlens-light', 'devlens-dark');
+    el.classList.remove('inspekt-light', 'inspekt-dark');
     if (theme === 'auto') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (!isDark) el.classList.add('devlens-light');
+      if (!isDark) el.classList.add('inspekt-light');
     } else if (theme === 'light') {
-      el.classList.add('devlens-light');
+      el.classList.add('inspekt-light');
     }
   }
 
@@ -272,14 +287,14 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
   mediaQuery.addEventListener('change', themeHandler);
 
   // Listen for settings from Chrome extension
-  document.addEventListener('devlens:settings-update', ((e: CustomEvent) => {
+  document.addEventListener('inspekt:settings-update', ((e: CustomEvent) => {
     const newSettings = e.detail;
     Object.assign(options, newSettings);
     if (newSettings.highlight) highlighter.updateConfig(options.highlight);
     applyTheme(host, options.theme);
   }) as EventListener);
 
-  const instance: DevLensInstance = {
+  const instance: InspektInstance = {
     enable() {
       if (enabled) return;
       enabled = true;
@@ -289,8 +304,8 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       document.addEventListener('mousemove', handleMouseMove);
 
       // Signal to Chrome extension
-      (window as unknown as Record<string, unknown>).__DEVLENS__ = { version: '0.1.0', options };
-      document.dispatchEvent(new CustomEvent('devlens:status', { detail: { enabled: true } }));
+      (window as unknown as Record<string, unknown>).__INSPEKT__ = { version: '0.1.0', options };
+      document.dispatchEvent(new CustomEvent('inspekt:status', { detail: { enabled: true } }));
 
       // Initialize tree panel with current component tree
       if (treePanel && options.treePanel.enabled) {
@@ -313,7 +328,7 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       document.removeEventListener('mousemove', handleMouseMove);
       host.remove();
 
-      document.dispatchEvent(new CustomEvent('devlens:status', { detail: { enabled: false } }));
+      document.dispatchEvent(new CustomEvent('inspekt:status', { detail: { enabled: false } }));
       emit('disable');
     },
 
@@ -330,10 +345,10 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       mediaQuery.removeEventListener('change', themeHandler);
       listeners.clear();
       customActions.clear();
-      delete (window as unknown as Record<string, unknown>).__DEVLENS__;
+      delete (window as unknown as Record<string, unknown>).__INSPEKT__;
     },
 
-    registerAction(action: DevLensAction) {
+    registerAction(action: InspektAction) {
       customActions.set(action.id, action);
     },
 
@@ -341,12 +356,12 @@ export function createDevLens(userOptions: Partial<DevLensOptions> = {}): DevLen
       customActions.delete(id);
     },
 
-    on<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]) {
+    on<K extends keyof InspektEventMap>(event: K, handler: InspektEventMap[K]) {
       if (!listeners.has(event)) listeners.set(event, new Set());
       listeners.get(event)!.add(handler);
     },
 
-    off<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]) {
+    off<K extends keyof InspektEventMap>(event: K, handler: InspektEventMap[K]) {
       listeners.get(event)?.delete(handler);
     },
   };

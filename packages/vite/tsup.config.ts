@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  external: ['vite', '@devlens/core', '@devlens/cli', /^node:/],
+  external: ['vite', '@inspekt/core', '@inspekt/cli', /^node:/],
 });

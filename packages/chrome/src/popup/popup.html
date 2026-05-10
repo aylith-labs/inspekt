@@ -89,6 +89,37 @@
       text-align: center;
     }
     .btn:hover { background: #f1f5f9; }
+    .btn-wrap {
+      flex: 1;
+      position: relative;
+    }
+    .btn-wrap .btn { width: 100%; }
+    .tooltip {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 6px 10px;
+      background: #1e293b;
+      color: #f1f5f9;
+      font-size: 11px;
+      line-height: 1.4;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: #1e293b;
+    }
+    .btn-wrap:hover .tooltip { display: block; }
 
     /* -------- Intro view -------- */
     .intro-header {
@@ -207,14 +238,14 @@
   <!-- Intro view: shown on first open, hidden after dismiss -->
   <div id="intro-view" class="hidden">
     <div class="intro-header">
-      <h1>DevLens</h1>
+      <h1>Inspekt</h1>
       <button class="intro-skip" id="intro-skip" type="button">Skip &times;</button>
     </div>
 
     <div class="slide active" data-slide="1">
       <div class="slide-icon">&#x1F50D;</div>
       <div class="slide-title">Click any UI element</div>
-      <p class="slide-body">DevLens shows the source file and component behind every button, card, and nav item on the page. Click anything. Jump to the code.</p>
+      <p class="slide-body">Inspekt shows the source file and component behind every button, card, and nav item on the page. Click anything. Jump to the code.</p>
     </div>
 
     <div class="slide" data-slide="2">
@@ -226,7 +257,7 @@
     <div class="slide" data-slide="3">
       <div class="slide-icon">&#x1F680;</div>
       <div class="slide-title">You're set</div>
-      <p class="slide-body">Click the DevLens icon anytime to toggle inspection on the current tab. Want the interactive demo?</p>
+      <p class="slide-body">Click the Inspekt icon anytime to toggle inspection on the current tab. Want the interactive demo?</p>
       <button class="tour-link" id="full-tour-link" type="button">Take the full tour &rarr;</button>
     </div>
 
@@ -246,7 +277,7 @@
   <!-- Main view: the normal popup -->
   <div id="main-view" class="hidden">
     <div class="header">
-      <h1>DevLens</h1>
+      <h1>Inspekt</h1>
       <div class="toggle" id="toggle"></div>
     </div>
     <div class="info">
@@ -269,7 +300,10 @@
     </div>
     <div class="actions">
       <button class="btn" id="settings-btn">Settings</button>
-      <button class="btn" id="standalone-btn">Standalone</button>
+      <div class="btn-wrap">
+        <button class="btn" id="standalone-btn">Standalone</button>
+        <div class="tooltip">Inspect any site without the build plugin</div>
+      </div>
     </div>
   </div>
 

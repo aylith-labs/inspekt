@@ -1,10 +1,10 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
 import { transformJSX, type TransformOptions } from './transform.js';
-import { handleDevLensRequest, corsMiddleware } from './server.js';
+import { handleInspektRequest, corsMiddleware } from './server.js';
 import { findComposeFile, parsePathMappings } from './docker.js';
 
-export interface DevLensViteOptions {
+export interface InspektViteOptions {
   framework?: 'react' | 'vue' | 'svelte' | 'solid' | 'auto';
   pathType?: 'relative' | 'absolute';
   root?: string;
@@ -17,9 +17,9 @@ export interface DevLensViteOptions {
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
-const INIT_PATH = '/@devlens/init.js';
+const INIT_PATH = '/@inspekt/init.js';
 
-export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
+export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
   const options = {
     framework: 'auto' as const,
     pathType: 'relative' as const,
@@ -44,15 +44,15 @@ export function devlens(userOptions: DevLensViteOptions = {}): Plugin {
       pathMapping: pathMapping ?? options.pathMapping,
     };
     return `
-import { createDevLens } from '@devlens/core';
-const devlens = createDevLens(${JSON.stringify(runtimeOptions)});
-devlens.enable();
-window.__DEVLENS_INSTANCE__ = devlens;
+import { createInspekt } from '@inspekt/core';
+const inspekt = createInspekt(${JSON.stringify(runtimeOptions)});
+inspekt.enable();
+window.__INSPEKT_INSTANCE__ = inspekt;
 `;
   }
 
   return {
-    name: 'devlens',
+    name: 'inspekt',
     enforce: 'pre',
 
     configResolved(config) {
@@ -72,10 +72,10 @@ window.__DEVLENS_INSTANCE__ = devlens;
     },
 
     configureServer(server) {
-      // Serve the DevLens init script as a Vite-transformed module
+      // Serve the Inspekt init script as a Vite-transformed module
       server.middlewares.use((req, res, next) => {
         if (req.url === INIT_PATH) {
-          // Let Vite transform the module (resolves @devlens/core import)
+          // Let Vite transform the module (resolves @inspekt/core import)
           server.transformRequest(INIT_PATH).then((result) => {
             if (result) {
               res.writeHead(200, {
@@ -94,7 +94,7 @@ window.__DEVLENS_INSTANCE__ = devlens;
         if (corsMiddleware(req, res)) return;
 
         // Open-in-editor endpoint
-        const handled = handleDevLensRequest(req, res, {
+        const handled = handleInspektRequest(req, res, {
           editor: options.editor,
           pathMapping,
           root: resolvedRoot,
@@ -128,7 +128,7 @@ window.__DEVLENS_INSTANCE__ = devlens;
         framework: options.framework,
         root: resolvedRoot,
         pathType: options.pathType,
-        attribute: 'data-devlens-path',
+        attribute: 'data-inspekt-path',
         include: options.include,
         exclude: options.exclude,
       };

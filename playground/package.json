@@ -1,5 +1,5 @@
 {
-  "name": "devlens-playground",
+  "name": "inspekt-playground",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,8 +12,8 @@
   "dependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "@devlens/core": "*",
-    "@devlens/vite": "*"
+    "@inspekt/core": "*",
+    "@inspekt/vite": "*"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",

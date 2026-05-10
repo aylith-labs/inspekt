@@ -1,16 +1,16 @@
 {
-  "name": "@devlens/chrome",
-  "version": "0.1.0",
+  "name": "@inspekt/chrome",
+  "version": "0.2.0",
   "private": true,
-  "description": "DevLens Chrome extension — global settings and standalone inspector",
+  "description": "Inspekt Chrome extension — global settings and standalone inspector",
   "type": "module",
   "scripts": {
-    "build": "tsup && cp -r public/* dist/ && cp src/popup/popup.html dist/popup/ && cp src/options/options.html dist/options/ && cp src/welcome/welcome.html dist/welcome/",
+    "build": "tsup && cp -r public/* ../../dist/ && cp src/popup/popup.html ../../dist/popup/ && cp src/options/options.html ../../dist/options/ && cp src/welcome/welcome.html ../../dist/welcome/",
     "dev": "tsup --watch",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf ../../dist"
   },
   "dependencies": {
-    "@devlens/core": "*"
+    "@inspekt/core": "*"
   },
   "devDependencies": {
     "tsup": "^8.3.0",

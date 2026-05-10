@@ -1,4 +1,4 @@
-# DevLens
+# Inspekt
 
 A framework-agnostic element inspector for developers. Click any UI element to see its source, navigate the component tree, and take action.
 
@@ -13,16 +13,16 @@ A framework-agnostic element inspector for developers. Click any UI element to s
 ## Quick Start
 
 ```bash
-npm install -D @devlens/vite
+npm install -D @inspekt/vite
 ```
 
 ```ts
 // vite.config.ts
-import { devlens } from '@devlens/vite';
+import { inspekt } from '@inspekt/vite';
 
 export default defineConfig({
   plugins: [
-    devlens({
+    inspekt({
       editor: 'cursor',     // or 'vscode', 'webstorm', 'zed', ...
     }),
   ],
@@ -37,7 +37,7 @@ That's it. Start your dev server and use `Ctrl+Alt+Click` on any element.
 |----------|--------|
 | `Ctrl+Alt+Click` | Inspect element (show popover with actions) |
 | `Shift+Alt+Click` | Open file in IDE immediately |
-| `Ctrl+Alt+I` | Toggle DevLens on/off |
+| `Ctrl+Alt+I` | Toggle Inspekt on/off |
 | `Ctrl+Alt+O` | Toggle overlay (component name badges) |
 | `Ctrl+Alt+T` | Toggle component tree panel |
 | `Escape` | Close popover / tree panel |
@@ -48,60 +48,58 @@ On Mac, `Cmd` replaces `Ctrl`.
 
 | Package | Description |
 |---------|-------------|
-| [`@devlens/core`](packages/core) | Runtime UI — overlay, popover, tree panel, highlighting. Pure vanilla JS/CSS in Shadow DOM |
-| [`@devlens/vite`](packages/vite) | Vite plugin — injects source location attributes at build time |
-| [`@devlens/webpack`](packages/webpack) | Webpack 5+ plugin |
-| [`@devlens/rspack`](packages/rspack) | Rspack/Rsbuild plugin |
-| [`@devlens/esbuild`](packages/esbuild) | esbuild plugin |
-| [`@devlens/cli`](packages/cli) | CLI utility — open files in IDE from terminal |
-| [`@devlens/chrome`](packages/chrome) | Chrome extension — global settings and standalone inspector |
+| [`@inspekt/core`](packages/core) | Runtime UI — overlay, popover, tree panel, highlighting. Pure vanilla JS/CSS in Shadow DOM |
+| [`@inspekt/vite`](packages/vite) | Vite plugin — injects source location attributes at build time |
+| [`@inspekt/bundlers`](packages/bundlers) | Webpack, Rspack, esbuild, and Rollup plugins (via unplugin) |
+| [`@inspekt/cli`](packages/cli) | CLI utility — open files in IDE from terminal |
+| [`@inspekt/chrome`](packages/chrome) | Chrome extension — global settings and standalone inspector |
 
 ## Bundler Setup
 
 ### Vite
 
 ```ts
-import { devlens } from '@devlens/vite';
+import { inspekt } from '@inspekt/vite';
 
 export default defineConfig({
-  plugins: [devlens()],
+  plugins: [inspekt()],
 });
 ```
 
 ### Webpack
 
 ```ts
-import { devlens } from '@devlens/webpack';
+import { webpack } from '@inspekt/bundlers';
 
 module.exports = {
-  plugins: [devlens()],
+  plugins: [webpack()],
 };
 ```
 
 ### Rspack / Rsbuild
 
 ```ts
-import { devlens } from '@devlens/rspack';
+import { rspack } from '@inspekt/bundlers';
 
 module.exports = {
-  plugins: [devlens()],
+  plugins: [rspack()],
 };
 ```
 
 ### esbuild
 
 ```ts
-import { devlens } from '@devlens/esbuild';
+import { esbuild } from '@inspekt/bundlers';
 
 await build({
-  plugins: [devlens()],
+  plugins: [esbuild()],
 });
 ```
 
 ## Plugin Options
 
 ```ts
-devlens({
+inspekt({
   // Framework detection (auto-detected if omitted)
   framework: 'react',              // 'react' | 'vue' | 'svelte' | 'solid' | 'auto'
 
@@ -124,14 +122,14 @@ devlens({
 
 ## Docker Support
 
-When your app runs in a Docker container, file paths point to container paths (`/app/src/...`). DevLens fixes this automatically:
+When your app runs in a Docker container, file paths point to container paths (`/app/src/...`). Inspekt fixes this automatically:
 
 ```ts
 // Auto-detect from docker-compose.yaml volume mounts
-devlens({ dockerCompose: true });
+inspekt({ dockerCompose: true });
 
 // Or specify manually
-devlens({
+inspekt({
   pathMapping: {
     '/app/': process.cwd() + '/',
   },
@@ -143,11 +141,11 @@ devlens({
 Add your own actions to the inspector popover:
 
 ```ts
-import { createDevLens } from '@devlens/core';
+import { createInspekt } from '@inspekt/core';
 
-const devlens = createDevLens();
+const inspekt = createInspekt();
 
-devlens.registerAction({
+inspekt.registerAction({
   id: 'open-jira',
   label: 'Search Jira',
   icon: '<svg>...</svg>',
@@ -160,11 +158,11 @@ devlens.registerAction({
 ## Events
 
 ```ts
-devlens.on('inspect', (element) => {
+inspekt.on('inspect', (element) => {
   console.log('Inspected:', element.filePath, element.componentName);
 });
 
-devlens.on('action', (actionId, element) => {
+inspekt.on('action', (actionId, element) => {
   console.log('Action:', actionId, 'on', element.componentName);
 });
 ```
@@ -174,7 +172,7 @@ devlens.on('action', (actionId, element) => {
 The Chrome extension provides:
 
 - **Global settings** — configure your IDE, theme, and shortcuts once for all projects
-- **Standalone mode** — inject DevLens into any page, even without a build plugin
+- **Standalone mode** — inject Inspekt into any page, even without a build plugin
 - **Per-site overrides** — different settings for different projects
 - **Settings sync** — chrome.storage.sync across devices
 
@@ -186,20 +184,20 @@ VS Code, VS Code Insiders, Cursor, Windsurf, WebStorm, PhpStorm, PyCharm, Intell
 
 ## How It Works
 
-1. **Build time** — The bundler plugin injects `data-devlens-path` attributes onto every component's root element with the source file path, line, and column
-2. **Runtime** — When you `Ctrl+Alt+Click`, DevLens walks up the DOM to find the nearest `data-devlens-path`, shows a popover with actions, and highlights the element
+1. **Build time** — The bundler plugin injects `data-inspekt-path` attributes onto every component's root element with the source file path, line, and column
+2. **Runtime** — When you `Ctrl+Alt+Click`, Inspekt walks up the DOM to find the nearest `data-inspekt-path`, shows a popover with actions, and highlights the element
 3. **Component tree** — Framework-specific adapters (React Fiber, Vue instances, Svelte context, Solid owner) build the full component hierarchy for the tree panel
 
-All DevLens UI renders inside Shadow DOM to prevent any style conflicts with your app.
+All Inspekt UI renders inside Shadow DOM to prevent any style conflicts with your app.
 
 ## Development
 
 ```bash
-git clone https://github.com/steven-pribilinskiy/devlens.git
-cd devlens
+git clone https://github.com/steven-pribilinskiy/inspekt.git
+cd inspekt
 bun install
 bun run build
-bun run --filter 'devlens-playground' dev
+bun run --filter 'inspekt-playground' dev
 ```
 
 ## License

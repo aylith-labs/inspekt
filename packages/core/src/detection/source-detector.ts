@@ -1,6 +1,6 @@
 import type { InspectedElement } from '../types.js';
 
-const SOURCE_ATTRIBUTES = ['data-devlens-path', 'data-insp-path'];
+const SOURCE_ATTRIBUTES = ['data-inspekt-path', 'data-insp-path'];
 
 export interface SourceInfo {
   filePath: string;

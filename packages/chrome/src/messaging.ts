@@ -1,7 +1,7 @@
 export type MessageType =
   | { type: 'GET_SETTINGS' }
   | { type: 'UPDATE_SETTINGS'; settings: Record<string, unknown> }
-  | { type: 'TOGGLE_DEVLENS' }
+  | { type: 'TOGGLE_INSPEKT' }
   | { type: 'INJECT_STANDALONE' }
   | { type: 'GET_STATUS' }
   | { type: 'STATUS_RESPONSE'; enabled: boolean; standalone: boolean; hasPlugin: boolean };

@@ -5,5 +5,5 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   dts: true,
   clean: true,
-  external: ['@devlens/vite'],
+  external: ['@inspekt/vite', 'webpack', '@rspack/core', 'esbuild'],
 });

@@ -4,13 +4,13 @@ import { openInEditor } from './index.js';
 const args = process.argv.slice(2);
 
 if (args.length === 0 || args[0] === '--help' || args[0] === '-h') {
-  console.log(`Usage: devlens <file>[:<line>[:<column>]] [--editor <editor>]`);
+  console.log(`Usage: inspekt <file>[:<line>[:<column>]] [--editor <editor>]`);
   console.log(`\nOpen a file in your configured IDE.\n`);
   console.log(`Options:`);
-  console.log(`  --editor, -e   IDE to use (default: $DEVLENS_EDITOR or 'code')`);
+  console.log(`  --editor, -e   IDE to use (default: $INSPEKT_EDITOR or 'code')`);
   console.log(`\nExamples:`);
-  console.log(`  devlens src/App.tsx:42`);
-  console.log(`  devlens src/App.tsx:42:3 --editor cursor`);
+  console.log(`  inspekt src/App.tsx:42`);
+  console.log(`  inspekt src/App.tsx:42:3 --editor cursor`);
   process.exit(0);
 }
 

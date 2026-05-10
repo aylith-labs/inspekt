@@ -13,6 +13,151 @@ export interface TransformOptions {
 // Match JSX opening tag start: <Component or <div (but not closing tags like </div>)
 const JSX_TAG_START_RE = /<(?!\/|!--)([A-Z][a-zA-Z0-9.]*|[a-z][a-z0-9]*(?:-[a-z0-9]+)*)/g;
 
+/**
+ * Pre-scan the source for regions where a `<` cannot start a JSX tag —
+ * string literals, template literals, and JS comments. Without this, the
+ * regex above happily matches inside `'pages/<name>/<name>.tsx'` and
+ * `// see <Component>`, then injects `data-inspekt-path` into the literal
+ * (or comment), corrupting runtime values that get rendered as text.
+ *
+ * Returns sorted, non-overlapping `[start, end)` ranges. The matcher skips
+ * any match.index that falls inside one. Template literals are treated as a
+ * single span that includes their `${}` expressions — JSX inside a tagged
+ * template is uncommon and the upstream Babel/SWC JSX transform would handle
+ * those cases anyway.
+ */
+function computeSkipRanges(code: string): Array<[number, number]> {
+  const ranges: Array<[number, number]> = [];
+  const len = code.length;
+  let i = 0;
+
+  while (i < len) {
+    const ch = code[i];
+    const next = code[i + 1];
+
+    // Line comment
+    if (ch === '/' && next === '/') {
+      const start = i;
+      i += 2;
+      while (i < len && code[i] !== '\n') i++;
+      ranges.push([start, i]);
+      continue;
+    }
+
+    // Block comment
+    if (ch === '/' && next === '*') {
+      const start = i;
+      i += 2;
+      while (i < len - 1 && !(code[i] === '*' && code[i + 1] === '/')) i++;
+      i = Math.min(i + 2, len);
+      ranges.push([start, i]);
+      continue;
+    }
+
+    // Single/double-quoted string
+    if (ch === '"' || ch === "'") {
+      const quote = ch;
+      const start = i;
+      i++;
+      while (i < len && code[i] !== quote) {
+        if (code[i] === '\\') {
+          i += 2;
+          continue;
+        }
+        if (code[i] === '\n') break; // unterminated — bail to avoid overrunning
+        i++;
+      }
+      if (i < len && code[i] === quote) i++;
+      ranges.push([start, i]);
+      continue;
+    }
+
+    // Template literal — skip the entire span including ${...} interpolations.
+    if (ch === '`') {
+      const start = i;
+      i = consumeTemplateLiteral(code, i);
+      ranges.push([start, i]);
+      continue;
+    }
+
+    i++;
+  }
+
+  return ranges;
+}
+
+function consumeTemplateLiteral(code: string, start: number): number {
+  const len = code.length;
+  let i = start + 1; // past opening backtick
+  while (i < len) {
+    const ch = code[i];
+    if (ch === '\\') {
+      i += 2;
+      continue;
+    }
+    if (ch === '`') return i + 1;
+    if (ch === '$' && code[i + 1] === '{') {
+      i = consumeBalancedBraces(code, i + 1);
+      continue;
+    }
+    i++;
+  }
+  return len;
+}
+
+function consumeBalancedBraces(code: string, start: number): number {
+  // start points at `{`. Walk forward respecting strings and nested templates.
+  const len = code.length;
+  let i = start + 1;
+  let depth = 1;
+  while (i < len && depth > 0) {
+    const ch = code[i];
+    if (ch === '\\') {
+      i += 2;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      const q = ch;
+      i++;
+      while (i < len && code[i] !== q) {
+        if (code[i] === '\\') {
+          i += 2;
+          continue;
+        }
+        if (code[i] === '\n') break;
+        i++;
+      }
+      if (i < len) i++;
+      continue;
+    }
+    if (ch === '`') {
+      i = consumeTemplateLiteral(code, i);
+      continue;
+    }
+    if (ch === '{') {
+      depth++;
+      i++;
+      continue;
+    }
+    if (ch === '}') {
+      depth--;
+      i++;
+      continue;
+    }
+    i++;
+  }
+  return i;
+}
+
+function offsetInRanges(offset: number, ranges: Array<[number, number]>): boolean {
+  // Linear scan is fine for typical source files; ranges are sorted by construction.
+  for (const [s, e] of ranges) {
+    if (offset < s) return false;
+    if (offset < e) return true;
+  }
+  return false;
+}
+
 // Skip tags that shouldn't get attributes
 const SKIP_TAGS = new Set([
   // React
@@ -32,7 +177,7 @@ export function transformJSX(
   // Skip if no JSX
   if (!code.includes('<') || !code.includes('>')) return null;
 
-  // Skip if already has devlens attributes
+  // Skip if already has inspekt attributes
   if (code.includes(options.attribute)) return null;
 
   const s = new MagicString(code);
@@ -161,6 +306,8 @@ export function transformJSX(
     return null;
   }
 
+  const skipRanges = computeSkipRanges(code);
+
   let match: RegExpExecArray | null;
   JSX_TAG_START_RE.lastIndex = 0;
 
@@ -170,9 +317,8 @@ export function transformJSX(
     // Skip fragments and special tags
     if (SKIP_TAGS.has(tagName)) continue;
 
-    // Quick check: skip if inside a string (look at surrounding context)
-    const charBefore = match.index > 0 ? code[match.index - 1] : '';
-    if (charBefore === '"' || charBefore === "'" || charBefore === '`') continue;
+    // Skip matches inside string literals, template literals, or comments.
+    if (offsetInRanges(match.index, skipRanges)) continue;
 
     // Find the actual closing > or /> for this tag
     const afterTagName = match.index + match[0].length;

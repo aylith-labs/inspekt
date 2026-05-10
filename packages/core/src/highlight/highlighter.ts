@@ -1,6 +1,6 @@
 import type { HighlightConfig } from '../types.js';
 
-const HIGHLIGHT_ATTR = 'data-devlens-highlight';
+const HIGHLIGHT_ATTR = 'data-inspekt-highlight';
 
 interface HighlightState {
   element: HTMLElement;

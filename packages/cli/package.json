@@ -1,13 +1,13 @@
 {
-  "name": "@devlens/cli",
+  "name": "@inspekt/cli",
   "version": "0.1.0",
-  "description": "DevLens CLI — open files in IDE from terminal",
+  "description": "Inspekt CLI — open files in IDE from terminal",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "devlens": "./dist/cli.js"
+    "inspekt": "./dist/cli.js"
   },
   "exports": {
     ".": {

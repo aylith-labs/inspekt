@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Welcome to DevLens</title>
+  <title>Welcome to Inspekt</title>
   <style>
     :root {
       --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -438,7 +438,7 @@
       border-top: 1px solid var(--border);
     }
 
-    .step-footer-left a {
+    .step-footer-left button {
       font-size: 13px;
       color: var(--text-muted);
       text-decoration: none;
@@ -449,7 +449,7 @@
       font-family: var(--font);
     }
 
-    .step-footer-left a:hover { color: var(--text); }
+    .step-footer-left button:hover { color: var(--text); }
 
     .step-footer-right {
       display: flex;
@@ -484,6 +484,28 @@
 
     button.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 
+    /* Toast */
+    .demo-toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      padding: 10px 20px;
+      background: var(--text-strong);
+      color: var(--bg);
+      font-size: 13px;
+      border-radius: 8px;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 9999;
+    }
+    .demo-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* Footer below card */
     .page-footer {
       margin-top: 24px;
@@ -497,8 +519,8 @@
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">&#x25C9;</div>
-        DevLens
+        <div class="brand-mark"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="#fff" stroke-width="1.5"/><circle cx="8" cy="8" r="1.5" fill="#fff"/><line x1="8" y1="0.5" x2="8" y2="3.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="8" y1="12.5" x2="8" y2="15.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="0.5" y1="8" x2="3.5" y2="8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><line x1="12.5" y1="8" x2="15.5" y2="8" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        Inspekt
       </div>
       <div class="dots" id="dots">
         <span class="dot active"></span>
@@ -512,7 +534,7 @@
       <!-- Step 1 -->
       <section class="step active" data-step="1">
         <h1>Click any UI element. See where it lives.</h1>
-        <p class="lede">DevLens turns your browser into an X-ray for components. Click a button, card, or nav item on any page — DevLens shows you the exact file and component that drew it.</p>
+        <p class="lede">Inspekt turns your browser into an X-ray for components. Click a button, card, or nav item on any page — Inspekt shows you the exact file and component that drew it.</p>
         <div class="hero-visual">
           <div class="hero-crosshair"><span></span></div>
         </div>
@@ -521,37 +543,37 @@
       <!-- Step 2: Try it right here -->
       <section class="step" data-step="2">
         <h1>Try the inspector right here</h1>
-        <p class="lede">This sandbox is using <strong>real DevLens</strong> — the same thing that runs on your app. Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click any element below.</p>
+        <p class="lede">This sandbox is using <strong>real Inspekt</strong> — the same thing that runs on your app. Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click any element below.</p>
         <div class="try-instructions">
           <span class="try-instructions-icon">i</span>
-          <span>Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click. A popover will show the (fake) source path — on a real app it would open the file in your editor.</span>
+          <span>Hold <kbd>Ctrl</kbd>+<kbd>Alt</kbd> and click any element. A popover will show the (fake) source path — on a real app it would open the file in your editor.</span>
         </div>
         <div class="sandbox" id="sandbox">
-          <div class="sandbox-nav" data-devlens-path="welcome/demo.tsx:4:3:SandboxNav">
-            <span class="sandbox-nav-title" data-devlens-path="welcome/demo.tsx:5:5:SandboxNavTitle">Sample App</span>
-            <div class="sandbox-nav-avatar" data-devlens-path="welcome/demo.tsx:6:5:SandboxAvatar">SP</div>
+          <div class="sandbox-nav" data-inspekt-path="welcome/demo.tsx:4:3:SandboxNav">
+            <span class="sandbox-nav-title" data-inspekt-path="welcome/demo.tsx:5:5:SandboxNavTitle">Sample App</span>
+            <div class="sandbox-nav-avatar" data-inspekt-path="welcome/demo.tsx:6:5:SandboxAvatar">SP</div>
           </div>
-          <div class="sandbox-card" data-devlens-path="welcome/demo.tsx:12:3:SandboxCard">
-            <div class="sandbox-card-title" data-devlens-path="welcome/demo.tsx:13:5:CardTitle">This is a Card</div>
-            <div class="sandbox-card-body" data-devlens-path="welcome/demo.tsx:14:5:CardBody">Click me, or the button below, or anything in the nav above. DevLens will show you where I'm defined.</div>
-            <button class="sandbox-button" data-devlens-path="welcome/demo.tsx:15:5:PrimaryButton" type="button">Primary Button</button>
+          <div class="sandbox-card" data-inspekt-path="welcome/demo.tsx:12:3:SandboxCard">
+            <div class="sandbox-card-title" data-inspekt-path="welcome/demo.tsx:13:5:CardTitle">This is a Card</div>
+            <div class="sandbox-card-body" data-inspekt-path="welcome/demo.tsx:14:5:CardBody">Ctrl+Alt+Click me, the button below, or anything in the nav above. Inspekt will show you where I'm defined.</div>
+            <button class="sandbox-button" data-inspekt-path="welcome/demo.tsx:15:5:PrimaryButton" type="button">Primary Button</button>
           </div>
         </div>
       </section>
 
       <!-- Step 3: Two modes -->
       <section class="step" data-step="3">
-        <h1>Two ways to use DevLens</h1>
-        <p class="lede">DevLens works on any site, but it really shines when you wire it into your own project's build tool.</p>
+        <h1>Two ways to use Inspekt</h1>
+        <p class="lede">Inspekt works on any site, but it really shines when you wire it into your own project's build tool.</p>
         <div class="modes-grid">
           <div class="mode-card best">
             <span class="mode-label">Best experience</span>
             <div class="mode-title">On your own projects</div>
-            <p class="mode-body">Add the DevLens plugin to your build tool (<code>Vite</code>, <code>Webpack</code>, <code>Rspack</code>, <code>esbuild</code>). Click anything on your running app — jump straight to the source file in your editor.</p>
+            <p class="mode-body">Add the Inspekt plugin to your build tool (<code>Vite</code>, <code>Webpack</code>, <code>Rspack</code>, <code>esbuild</code>). Click anything on your running app — jump straight to the source file in your editor.</p>
           </div>
           <div class="mode-card">
             <div class="mode-title">On any other website</div>
-            <p class="mode-body">Click the DevLens icon in the Chrome toolbar. Click elements to explore their DOM structure. Source-jumping is disabled (the site doesn't have the breadcrumbs baked in), but you can still poke around.</p>
+            <p class="mode-body">Click the Inspekt icon in the Chrome toolbar. Click elements to explore their DOM structure. Source-jumping is disabled (the site doesn't have the breadcrumbs baked in), but you can still poke around.</p>
           </div>
         </div>
       </section>
@@ -559,7 +581,7 @@
       <!-- Step 4: Editor picker -->
       <section class="step" data-step="4">
         <h1>Pick your editor</h1>
-        <p class="lede">When you click an element on your project, DevLens will open its source file in the editor you choose here. You can change this anytime in Settings.</p>
+        <p class="lede">When you click an element on your project, Inspekt will open its source file in the editor you choose here. You can change this anytime in Settings.</p>
         <div class="picker-wrap">
           <label class="picker-label" for="editor-select">Open source files in</label>
           <select id="editor-select">

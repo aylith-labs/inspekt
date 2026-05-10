@@ -9,10 +9,11 @@ export default defineConfig([
       'options/options': 'src/options/options.ts',
       'welcome/welcome': 'src/welcome/welcome.ts',
     },
+    outDir: '../../dist',
     format: ['esm'],
     sourcemap: true,
     clean: true,
-    noExternal: ['@devlens/core'],
+    noExternal: ['@inspekt/core'],
     splitting: false,
   },
 ]);

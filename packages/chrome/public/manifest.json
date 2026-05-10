@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "DevLens",
-  "version": "0.1.0",
+  "name": "Inspekt",
+  "version": "0.2.0",
   "description": "Framework-agnostic element inspector — click any UI element to see its source and navigate the component tree",
   "permissions": ["storage", "activeTab", "scripting"],
   "action": {

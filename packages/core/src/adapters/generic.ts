@@ -6,7 +6,7 @@ function buildTreeFromDOM(element: HTMLElement, depth: number): ComponentNode[] 
 
   for (const child of Array.from(element.children)) {
     if (!(child instanceof HTMLElement)) continue;
-    if (child.tagName === 'DEVLENS-ROOT') continue;
+    if (child.tagName === 'INSPEKT-ROOT') continue;
     if (child.tagName === 'SCRIPT' || child.tagName === 'STYLE') continue;
 
     const attr = findSourceAttribute(child);
@@ -40,7 +40,7 @@ export const genericAdapter: FrameworkAdapter = {
   name: 'generic',
 
   detect(): boolean {
-    return document.querySelector('[data-devlens-path], [data-insp-path]') !== null;
+    return document.querySelector('[data-inspekt-path], [data-insp-path]') !== null;
   },
 
   getComponentTree(root: HTMLElement): ComponentNode | null {

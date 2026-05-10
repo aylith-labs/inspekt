@@ -1,14 +1,14 @@
-import { createDevLens, type DevLensInstance } from '@devlens/core';
+import { createInspekt, type InspektInstance } from '@inspekt/core';
 
-let instance: DevLensInstance | null = null;
+let instance: InspektInstance | null = null;
 let hasPlugin = false;
 
-// Check if the build plugin already injected DevLens
+// Check if the build plugin already injected Inspekt
 function detectPlugin(): boolean {
   return !!(
-    document.querySelector('devlens-root') ||
-    (window as unknown as Record<string, unknown>).__DEVLENS__ ||
-    (window as unknown as Record<string, unknown>).__DEVLENS_INSTANCE__
+    document.querySelector('inspekt-root') ||
+    (window as unknown as Record<string, unknown>).__INSPEKT__ ||
+    (window as unknown as Record<string, unknown>).__INSPEKT_INSTANCE__
   );
 }
 
@@ -16,7 +16,7 @@ function detectPlugin(): boolean {
 function initStandalone(settings: Record<string, unknown>): void {
   if (instance) return;
 
-  instance = createDevLens({
+  instance = createInspekt({
     activation: (settings['activation'] as 'click') ?? 'click',
     theme: (settings['theme'] as 'auto') ?? 'auto',
     editor: (settings['editor'] as string) ?? 'cursor',
@@ -37,7 +37,7 @@ function initStandalone(settings: Record<string, unknown>): void {
 // Push settings to the build plugin's runtime
 function pushSettingsToPlugin(settings: Record<string, unknown>): void {
   document.dispatchEvent(
-    new CustomEvent('devlens:settings-update', { detail: settings }),
+    new CustomEvent('inspekt:settings-update', { detail: settings }),
   );
 }
 
@@ -90,7 +90,7 @@ window.addEventListener('load', () => {
   }).catch(() => {});
 
   // Listen for plugin status events
-  document.addEventListener('devlens:status', ((e: CustomEvent) => {
+  document.addEventListener('inspekt:status', ((e: CustomEvent) => {
     hasPlugin = true;
     // Sync global settings to the plugin
     chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { transformJSX, type TransformOptions } from './transform.js';
 import { findComposeFile, parsePathMappings } from './docker.js';
 
-export interface DevLensPluginOptions {
+export interface InspektPluginOptions {
   framework?: 'react' | 'vue' | 'svelte' | 'solid' | 'auto';
   pathType?: 'relative' | 'absolute';
   root?: string;
@@ -24,7 +24,7 @@ function minimatch(filePath: string, pattern: string): boolean {
   return new RegExp(`^${re}$`).test(filePath);
 }
 
-export const unpluginDevLens = createUnplugin((userOptions: DevLensPluginOptions = {}) => {
+export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions = {}) => {
   const options = {
     framework: 'auto' as const,
     pathType: 'relative' as const,
@@ -47,7 +47,7 @@ export const unpluginDevLens = createUnplugin((userOptions: DevLensPluginOptions
   }
 
   return {
-    name: 'devlens',
+    name: 'inspekt',
     enforce: 'pre' as const,
 
     transformInclude(id: string) {
@@ -62,7 +62,7 @@ export const unpluginDevLens = createUnplugin((userOptions: DevLensPluginOptions
         framework: options.framework,
         root: resolvedRoot,
         pathType: options.pathType,
-        attribute: 'data-devlens-path',
+        attribute: 'data-inspekt-path',
         include: options.include,
         exclude: options.exclude,
       };
@@ -72,7 +72,8 @@ export const unpluginDevLens = createUnplugin((userOptions: DevLensPluginOptions
 });
 
 // Per-bundler exports
-export const webpackPlugin = unpluginDevLens.webpack;
-export const rspackPlugin = unpluginDevLens.rspack;
-export const esbuildPlugin = unpluginDevLens.esbuild;
-export const rollupPlugin = unpluginDevLens.rollup;
+export const webpackPlugin = unpluginInspekt.webpack;
+export const rspackPlugin = unpluginInspekt.rspack;
+export const esbuildPlugin = unpluginInspekt.esbuild;
+export const rollupPlugin = unpluginInspekt.rollup;
+export const rolldownPlugin = unpluginInspekt.rolldown;

@@ -41,7 +41,7 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       });
       return true;
 
-    case 'TOGGLE_DEVLENS':
+    case 'TOGGLE_INSPEKT':
       resolveTabId(senderTabId).then((tabId) => {
         if (tabId) {
           const state = tabState.get(tabId) ?? { enabled: false, standalone: false };

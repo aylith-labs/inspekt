@@ -1,7 +1,7 @@
 {
-  "name": "@devlens/core",
+  "name": "@inspekt/core",
   "version": "0.1.0",
-  "description": "DevLens runtime — overlay, popover, tree panel, highlighting",
+  "description": "Inspekt runtime — overlay, popover, tree panel, highlighting",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

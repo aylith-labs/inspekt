@@ -22,8 +22,8 @@ export interface TreePanelConfig {
   showLineNumbers: boolean;
 }
 
-export interface DevLensOptions {
-  activation: 'click' | 'hover' | 'manual';
+export interface InspektOptions {
+  activation: 'click' | 'hover-mod' | 'hover' | 'manual';
   shortcut: ShortcutConfig;
   toggleShortcut: ShortcutConfig;
   theme: 'light' | 'dark' | 'auto';
@@ -60,7 +60,7 @@ export interface InspectedElement {
   framework: 'react' | 'vue' | 'svelte' | 'solid' | 'unknown';
 }
 
-export interface DevLensAction {
+export interface InspektAction {
   id: string;
   label: string;
   icon: string;
@@ -69,7 +69,7 @@ export interface DevLensAction {
   handler: (element: InspectedElement) => void;
 }
 
-export type DevLensEventMap = {
+export type InspektEventMap = {
   inspect: (element: InspectedElement) => void;
   action: (actionId: string, element: InspectedElement) => void;
   enable: () => void;
@@ -77,13 +77,13 @@ export type DevLensEventMap = {
   'tree-select': (element: InspectedElement) => void;
 };
 
-export interface DevLensInstance {
+export interface InspektInstance {
   enable(): void;
   disable(): void;
   toggle(): void;
   destroy(): void;
-  registerAction(action: DevLensAction): void;
+  registerAction(action: InspektAction): void;
   unregisterAction(id: string): void;
-  on<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]): void;
-  off<K extends keyof DevLensEventMap>(event: K, handler: DevLensEventMap[K]): void;
+  on<K extends keyof InspektEventMap>(event: K, handler: InspektEventMap[K]): void;
+  off<K extends keyof InspektEventMap>(event: K, handler: InspektEventMap[K]): void;
 }

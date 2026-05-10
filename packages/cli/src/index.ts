@@ -15,9 +15,9 @@ export function openInEditor(options: OpenFileOptions): void {
     if (column) target += `:${column}`;
   }
 
-  launchEditor(target, editor ?? process.env['DEVLENS_EDITOR'] ?? 'code');
+  launchEditor(target, editor ?? process.env['INSPEKT_EDITOR'] ?? 'code');
 }
 
 export function resolveEditor(editor?: string): string {
-  return editor ?? process.env['DEVLENS_EDITOR'] ?? 'code';
+  return editor ?? process.env['INSPEKT_EDITOR'] ?? 'code';
 }

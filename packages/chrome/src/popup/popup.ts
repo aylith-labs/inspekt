@@ -62,7 +62,7 @@ async function dismissIntro(): Promise<void> {
 async function showMain(settings: Awaited<ReturnType<typeof getSettings>>): Promise<void> {
   mainView.classList.remove('hidden');
 
-  modeEl.textContent = `${capitalize(settings.activation)} (Ctrl+Alt)`;
+  modeEl.textContent = activationLabel(settings.activation);
   editorEl.textContent = capitalize(settings.editor);
   treeEl.textContent = settings.treePanelEnabled ? 'On' : 'Off';
 
@@ -113,10 +113,10 @@ fullTourLink.addEventListener('click', async () => {
 
 // ---- Main view event handlers ----
 
-toggle.addEventListener('click', async () => {
-  const response = await chrome.runtime.sendMessage({ type: 'TOGGLE_DEVLENS' });
-  enabled = response?.enabled ?? !enabled;
+toggle.addEventListener('click', () => {
+  enabled = !enabled;
   updateToggle();
+  chrome.runtime.sendMessage({ type: 'TOGGLE_INSPEKT' }).catch(() => {});
 });
 
 settingsBtn.addEventListener('click', () => {
@@ -149,6 +149,16 @@ function updateStatus(response: { hasPlugin?: boolean; standalone?: boolean; ena
   } else {
     statusEl.textContent = enabled ? 'Active' : 'Inactive';
     statusEl.className = `status ${enabled ? 'status-plugin' : 'status-inactive'}`;
+  }
+}
+
+function activationLabel(mode: string): string {
+  switch (mode) {
+    case 'click': return 'Click (Ctrl+Alt)';
+    case 'hover-mod': return 'Hover (Ctrl+Alt)';
+    case 'hover': return 'Hover (always)';
+    case 'manual': return 'Manual';
+    default: return mode;
   }
 }
 

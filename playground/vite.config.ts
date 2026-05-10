@@ -1,11 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { devlens } from '@devlens/vite';
+import { inspekt } from '@inspekt/vite';
 
 export default defineConfig({
   plugins: [
     react(),
-    devlens({
+    inspekt({
       framework: 'react',
       editor: 'cursor',
     }),

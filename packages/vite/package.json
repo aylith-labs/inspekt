@@ -1,7 +1,7 @@
 {
-  "name": "@devlens/vite",
+  "name": "@inspekt/vite",
   "version": "0.1.0",
-  "description": "DevLens Vite plugin — injects source location attributes at build time",
+  "description": "Inspekt Vite plugin — injects source location attributes at build time",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -26,6 +26,11 @@
       "import": "./dist/unplugin.js",
       "require": "./dist/unplugin.cjs",
       "types": "./dist/unplugin.d.ts"
+    },
+    "./rolldown": {
+      "import": "./dist/unplugin.js",
+      "require": "./dist/unplugin.cjs",
+      "types": "./dist/unplugin.d.ts"
     }
   },
   "files": ["dist"],
@@ -37,8 +42,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@devlens/core": "*",
-    "@devlens/cli": "*",
+    "@inspekt/core": "*",
+    "@inspekt/cli": "*",
     "unplugin": "^2.2.0",
     "magic-string": "^0.30.0"
   },

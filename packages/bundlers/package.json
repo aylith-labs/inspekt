@@ -1,7 +1,7 @@
 {
-  "name": "@devlens/webpack",
+  "name": "@inspekt/bundlers",
   "version": "0.1.0",
-  "description": "DevLens Webpack plugin — injects source location attributes at build time",
+  "description": "Inspekt plugins for Webpack, Rspack, esbuild, and Rollup — injects source location attributes at build time",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -20,13 +20,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@devlens/vite": "*"
+    "@inspekt/vite": "*"
   },
   "peerDependencies": {
-    "webpack": ">=5.0.0"
+    "webpack": ">=5.0.0",
+    "@rspack/core": ">=0.5.0",
+    "esbuild": ">=0.17.0"
   },
   "peerDependenciesMeta": {
-    "webpack": { "optional": true }
+    "webpack": { "optional": true },
+    "@rspack/core": { "optional": true },
+    "esbuild": { "optional": true }
   },
   "devDependencies": {
     "tsup": "^8.3.0",

@@ -1,18 +1,18 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { openInEditor } from '@devlens/cli';
+import { openInEditor } from '@inspekt/cli';
 
-export interface DevLensServerOptions {
+export interface InspektServerOptions {
   editor: string;
   pathMapping: Record<string, string>;
   root: string;
 }
 
-export function handleDevLensRequest(
+export function handleInspektRequest(
   req: IncomingMessage,
   res: ServerResponse,
-  options: DevLensServerOptions,
+  options: InspektServerOptions,
 ): boolean {
-  if (req.url !== '/__devlens/open' || req.method !== 'POST') {
+  if (req.url !== '/__inspekt/open' || req.method !== 'POST') {
     return false;
   }
 
@@ -70,7 +70,7 @@ export function corsMiddleware(
   req: IncomingMessage,
   res: ServerResponse,
 ): boolean {
-  if (req.method === 'OPTIONS' && req.url?.startsWith('/__devlens/')) {
+  if (req.method === 'OPTIONS' && req.url?.startsWith('/__inspekt/')) {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
