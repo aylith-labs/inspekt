@@ -1,0 +1,429 @@
+/* Inspekt extension — shared design tokens and base components.
+ *
+ * Single committed color (violet) + tinted neutrals (OKLCH). Mirrors the
+ * landing site's `custom.css`, so the popup, options page, and welcome tour
+ * read as one coherent surface with the marketing site.
+ */
+
+:root {
+  --inspekt-violet: oklch(0.58 0.22 285);
+  --inspekt-violet-bright: oklch(0.68 0.2 285);
+  --inspekt-violet-tint: oklch(0.96 0.04 285);
+  --inspekt-violet-soft: oklch(0.93 0.06 285);
+  --inspekt-violet-on-soft: oklch(0.46 0.22 285);
+
+  --inspekt-ink: oklch(0.18 0.01 285);
+  --inspekt-ink-2: oklch(0.36 0.012 285);
+  --inspekt-ink-3: oklch(0.5 0.012 285);
+  --inspekt-paper: oklch(0.99 0.003 285);
+  --inspekt-paper-2: oklch(0.965 0.005 285);
+  --inspekt-rule: oklch(0.9 0.005 285);
+  --inspekt-rule-strong: oklch(0.82 0.008 285);
+
+  --inspekt-pill-bg: oklch(0.18 0.01 285);
+  --inspekt-pill-bg-2: oklch(0.24 0.012 285);
+  --inspekt-pill-fg: oklch(0.96 0.01 285);
+  --inspekt-pill-fg-dim: oklch(0.78 0.012 285);
+
+  --inspekt-success: oklch(0.6 0.16 145);
+  --inspekt-warn: oklch(0.65 0.15 85);
+  --inspekt-danger: oklch(0.6 0.2 27);
+
+  --inspekt-font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI',
+    Roboto, sans-serif;
+  --inspekt-font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Consolas',
+    'JetBrains Mono', monospace;
+
+  --inspekt-radius-sm: 6px;
+  --inspekt-radius-md: 8px;
+  --inspekt-radius-lg: 12px;
+
+  --inspekt-shadow-sm: 0 1px 0 var(--inspekt-rule);
+  --inspekt-shadow-md: 0 4px 16px oklch(0.18 0.01 285 / 0.08);
+  --inspekt-shadow-lg: 0 12px 40px oklch(0.18 0.01 285 / 0.12);
+}
+
+html.dark,
+body.inspekt-dark {
+  --inspekt-ink: oklch(0.96 0.01 285);
+  --inspekt-ink-2: oklch(0.78 0.012 285);
+  --inspekt-ink-3: oklch(0.66 0.014 285);
+  --inspekt-paper: oklch(0.22 0.02 285);
+  --inspekt-paper-2: oklch(0.26 0.022 285);
+  --inspekt-rule: oklch(0.34 0.018 285);
+  --inspekt-rule-strong: oklch(0.46 0.022 285);
+
+  --inspekt-violet: oklch(0.74 0.18 285);
+  --inspekt-violet-bright: oklch(0.82 0.16 285);
+  --inspekt-violet-tint: oklch(0.32 0.08 285);
+  --inspekt-violet-soft: oklch(0.36 0.11 285);
+  --inspekt-violet-on-soft: oklch(0.92 0.1 285);
+}
+
+/* ---- Reset ---- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--inspekt-font-sans);
+  color: var(--inspekt-ink);
+  background: var(--inspekt-paper);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--inspekt-violet);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+code,
+.mono {
+  font-family: var(--inspekt-font-mono);
+  font-size: 0.92em;
+}
+
+::selection {
+  background: var(--inspekt-violet-soft);
+  color: var(--inspekt-violet-on-soft);
+}
+
+/* ---- Form controls ---- */
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0;
+}
+.field + .field {
+  border-top: 1px solid var(--inspekt-rule);
+}
+.field > .label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.field > .label .title {
+  font-size: 14px;
+  color: var(--inspekt-ink);
+  font-weight: 500;
+}
+.field > .label .help {
+  font-size: 12px;
+  color: var(--inspekt-ink-3);
+  line-height: 1.45;
+}
+.field > .control {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.input,
+.select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 12px;
+  border: 1px solid var(--inspekt-rule-strong);
+  border-radius: var(--inspekt-radius-sm);
+  background: var(--inspekt-paper);
+  color: var(--inspekt-ink);
+  font: inherit;
+  font-size: 13px;
+  min-width: 180px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--inspekt-violet);
+  box-shadow: 0 0 0 3px var(--inspekt-violet-soft);
+}
+.select {
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) calc(50% - 2px),
+    calc(100% - 13px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 30px;
+}
+
+.input[type='color'] {
+  padding: 2px;
+  width: 44px;
+  height: 32px;
+  min-width: 0;
+}
+
+.input[type='number'] {
+  min-width: 90px;
+  text-align: right;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 8px 0;
+}
+.checkbox-row + .checkbox-row {
+  border-top: 1px solid var(--inspekt-rule);
+}
+.checkbox-row input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--inspekt-rule-strong);
+  border-radius: 4px;
+  background: var(--inspekt-paper);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+.checkbox-row input[type='checkbox']:checked {
+  background: var(--inspekt-violet);
+  border-color: var(--inspekt-violet);
+}
+.checkbox-row input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.checkbox-row input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--inspekt-violet);
+  outline-offset: 2px;
+}
+.checkbox-row .label-text {
+  font-size: 14px;
+  color: var(--inspekt-ink);
+}
+
+/* ---- Buttons ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--inspekt-rule-strong);
+  border-radius: var(--inspekt-radius-sm);
+  background: var(--inspekt-paper);
+  color: var(--inspekt-ink-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+  text-decoration: none;
+}
+.btn:hover {
+  background: var(--inspekt-paper-2);
+  color: var(--inspekt-ink);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--inspekt-violet);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background: var(--inspekt-violet);
+  color: #fff;
+  border-color: var(--inspekt-violet);
+}
+.btn-primary:hover {
+  background: var(--inspekt-violet-bright);
+  border-color: var(--inspekt-violet-bright);
+  color: #fff;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+}
+.btn-ghost:hover {
+  background: var(--inspekt-paper-2);
+  color: var(--inspekt-ink);
+}
+
+/* ---- Badges / chips ---- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-family: var(--inspekt-font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: var(--inspekt-violet);
+  flex-shrink: 0;
+}
+.badge-grey {
+  background: var(--inspekt-rule-strong);
+  color: var(--inspekt-ink-3);
+  border: 1px dashed var(--inspekt-ink-3);
+}
+.badge-off  { background: oklch(0.52 0.012 285); }
+.badge-on   { background: oklch(0.62 0.16 250); }
+.badge-dev  { background: oklch(0.62 0.16 145); }
+.badge-map  { background: oklch(0.55 0.18 250); }
+.badge-ai   { background: oklch(0.58 0.22 305); }
+
+/* ---- Inspekt brand mark ---- */
+
+.inspekt-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px dashed var(--inspekt-violet);
+  border-radius: 6px;
+  position: relative;
+  flex-shrink: 0;
+}
+.inspekt-mark::after {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--inspekt-violet);
+}
+
+/* ---- Theme switcher (three-state cycle) ---- */
+
+.inspekt-theme-cycle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--inspekt-ink-2);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  font-family: inherit;
+}
+.inspekt-theme-cycle:hover {
+  background: var(--inspekt-paper-2);
+  color: var(--inspekt-ink);
+}
+.inspekt-theme-cycle:focus-visible {
+  outline: 2px solid var(--inspekt-violet);
+  outline-offset: 2px;
+}
+.inspekt-theme-cycle .icon-stack {
+  position: relative;
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+.inspekt-theme-cycle .icon-stack svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0;
+  transform: scale(0.85) rotate(-12deg);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.inspekt-theme-cycle .icon-stack[data-mode='auto'] .icon-auto,
+.inspekt-theme-cycle .icon-stack[data-mode='light'] .icon-light,
+.inspekt-theme-cycle .icon-stack[data-mode='dark'] .icon-dark {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+/* ---- Eyebrow / section labels ---- */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--inspekt-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inspekt-ink-3);
+}
+.eyebrow::before {
+  content: '';
+  width: 16px;
+  height: 1px;
+  background: var(--inspekt-violet);
+}
+
+/* ---- Callout ---- */
+
+.callout {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--inspekt-violet-soft);
+  border-left: 3px solid var(--inspekt-violet);
+  border-radius: 0 var(--inspekt-radius-sm) var(--inspekt-radius-sm) 0;
+  color: var(--inspekt-ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.callout strong { color: var(--inspekt-ink); }
+.callout code {
+  background: var(--inspekt-paper);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.callout-warn {
+  background: oklch(0.96 0.06 85);
+  border-left-color: var(--inspekt-warn);
+}
+html.dark .callout-warn,
+body.inspekt-dark .callout-warn {
+  background: oklch(0.34 0.08 85);
+}
+
+/* ---- Inline code ---- */
+
+.inline-code,
+p code {
+  font-family: var(--inspekt-font-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+  background: var(--inspekt-paper-2);
+  border-radius: 3px;
+  color: var(--inspekt-ink);
+}

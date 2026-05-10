@@ -7,6 +7,10 @@ export default defineConfig({
   base: '/inspekt/',
   cleanUrls: true,
   lastUpdated: true,
+  // `true` = system preference is the default on first visit; the user's
+  // explicit choice (via our three-state switcher) is persisted in
+  // localStorage and can be reset to "System" any time.
+  appearance: true,
 
   head: [
     ['link', { rel: 'icon', href: '/inspekt/favicon.svg', type: 'image/svg+xml' }],
@@ -23,10 +27,12 @@ export default defineConfig({
 
   themeConfig: {
     logo: '/logo.svg',
+    // No GitHub entry here — the GitHubLink component injected via the
+    // `nav-bar-content-after` slot replaces both the nav text and the
+    // default `socialLinks` icon, so we have exactly one anchor.
     nav: [
       { text: 'Docs', link: '/docs/install' },
       { text: 'Agents', link: '/docs/agent-integration' },
-      { text: 'GitHub', link: 'https://github.com/steven-pribilinskiy/inspekt' },
     ],
     sidebar: {
       '/docs/': [
@@ -55,9 +61,8 @@ export default defineConfig({
         },
       ],
     },
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/steven-pribilinskiy/inspekt' },
-    ],
+    // socialLinks removed — replaced by the custom GitHubLink component in
+    // the nav-bar-content-after slot (theme/index.ts).
     search: { provider: 'local' },
     editLink: {
       pattern:

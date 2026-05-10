@@ -135,4 +135,43 @@ function attachHandlers(): void {
   });
 }
 
+// ---- Theme cycler (same 3-state cycle as popup/options/landing) ----
+
+const THEME_KEY = 'inspekt-welcome-theme';
+type ThemeMode = 'auto' | 'light' | 'dark';
+const THEME_ORDER: ThemeMode[] = ['auto', 'light', 'dark'];
+
+function readThemeMode(): ThemeMode {
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored === 'auto' || stored === 'light' || stored === 'dark' ? stored : 'auto';
+}
+
+function applyThemeMode(mode: ThemeMode): void {
+  const isDark =
+    mode === 'dark' ||
+    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', isDark);
+  const stack = document.getElementById('welcome-theme-stack');
+  if (stack) stack.dataset['mode'] = mode;
+}
+
+function setThemeMode(next: ThemeMode): void {
+  localStorage.setItem(THEME_KEY, next);
+  applyThemeMode(next);
+  void updateSettings({ theme: next });
+}
+
+document.getElementById('welcome-theme')?.addEventListener('click', () => {
+  const current = readThemeMode();
+  const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]!;
+  setThemeMode(next);
+});
+
+applyThemeMode(readThemeMode());
+window
+  .matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', () => {
+    if (readThemeMode() === 'auto') applyThemeMode('auto');
+  });
+
 void init();

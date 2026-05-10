@@ -166,4 +166,44 @@ function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
+// ---- Theme cycler ----
+// Single 3-state cycle button shared with the options page and landing site.
+
+const THEME_KEY = 'inspekt-popup-theme';
+type ThemeMode = 'auto' | 'light' | 'dark';
+const THEME_ORDER: ThemeMode[] = ['auto', 'light', 'dark'];
+
+function readTheme(): ThemeMode {
+  const stored = localStorage.getItem(THEME_KEY);
+  return stored === 'auto' || stored === 'light' || stored === 'dark' ? stored : 'auto';
+}
+
+function applyTheme(mode: ThemeMode): void {
+  const isDark =
+    mode === 'dark' ||
+    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', isDark);
+  const stack = document.getElementById('popup-theme-stack');
+  if (stack) stack.dataset['mode'] = mode;
+}
+
+function setTheme(next: ThemeMode): void {
+  localStorage.setItem(THEME_KEY, next);
+  applyTheme(next);
+  void updateSettings({ theme: next });
+}
+
+document.getElementById('popup-theme')?.addEventListener('click', () => {
+  const current = readTheme();
+  const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]!;
+  setTheme(next);
+});
+
+applyTheme(readTheme());
+window
+  .matchMedia('(prefers-color-scheme: dark)')
+  .addEventListener('change', () => {
+    if (readTheme() === 'auto') applyTheme('auto');
+  });
+
 void init();

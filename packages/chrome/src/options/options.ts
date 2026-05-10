@@ -1,9 +1,95 @@
-import { getSettings, updateSettings, exportSettings, importSettings, type InspektSettings } from '../storage.js';
+import {
+  getSettings,
+  updateSettings,
+  exportSettings,
+  importSettings,
+  type InspektSettings,
+} from '../storage.js';
+
+// ---- Tabs ----------------------------------------------------------------
+// Sidebar tab routing. Persists the active tab in the URL hash so reloads
+// land on the same section.
+
+type TabId = 'general' | 'appearance' | 'snippets' | 'agents' | 'ie';
+
+function setActiveTab(tab: TabId): void {
+  document.querySelectorAll<HTMLButtonElement>('.tablist button').forEach((button) => {
+    button.classList.toggle('active', button.dataset['tab'] === tab);
+  });
+  document.querySelectorAll<HTMLElement>('.tabpanel').forEach((panel) => {
+    panel.classList.toggle('active', panel.id === `panel-${tab}`);
+  });
+  if (location.hash !== `#${tab}`) {
+    history.replaceState(null, '', `#${tab}`);
+  }
+}
+
+function bindTabs(): void {
+  document.querySelectorAll<HTMLButtonElement>('.tablist button').forEach((button) => {
+    button.addEventListener('click', () => {
+      const tab = button.dataset['tab'] as TabId | undefined;
+      if (tab) setActiveTab(tab);
+    });
+  });
+  const initial = (location.hash.replace('#', '') as TabId) || 'general';
+  setActiveTab(
+    ['general', 'appearance', 'snippets', 'agents', 'ie'].includes(initial) ? initial : 'general',
+  );
+}
+
+// ---- Theme cycler --------------------------------------------------------
+// Mirrors the landing's three-state cycler: System → Light → Dark → System.
+// Writes the storage settings AND applies the .dark class on this very page
+// so the live preview reflects the user's choice.
+
+const APPEARANCE_KEY = 'inspekt-options-theme';
+type Mode = 'auto' | 'light' | 'dark';
+const ORDER: Mode[] = ['auto', 'light', 'dark'];
+
+function readMode(): Mode {
+  const stored = localStorage.getItem(APPEARANCE_KEY);
+  if (stored === 'auto' || stored === 'light' || stored === 'dark') return stored;
+  return 'auto';
+}
+
+function applyDarkClass(mode: Mode): void {
+  const isDark =
+    mode === 'dark' ||
+    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', isDark);
+}
+
+function paintThemeIcon(mode: Mode): void {
+  const stack = document.getElementById('theme-icon-stack');
+  if (stack) stack.dataset['mode'] = mode;
+}
+
+function setTheme(next: Mode, persistToSettings = true): void {
+  localStorage.setItem(APPEARANCE_KEY, next);
+  applyDarkClass(next);
+  paintThemeIcon(next);
+  if (persistToSettings) {
+    void updateSettings({ theme: next });
+    pulseSaved();
+  }
+}
+
+function cycleTheme(): void {
+  const current = readMode();
+  const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length]!;
+  setTheme(next);
+}
+
+const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+mediaQuery.addEventListener('change', () => {
+  if (readMode() === 'auto') applyDarkClass('auto');
+});
+
+// ---- Form fields ---------------------------------------------------------
 
 const fields = {
   editor: document.getElementById('editor') as HTMLSelectElement,
   activation: document.getElementById('activation') as HTMLSelectElement,
-  theme: document.getElementById('theme') as HTMLSelectElement,
   highlightColor: document.getElementById('highlightColor') as HTMLInputElement,
   highlightStyle: document.getElementById('highlightStyle') as HTMLSelectElement,
   animation: document.getElementById('animation') as HTMLSelectElement,
@@ -19,11 +105,17 @@ const fields = {
 const savedMsg = document.getElementById('saved-msg')!;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
+function pulseSaved(label = 'Saved'): void {
+  savedMsg.textContent = label;
+  savedMsg.classList.add('show');
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => savedMsg.classList.remove('show'), 1500);
+}
+
 async function loadSettings(): Promise<void> {
   const settings = await getSettings();
   fields.editor.value = settings.editor;
   fields.activation.value = settings.activation;
-  fields.theme.value = settings.theme;
   fields.highlightColor.value = settings.highlightColor;
   fields.highlightStyle.value = settings.highlightStyle;
   fields.animation.value = settings.animation;
@@ -34,13 +126,19 @@ async function loadSettings(): Promise<void> {
   fields.defaultSnippetExpanded.checked = settings.defaultSnippetExpanded;
   fields.snippetContext.value = String(settings.snippetContext);
   fields.sourceMapEnabled.checked = settings.sourceMapEnabled;
+
+  // Theme: prefer per-options-page localStorage value (set by cycler clicks);
+  // fall back to the synced settings value on first load.
+  const stored = localStorage.getItem(APPEARANCE_KEY) as Mode | null;
+  const initialTheme: Mode = stored ?? (settings.theme as Mode);
+  setTheme(initialTheme, false);
 }
 
 function collectSettings(): Partial<InspektSettings> {
   return {
     editor: fields.editor.value,
     activation: fields.activation.value as InspektSettings['activation'],
-    theme: fields.theme.value as InspektSettings['theme'],
+    theme: readMode(),
     highlightColor: fields.highlightColor.value,
     highlightStyle: fields.highlightStyle.value as InspektSettings['highlightStyle'],
     animation: fields.animation.value as InspektSettings['animation'],
@@ -56,18 +154,17 @@ function collectSettings(): Partial<InspektSettings> {
 
 async function autoSave(): Promise<void> {
   await updateSettings(collectSettings());
-  savedMsg.textContent = 'Saved!';
-  savedMsg.classList.add('show');
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => savedMsg.classList.remove('show'), 1500);
+  pulseSaved();
 }
 
-// Autosave on any field change
 for (const el of Object.values(fields)) {
   el.addEventListener('change', () => void autoSave());
 }
 
-// Import/Export modal
+document.getElementById('theme-cycle')?.addEventListener('click', cycleTheme);
+
+// ---- Import/Export modal -------------------------------------------------
+
 const modal = document.getElementById('ie-modal') as HTMLDivElement;
 const modalClose = document.getElementById('ie-modal-close') as HTMLButtonElement;
 const exportBtn = document.getElementById('export-btn') as HTMLButtonElement;
@@ -76,6 +173,7 @@ const modalTextarea = document.getElementById('ie-json') as HTMLTextAreaElement;
 const modalPreview = document.getElementById('ie-preview') as HTMLDivElement;
 const modalApply = document.getElementById('ie-apply') as HTMLButtonElement;
 const modalExportCopy = document.getElementById('ie-copy') as HTMLButtonElement;
+const modalTitle = document.getElementById('ie-modal-title')!;
 
 let modalMode: 'export' | 'import' = 'export';
 
@@ -87,10 +185,13 @@ function openModal(mode: 'export' | 'import'): void {
   modalApply.style.display = mode === 'import' ? '' : 'none';
   modalExportCopy.style.display = mode === 'export' ? '' : 'none';
   modalTextarea.readOnly = mode === 'export';
-  modalTextarea.placeholder = mode === 'export' ? '' : 'Paste JSON here...';
+  modalTextarea.placeholder = mode === 'export' ? '' : 'Paste JSON here…';
+  modalTitle.textContent = mode === 'export' ? 'Export Settings' : 'Import Settings';
 
   if (mode === 'export') {
-    void exportSettings().then((json) => { modalTextarea.value = json; });
+    void exportSettings().then((json) => {
+      modalTextarea.value = json;
+    });
   }
 }
 
@@ -101,21 +202,35 @@ function closeModal(): void {
 exportBtn.addEventListener('click', () => openModal('export'));
 importBtn.addEventListener('click', () => openModal('import'));
 modalClose.addEventListener('click', closeModal);
-modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+modal.addEventListener('click', (e) => {
+  if (e.target === modal) closeModal();
+});
 
 modalTextarea.addEventListener('input', () => {
   if (modalMode !== 'import') return;
   const text = modalTextarea.value.trim();
-  if (!text) { modalPreview.innerHTML = ''; return; }
+  if (!text) {
+    modalPreview.innerHTML = '';
+    return;
+  }
   try {
     const incoming = JSON.parse(text) as Partial<InspektSettings>;
     const current = collectSettings();
     const diffs: string[] = [];
     for (const [key, val] of Object.entries(incoming)) {
-      if (key === 'popupIntroSeen' || key === 'siteOverrides' || key === 'pathMappings' || key === 'githubDefaults') continue;
+      if (
+        key === 'popupIntroSeen' ||
+        key === 'siteOverrides' ||
+        key === 'pathMappings' ||
+        key === 'githubDefaults'
+      ) {
+        continue;
+      }
       const cur = current[key as keyof typeof current];
       if (cur !== undefined && String(cur) !== String(val)) {
-        diffs.push(`<div class="diff-row"><span class="diff-key">${key}</span><span class="diff-old">${String(cur)}</span><span class="diff-arrow">&rarr;</span><span class="diff-new">${String(val)}</span></div>`);
+        diffs.push(
+          `<div class="diff-row"><span class="diff-key">${key}</span><span class="diff-old">${String(cur)}</span><span class="diff-arrow">&rarr;</span><span class="diff-new">${String(val)}</span></div>`,
+        );
       }
     }
     modalPreview.innerHTML = diffs.length
@@ -133,10 +248,7 @@ modalApply.addEventListener('click', async () => {
     await importSettings(text);
     await loadSettings();
     closeModal();
-    savedMsg.textContent = 'Imported!';
-    savedMsg.classList.add('show');
-    if (saveTimer) clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => savedMsg.classList.remove('show'), 2000);
+    pulseSaved('Imported');
   } catch {
     modalPreview.innerHTML = '<div class="diff-error">Invalid JSON — import failed</div>';
   }
@@ -144,8 +256,11 @@ modalApply.addEventListener('click', async () => {
 
 modalExportCopy.addEventListener('click', async () => {
   await navigator.clipboard.writeText(modalTextarea.value);
+  const previous = modalExportCopy.textContent;
   modalExportCopy.textContent = 'Copied!';
-  setTimeout(() => { modalExportCopy.textContent = 'Copy to clipboard'; }, 1500);
+  setTimeout(() => {
+    modalExportCopy.textContent = previous;
+  }, 1500);
 });
 
 document.getElementById('open-welcome')?.addEventListener('click', (e) => {
@@ -153,4 +268,5 @@ document.getElementById('open-welcome')?.addEventListener('click', (e) => {
   chrome.tabs.create({ url: chrome.runtime.getURL('welcome/welcome.html') });
 });
 
-loadSettings();
+void loadSettings();
+bindTabs();

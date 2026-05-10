@@ -1,0 +1,193 @@
+/* Inspekt landing — schematic editorial.
+ *
+ * Single committed color: violet. Asymmetric grid. Annotated diagrams as the
+ * primary visual language. Light-first, deep-slate dark variant.
+ */
+
+/* Hide VitePress's built-in two-state appearance toggle; we replace it with
+   our three-state switcher (Light / System / Dark). */
+.VPNavBarAppearance,
+.VPNavScreenAppearance {
+  display: none !important;
+}
+
+:root {
+  /* Brand violet — single committed color, OKLCH. */
+  --inspekt-violet: oklch(0.58 0.22 285);
+  --inspekt-violet-bright: oklch(0.68 0.2 285);
+  --inspekt-violet-tint: oklch(0.96 0.04 285);
+  --inspekt-violet-soft: oklch(0.93 0.06 285);
+  /* Color of violet text/icons placed on the violet-soft background. Light
+     mode: saturated violet (good contrast on pale tint). Rebound in dark. */
+  --inspekt-violet-on-soft: oklch(0.46 0.22 285);
+
+  /* Tinted neutrals — chroma 0.005 toward violet so they're never dead grey. */
+  --inspekt-ink: oklch(0.18 0.01 285);
+  --inspekt-ink-2: oklch(0.36 0.012 285);
+  --inspekt-ink-3: oklch(0.5 0.012 285);
+  --inspekt-paper: oklch(0.99 0.003 285);
+  --inspekt-paper-2: oklch(0.965 0.005 285);
+  --inspekt-rule: oklch(0.9 0.005 285);
+  --inspekt-rule-strong: oklch(0.82 0.008 285);
+
+  /* Terminal pill — stylized dark chip used for install snippets and code
+     blocks. Always dark in both themes; does NOT flip with --inspekt-ink. */
+  --inspekt-pill-bg: oklch(0.18 0.01 285);
+  --inspekt-pill-bg-2: oklch(0.24 0.012 285);
+  --inspekt-pill-fg: oklch(0.96 0.01 285);
+  --inspekt-pill-fg-dim: oklch(0.78 0.012 285);
+
+  /* Override VitePress brand tokens with our violet. */
+  --vp-c-brand-1: var(--inspekt-violet);
+  --vp-c-brand-2: var(--inspekt-violet-bright);
+  --vp-c-brand-3: var(--inspekt-violet);
+  --vp-c-brand-soft: var(--inspekt-violet-tint);
+  --vp-button-brand-bg: var(--inspekt-violet);
+  --vp-button-brand-hover-bg: var(--inspekt-violet-bright);
+
+  /* Drop the gradient hero text (absolute ban: gradient text). */
+  --vp-home-hero-name-color: var(--inspekt-ink);
+  --vp-home-hero-name-background: transparent;
+
+  /* Typography scale (1.33 ratio). */
+  --inspekt-size-hero: 4.5rem;
+  --inspekt-size-display: 3.375rem;
+  --inspekt-size-h2: 2rem;
+  --inspekt-size-h3: 1.5rem;
+  --inspekt-size-body: 1rem;
+  --inspekt-size-small: 0.8125rem;
+  --inspekt-size-meta: 0.6875rem;
+}
+
+.dark {
+  --inspekt-ink: oklch(0.96 0.01 285);
+  --inspekt-ink-2: oklch(0.78 0.012 285);
+  --inspekt-ink-3: oklch(0.66 0.014 285);
+  --inspekt-paper: oklch(0.22 0.02 285);
+  --inspekt-paper-2: oklch(0.26 0.022 285);
+  --inspekt-rule: oklch(0.34 0.018 285);
+  --inspekt-rule-strong: oklch(0.46 0.022 285);
+
+  /* Brighten violet for dark backgrounds so it still reads as the accent. */
+  --inspekt-violet: oklch(0.74 0.18 285);
+  --inspekt-violet-bright: oklch(0.82 0.16 285);
+  --inspekt-violet-tint: oklch(0.32 0.08 285);
+  --inspekt-violet-soft: oklch(0.36 0.11 285);
+  --inspekt-violet-on-soft: oklch(0.92 0.1 285);
+
+  --vp-home-hero-name-color: var(--inspekt-ink);
+}
+
+/* ---- Landing-page layout primitives ---- */
+
+.inspekt-landing {
+  --col: minmax(0, 1fr);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  font-family: var(--vp-font-family-base);
+  color: var(--inspekt-ink);
+}
+
+.inspekt-landing section {
+  padding: 96px 0;
+  border-top: 1px solid var(--inspekt-rule);
+}
+.inspekt-landing section:first-of-type {
+  border-top: 0;
+  padding-top: 48px;
+}
+
+@media (max-width: 768px) {
+  .inspekt-landing section {
+    padding: 64px 0;
+  }
+}
+
+.inspekt-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--inspekt-size-meta);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--inspekt-ink-3);
+  margin-bottom: 16px;
+}
+.inspekt-eyebrow::before {
+  content: '';
+  width: 24px;
+  height: 1px;
+  background: var(--inspekt-violet);
+}
+
+.inspekt-h2 {
+  font-size: var(--inspekt-size-h2);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--inspekt-ink);
+  margin: 0 0 16px;
+  max-width: 22ch;
+}
+
+.inspekt-lede {
+  font-size: 1.125rem;
+  line-height: 1.55;
+  color: var(--inspekt-ink-2);
+  max-width: 60ch;
+}
+
+.inspekt-mono {
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--inspekt-size-small);
+}
+
+/* Asymmetric grid helpers */
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, var(--col));
+  gap: 24px;
+}
+@media (max-width: 768px) {
+  .grid-12 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Schematic numeric labels */
+.inspekt-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1.5px solid var(--inspekt-violet);
+  background: var(--inspekt-paper);
+  color: var(--inspekt-violet);
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Schematic divider (label + rule) */
+.inspekt-rule-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--vp-font-family-mono);
+  font-size: var(--inspekt-size-meta);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inspekt-ink-3);
+  margin: 0;
+}
+.inspekt-rule-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--inspekt-rule);
+}
