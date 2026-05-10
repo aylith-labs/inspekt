@@ -43,6 +43,21 @@ function pushSettingsToPlugin(settings: Record<string, unknown>): void {
   );
 }
 
+// Bridge: forward in-page capability postMessage to the background script so
+// it can update the toolbar icon. Filtered by the namespaced envelope so we
+// don't react to unrelated postMessages on the page.
+window.addEventListener('message', (event: MessageEvent) => {
+  const data = event.data as
+    | { source?: string; type?: string; payload?: unknown }
+    | null;
+  if (!data || data.source !== 'inspekt') return;
+  if (data.type !== 'inspekt:capabilities') return;
+  chrome.runtime.sendMessage({
+    type: 'INSPEKT_CAPABILITIES',
+    capabilities: data.payload,
+  });
+});
+
 // Listen for messages from background/popup
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   switch (message.type) {

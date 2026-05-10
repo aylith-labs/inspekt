@@ -65,6 +65,7 @@ const DEFAULT_OPTIONS: InspektOptions = {
 
 export function createInspekt(userOptions: Partial<InspektOptions> = {}): InspektInstance {
   const options: InspektOptions = { ...DEFAULT_OPTIONS, ...userOptions };
+  let capabilityTeardown: (() => void) | null = null;
 
   // Merge nested objects
   if (userOptions.highlight) options.highlight = { ...DEFAULT_OPTIONS.highlight, ...userOptions.highlight };
@@ -314,6 +315,17 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       (window as unknown as Record<string, unknown>).__INSPEKT__ = { version: '0.1.0', options };
       document.dispatchEvent(new CustomEvent('inspekt:status', { detail: { enabled: true } }));
 
+      // Start capability probe: publishes via window.postMessage so the Chrome
+      // extension content script can forward to the background and update the
+      // toolbar icon. Lives behind a dynamic import so headless / SSR use of
+      // @inspekt/core doesn't pay for it.
+      void import('./detection/capability-probe.js').then(({ watchCapabilities }) => {
+        if (!enabled) return; // Could have been disabled during the import.
+        capabilityTeardown = watchCapabilities({
+          serverUrl: options.serverUrl || undefined,
+        });
+      });
+
       // Initialize tree panel with current component tree
       if (treePanel && options.treePanel.enabled) {
         // Delay to let the DOM settle after React/Vue renders
@@ -330,6 +342,8 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       overlay.hide();
       treePanel?.hide();
       highlighter.unhighlightAll();
+      capabilityTeardown?.();
+      capabilityTeardown = null;
       document.removeEventListener('click', handleClick, true);
       document.removeEventListener('keydown', handleKeydown, true);
       document.removeEventListener('mousemove', handleMouseMove);

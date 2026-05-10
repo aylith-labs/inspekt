@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsup && cp -r public/* ../../dist/ && cp src/popup/popup.html ../../dist/popup/ && cp src/options/options.html ../../dist/options/ && cp src/welcome/welcome.html ../../dist/welcome/",
     "dev": "tsup --watch",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf ../../dist"
   },
   "dependencies": {
@@ -15,6 +16,7 @@
   "devDependencies": {
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
     "@types/chrome": "^0.0.287"
   },
   "license": "MIT"

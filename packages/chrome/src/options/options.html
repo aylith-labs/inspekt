@@ -163,6 +163,51 @@
     .diff-new { color: #16a34a; font-weight: 500; }
     .diff-empty { font-size: 12px; color: #94a3b8; padding: 8px 0; }
     .diff-error { font-size: 12px; color: #dc2626; padding: 8px 0; }
+    .icon-legend {
+      list-style: none;
+      padding: 0;
+      margin: 12px 0;
+      display: grid;
+      gap: 8px;
+    }
+    .icon-legend li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #475569;
+    }
+    .icon-legend strong { color: #1e293b; }
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 36px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 3px;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      background: #3b82f6;
+      flex-shrink: 0;
+    }
+    .badge-chip-grey {
+      background: #cbd5e1;
+      border: 1px dashed #94a3b8;
+    }
+    .hint, .hint-inline {
+      color: #64748b;
+      font-size: 12px;
+    }
+    .hint code {
+      font-family: 'SF Mono', Monaco, 'Cascadia Code', Consolas, monospace;
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+    .hint-inline { display: block; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -251,6 +296,17 @@
       Show line numbers
     </label>
   </div>
+
+  <h2>Toolbar icon</h2>
+  <p class="hint">The Inspekt icon in your toolbar changes per tab to describe what's available:</p>
+  <ul class="icon-legend">
+    <li><span class="badge-chip badge-chip-grey"></span> <strong>Greyscale</strong> — page has no Inspekt instrumentation; the inspector won't find any sources here.</li>
+    <li><span class="badge-chip" style="background:#6b7280">OFF</span> Page is instrumented but the inspector is disabled. Click the icon to enable.</li>
+    <li><span class="badge-chip" style="background:#3b82f6">ON</span> Active — file path only (no snippet source available).</li>
+    <li><span class="badge-chip" style="background:#16a34a">DEV</span> Active — snippets via the local dev server.</li>
+    <li><span class="badge-chip" style="background:#2563eb">MAP</span> Active — snippets via source maps (opt-in fallback).</li>
+    <li><span class="badge-chip" style="background:#9333ea">AI</span> Active — agent connected via MCP. Grabs route to your editor's agent.</li>
+  </ul>
 
   <h2>Source snippet</h2>
   <p class="hint">When you click an element, Inspekt fetches the surrounding lines from your dev server's <code>/__inspekt/snippet</code> endpoint and renders them in the popover. Works automatically when <code>@inspekt/vite</code> is running.</p>
