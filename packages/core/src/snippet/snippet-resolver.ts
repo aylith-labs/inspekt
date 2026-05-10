@@ -17,6 +17,8 @@ export interface SnippetResolverOptions {
   serverUrl?: string;
   context?: number;
   fetcher?: typeof fetch;
+  /** When true, attempts source-map fallback after the dev server fails. */
+  sourceMapEnabled?: boolean;
 }
 
 const CACHE_LIMIT = 100;
@@ -68,6 +70,26 @@ export async function resolveSnippet(
   if (fromServer) {
     lruTouch(key, fromServer);
     return fromServer;
+  }
+
+  // Source-map fallback (opt-in; default off). Lazy-imported so projects that
+  // don't enable it never pay the @jridgewell/trace-mapping bundle cost.
+  if (opts.sourceMapEnabled) {
+    try {
+      const mod = await import('./sourcemap-resolver.js');
+      const fromMap = await mod.resolveFromSourceMap({
+        filePath: opts.filePath,
+        line: opts.line,
+        context: opts.context,
+        fetcher: opts.fetcher,
+      });
+      if (fromMap) {
+        lruTouch(key, fromMap);
+        return fromMap;
+      }
+    } catch {
+      // sourcemap-resolver failed (network, parse error). Fall through.
+    }
   }
 
   // Negative-cache the miss so we don't re-fetch on every popover open.

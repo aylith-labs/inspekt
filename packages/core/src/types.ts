@@ -43,6 +43,12 @@ export interface InspektOptions {
   defaultSnippetExpanded: boolean;
   /** Lines of context above/below the target line in the snippet. */
   snippetContext: number;
+  /**
+   * When true, fetches .map files to resolve snippets when the dev server is
+   * unreachable. Default false because the .map fetches are observable in
+   * DevTools/proxies and shouldn't happen without user consent.
+   */
+  sourceMapEnabled: boolean;
 }
 
 export interface SourceSnippet {

@@ -13,6 +13,7 @@ const fields = {
   showLineNumbers: document.getElementById('showLineNumbers') as HTMLInputElement,
   defaultSnippetExpanded: document.getElementById('defaultSnippetExpanded') as HTMLInputElement,
   snippetContext: document.getElementById('snippetContext') as HTMLInputElement,
+  sourceMapEnabled: document.getElementById('sourceMapEnabled') as HTMLInputElement,
 };
 
 const savedMsg = document.getElementById('saved-msg')!;
@@ -32,6 +33,7 @@ async function loadSettings(): Promise<void> {
   fields.showLineNumbers.checked = settings.showLineNumbers;
   fields.defaultSnippetExpanded.checked = settings.defaultSnippetExpanded;
   fields.snippetContext.value = String(settings.snippetContext);
+  fields.sourceMapEnabled.checked = settings.sourceMapEnabled;
 }
 
 function collectSettings(): Partial<InspektSettings> {
@@ -48,6 +50,7 @@ function collectSettings(): Partial<InspektSettings> {
     showLineNumbers: fields.showLineNumbers.checked,
     defaultSnippetExpanded: fields.defaultSnippetExpanded.checked,
     snippetContext: Math.max(0, Math.min(30, parseInt(fields.snippetContext.value, 10) || 5)),
+    sourceMapEnabled: fields.sourceMapEnabled.checked,
   };
 }
 

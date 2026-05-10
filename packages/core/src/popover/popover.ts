@@ -8,11 +8,14 @@ export interface PopoverSnippetConfig {
   context: number;
   /** When true, the snippet section is expanded immediately on show(). */
   defaultExpanded: boolean;
+  /** When true, attempts source-map fallback if the dev server can't help. */
+  sourceMapEnabled: boolean;
 }
 
 const DEFAULT_SNIPPET_CONFIG: PopoverSnippetConfig = {
   context: 5,
   defaultExpanded: false,
+  sourceMapEnabled: false,
 };
 
 export class Popover {
@@ -142,6 +145,7 @@ export class Popover {
       line: element.line,
       serverUrl: this.snippetConfig.serverUrl,
       context: this.snippetConfig.context,
+      sourceMapEnabled: this.snippetConfig.sourceMapEnabled,
     });
 
     body.innerHTML = '';

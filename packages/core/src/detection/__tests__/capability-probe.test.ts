@@ -45,16 +45,28 @@ describe('probeCapabilities', () => {
     expect(caps.snippetSource).toBe('devserver');
   });
 
-  it('falls back to snippetSource=sourcemap when devserver is down but a .map script is present', async () => {
+  it('falls back to snippetSource=sourcemap when sourceMapEnabled=true and a .map script is present', async () => {
+    document.head.innerHTML = '<script src="/assets/index.js.map"></script>';
+    const fetcher = vi.fn().mockResolvedValue(notFound());
+    const caps = await probeCapabilities({
+      serverUrl: 'http://localhost:5173',
+      sourceMapEnabled: true,
+      fetcher: fetcher as unknown as typeof fetch,
+    });
+    expect(caps.serverReachable).toBe(false);
+    expect(caps.sourceMapAvailable).toBe(true);
+    expect(caps.snippetSource).toBe('sourcemap');
+  });
+
+  it('does NOT claim sourcemap as snippetSource when sourceMapEnabled is false (the default)', async () => {
     document.head.innerHTML = '<script src="/assets/index.js.map"></script>';
     const fetcher = vi.fn().mockResolvedValue(notFound());
     const caps = await probeCapabilities({
       serverUrl: 'http://localhost:5173',
       fetcher: fetcher as unknown as typeof fetch,
     });
-    expect(caps.serverReachable).toBe(false);
     expect(caps.sourceMapAvailable).toBe(true);
-    expect(caps.snippetSource).toBe('sourcemap');
+    expect(caps.snippetSource).toBeNull();
   });
 
   it('flags agentConnected when the daemon URL returns 200', async () => {

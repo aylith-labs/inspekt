@@ -17,6 +17,12 @@ export interface ProbeContext {
   serverUrl?: string;
   /** When set, used as the URL prefix for the daemon `/daemon` ping (Phase 3+). */
   daemonUrl?: string;
+  /**
+   * When true, source-map fallback is enabled. The probe will set
+   * snippetSource='sourcemap' even if the dev server is unreachable, as long
+   * as the page has at least one .map-bearing script.
+   */
+  sourceMapEnabled?: boolean;
   /** Custom fetcher (injectable for tests). */
   fetcher?: typeof fetch;
   /** When set, posts the probe result via this callback instead of postMessage. */
@@ -73,9 +79,12 @@ export async function probeCapabilities(ctx: ProbeContext = {}): Promise<PageCap
     ? await pingHead(new URL('/__inspekt/daemon', ctx.daemonUrl).toString(), fetcher)
     : false;
 
+  // Only claim sourcemap as the snippet source when the user has explicitly
+  // opted in — otherwise the icon would imply we'll fetch .map files when in
+  // fact we won't.
   const snippetSource: PageCapabilities['snippetSource'] = serverReachable
     ? 'devserver'
-    : sourceMapAvailable
+    : ctx.sourceMapEnabled && sourceMapAvailable
       ? 'sourcemap'
       : null;
 

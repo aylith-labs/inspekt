@@ -25,6 +25,8 @@ export interface InspektSettings {
   agentEndpoint: string;
   /** Currently selected agent for "Send to Agent" — informational; daemon routes to all. */
   selectedAgent: 'claude-code' | 'cursor' | 'codex' | 'gemini-cli' | 'antigravity' | null;
+  /** Opt-in: fetch .map files when dev server is unreachable. Default false. */
+  sourceMapEnabled: boolean;
 }
 
 const DEFAULTS: InspektSettings = {
@@ -49,6 +51,7 @@ const DEFAULTS: InspektSettings = {
   inspektToken: '',
   agentEndpoint: 'http://127.0.0.1:5678',
   selectedAgent: null,
+  sourceMapEnabled: false,
 };
 
 export async function getSettings(): Promise<InspektSettings> {

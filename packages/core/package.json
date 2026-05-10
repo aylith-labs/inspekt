@@ -24,13 +24,16 @@
   },
   "dependencies": {
     "bippy": "^0.5.39",
-    "react-grab": "^0.1.33"
+    "react-grab": "^0.1.33",
+    "@jridgewell/trace-mapping": "^0.3.31"
   },
   "devDependencies": {
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",
-    "happy-dom": "^15.0.0"
+    "happy-dom": "^15.0.0",
+    "@types/chrome": "^0.0.287",
+    "@jridgewell/sourcemap-codec": "^1.5.0"
   },
   "sideEffects": false,
   "license": "MIT"

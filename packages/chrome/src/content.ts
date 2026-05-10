@@ -33,6 +33,7 @@ function initStandalone(settings: Record<string, unknown>): void {
     },
     defaultSnippetExpanded: (settings['defaultSnippetExpanded'] as boolean) ?? false,
     snippetContext: (settings['snippetContext'] as number) ?? 5,
+    sourceMapEnabled: (settings['sourceMapEnabled'] as boolean) ?? false,
   });
 }
 

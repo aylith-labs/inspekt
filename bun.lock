@@ -65,10 +65,13 @@
       "name": "@inspekt/core",
       "version": "0.1.0",
       "dependencies": {
+        "@jridgewell/trace-mapping": "^0.3.31",
         "bippy": "^0.5.39",
         "react-grab": "^0.1.33",
       },
       "devDependencies": {
+        "@jridgewell/sourcemap-codec": "^1.5.0",
+        "@types/chrome": "^0.0.287",
         "happy-dom": "^15.0.0",
         "tsup": "^8.3.0",
         "typescript": "^5.7.0",

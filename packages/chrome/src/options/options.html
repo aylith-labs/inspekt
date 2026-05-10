@@ -323,6 +323,27 @@
     <span class="hint-inline">Lines above and below the target line (max 30).</span>
   </div>
 
+  <h2>Source map fallback <span class="hint-inline" style="font-weight: normal; color: #94a3b8;">(advanced)</span></h2>
+  <p class="hint">
+    Inspekt can fetch source-map files from your app's bundle URLs when the
+    local dev server isn't running. Useful for inspecting staging/production
+    sites or extension pages.
+  </p>
+  <p class="hint" style="border-left: 3px solid #facc15; padding-left: 10px; background: #fef9c3; margin: 8px 0;">
+    <strong>When enabled</strong>, your browser will make additional network
+    requests to download <code>.map</code> files. These requests appear in
+    your DevTools Network tab and in corporate proxy/network logs. Map files
+    can be several MB and are cached for the browser session.<br><br>
+    Disable when on shared / monitored networks, or when inspecting sites
+    where source maps shouldn't be requested.
+  </p>
+  <div class="field">
+    <label class="checkbox-label">
+      <input type="checkbox" id="sourceMapEnabled">
+      Fetch <code>.map</code> files when dev server is unreachable
+    </label>
+  </div>
+
   <h2>Import / Export</h2>
   <div class="actions">
     <button class="btn" id="export-btn">Export settings</button>

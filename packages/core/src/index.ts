@@ -61,6 +61,7 @@ const DEFAULT_OPTIONS: InspektOptions = {
   serverUrl: '',
   defaultSnippetExpanded: false,
   snippetContext: 5,
+  sourceMapEnabled: false,
 };
 
 export function createInspekt(userOptions: Partial<InspektOptions> = {}): InspektInstance {
@@ -97,6 +98,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     serverUrl: options.serverUrl || undefined,
     context: options.snippetContext,
     defaultExpanded: options.defaultSnippetExpanded,
+    sourceMapEnabled: options.sourceMapEnabled,
   });
   const overlay = new Overlay(shadow);
   const adapter = detectAdapter();
@@ -323,6 +325,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
         if (!enabled) return; // Could have been disabled during the import.
         capabilityTeardown = watchCapabilities({
           serverUrl: options.serverUrl || undefined,
+          sourceMapEnabled: options.sourceMapEnabled,
         });
       });
 
