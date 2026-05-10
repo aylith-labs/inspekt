@@ -114,6 +114,13 @@
         "vitest": "^3.0.0",
       },
     },
+    "packages/skill": {
+      "name": "@inspekt/skill",
+      "version": "0.1.0",
+      "devDependencies": {
+        "vitest": "^3.0.0",
+      },
+    },
     "packages/vite": {
       "name": "@inspekt/vite",
       "version": "0.1.0",
@@ -264,6 +271,8 @@
     "@inspekt/daemon": ["@inspekt/daemon@workspace:packages/daemon"],
 
     "@inspekt/mcp": ["@inspekt/mcp@workspace:packages/mcp"],
+
+    "@inspekt/skill": ["@inspekt/skill@workspace:packages/skill"],
 
     "@inspekt/vite": ["@inspekt/vite@workspace:packages/vite"],
 
