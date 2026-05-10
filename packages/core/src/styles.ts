@@ -89,6 +89,91 @@ export const STYLES = /* css */ `
     padding: 6px 8px;
   }
 
+  /* Snippet section */
+  .inspekt-snippet {
+    border-bottom: 1px solid var(--dl-border);
+  }
+
+  .inspekt-snippet-toggle {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 6px 12px;
+    background: transparent;
+    border: none;
+    color: var(--dl-text-dim);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    pointer-events: auto;
+  }
+
+  .inspekt-snippet-toggle:hover {
+    background: var(--dl-bg-hover);
+    color: var(--dl-text);
+  }
+
+  .inspekt-snippet-body {
+    padding: 0;
+    max-width: 600px;
+    max-height: 240px;
+    overflow: auto;
+    border-top: 1px solid var(--dl-border);
+  }
+
+  .inspekt-snippet-pre {
+    margin: 0;
+    padding: 8px 0;
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--dl-text);
+    background: transparent;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .inspekt-line {
+    display: inline-flex;
+    align-items: baseline;
+    padding: 0 12px 0 0;
+  }
+
+  .inspekt-line-target {
+    background: var(--dl-accent-dim);
+    border-left: 2px solid var(--dl-accent);
+    padding-left: 10px;
+  }
+
+  .inspekt-line:not(.inspekt-line-target) {
+    padding-left: 12px;
+  }
+
+  .inspekt-line-no {
+    display: inline-block;
+    min-width: 30px;
+    text-align: right;
+    color: var(--dl-text-dim);
+    margin-right: 10px;
+    user-select: none;
+    flex-shrink: 0;
+  }
+
+  .inspekt-line-code {
+    white-space: pre;
+  }
+
+  .inspekt-snippet-skeleton,
+  .inspekt-snippet-empty {
+    padding: 12px;
+    font-size: 11px;
+    color: var(--dl-text-dim);
+    text-align: center;
+    font-style: italic;
+  }
+
   .inspekt-popover-action {
     display: flex;
     align-items: center;

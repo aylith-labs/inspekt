@@ -59,6 +59,8 @@ const DEFAULT_OPTIONS: InspektOptions = {
   },
   sourceAttribute: 'data-insp-path',
   serverUrl: '',
+  defaultSnippetExpanded: false,
+  snippetContext: 5,
 };
 
 export function createInspekt(userOptions: Partial<InspektOptions> = {}): InspektInstance {
@@ -90,6 +92,11 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   // Components
   const highlighter = new Highlighter(options.highlight);
   const popover = new Popover(shadow);
+  popover.configureSnippet({
+    serverUrl: options.serverUrl || undefined,
+    context: options.snippetContext,
+    defaultExpanded: options.defaultSnippetExpanded,
+  });
   const overlay = new Overlay(shadow);
   const adapter = detectAdapter();
 

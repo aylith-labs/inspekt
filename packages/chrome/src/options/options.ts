@@ -11,6 +11,8 @@ const fields = {
   treePanelPosition: document.getElementById('treePanelPosition') as HTMLSelectElement,
   showProps: document.getElementById('showProps') as HTMLInputElement,
   showLineNumbers: document.getElementById('showLineNumbers') as HTMLInputElement,
+  defaultSnippetExpanded: document.getElementById('defaultSnippetExpanded') as HTMLInputElement,
+  snippetContext: document.getElementById('snippetContext') as HTMLInputElement,
 };
 
 const savedMsg = document.getElementById('saved-msg')!;
@@ -28,6 +30,8 @@ async function loadSettings(): Promise<void> {
   fields.treePanelPosition.value = settings.treePanelPosition;
   fields.showProps.checked = settings.showProps;
   fields.showLineNumbers.checked = settings.showLineNumbers;
+  fields.defaultSnippetExpanded.checked = settings.defaultSnippetExpanded;
+  fields.snippetContext.value = String(settings.snippetContext);
 }
 
 function collectSettings(): Partial<InspektSettings> {
@@ -42,6 +46,8 @@ function collectSettings(): Partial<InspektSettings> {
     treePanelPosition: fields.treePanelPosition.value as InspektSettings['treePanelPosition'],
     showProps: fields.showProps.checked,
     showLineNumbers: fields.showLineNumbers.checked,
+    defaultSnippetExpanded: fields.defaultSnippetExpanded.checked,
+    snippetContext: Math.max(0, Math.min(30, parseInt(fields.snippetContext.value, 10) || 5)),
   };
 }
 

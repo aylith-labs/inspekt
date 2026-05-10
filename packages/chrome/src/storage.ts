@@ -15,6 +15,10 @@ export interface InspektSettings {
   pathMappings: Record<string, Record<string, string>>;
   githubDefaults: Record<string, { repo: string; branch: string }>;
   popupIntroSeen: boolean;
+  /** Default expansion state for the popover's snippet section. */
+  defaultSnippetExpanded: boolean;
+  /** Lines of context above/below the target line. Clamped to 0..30 by the server. */
+  snippetContext: number;
 }
 
 const DEFAULTS: InspektSettings = {
@@ -34,6 +38,8 @@ const DEFAULTS: InspektSettings = {
   pathMappings: {},
   githubDefaults: {},
   popupIntroSeen: false,
+  defaultSnippetExpanded: false,
+  snippetContext: 5,
 };
 
 export async function getSettings(): Promise<InspektSettings> {

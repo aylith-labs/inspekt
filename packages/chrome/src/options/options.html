@@ -252,6 +252,21 @@
     </label>
   </div>
 
+  <h2>Source snippet</h2>
+  <p class="hint">When you click an element, Inspekt fetches the surrounding lines from your dev server's <code>/__inspekt/snippet</code> endpoint and renders them in the popover. Works automatically when <code>@inspekt/vite</code> is running.</p>
+  <div class="field">
+    <label class="checkbox-label">
+      <input type="checkbox" id="defaultSnippetExpanded">
+      Expand snippet by default
+    </label>
+    <span class="hint-inline">When off, the popover shows a "Show source ▾" toggle and only fetches on first expand.</span>
+  </div>
+  <div class="field">
+    <label for="snippetContext">Lines of context</label>
+    <input type="number" id="snippetContext" min="0" max="30" step="1" value="5">
+    <span class="hint-inline">Lines above and below the target line (max 30).</span>
+  </div>
+
   <h2>Import / Export</h2>
   <div class="actions">
     <button class="btn" id="export-btn">Export settings</button>

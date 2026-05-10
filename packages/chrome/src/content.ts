@@ -31,6 +31,8 @@ function initStandalone(settings: Record<string, unknown>): void {
       showProps: (settings['showProps'] as boolean) ?? true,
       showLineNumbers: (settings['showLineNumbers'] as boolean) ?? true,
     },
+    defaultSnippetExpanded: (settings['defaultSnippetExpanded'] as boolean) ?? false,
+    snippetContext: (settings['snippetContext'] as number) ?? 5,
   });
 }
 

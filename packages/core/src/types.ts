@@ -39,6 +39,10 @@ export interface InspektOptions {
   treePanel: TreePanelConfig;
   sourceAttribute: string;
   serverUrl: string;
+  /** Default expansion state for the popover's snippet section. */
+  defaultSnippetExpanded: boolean;
+  /** Lines of context above/below the target line in the snippet. */
+  snippetContext: number;
 }
 
 export interface SourceSnippet {

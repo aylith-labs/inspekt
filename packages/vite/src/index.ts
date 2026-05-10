@@ -1,7 +1,12 @@
 import type { Plugin } from 'vite';
 import path from 'node:path';
 import { transformInspekt, type TransformOptions } from './transform-adapter.js';
-import { handleInspektRequest, corsMiddleware } from './server.js';
+import {
+  handleInspektRequest,
+  handleSnippetRequest,
+  handleCapabilitiesRequest,
+  corsMiddleware,
+} from './server.js';
 import { findComposeFile, parsePathMappings } from './docker.js';
 
 export interface InspektViteOptions {
@@ -95,12 +100,20 @@ window.__INSPEKT_INSTANCE__ = inspekt;
         // CORS preflight
         if (corsMiddleware(req, res)) return;
 
+        // Capabilities probe
+        if (handleCapabilitiesRequest(req, res)) return;
+
+        // Snippet endpoint (async — handle promise without blocking)
+        const snippetCtx = { editor: options.editor, pathMapping, root: resolvedRoot };
+        if (req.url?.startsWith('/__inspekt/snippet')) {
+          handleSnippetRequest(req, res, snippetCtx).then((handled) => {
+            if (!handled) next();
+          }).catch(() => next());
+          return;
+        }
+
         // Open-in-editor endpoint
-        const handled = handleInspektRequest(req, res, {
-          editor: options.editor,
-          pathMapping,
-          root: resolvedRoot,
-        });
+        const handled = handleInspektRequest(req, res, snippetCtx);
         if (!handled) next();
       });
     },
