@@ -7,6 +7,7 @@ import type {
 } from './types.js';
 import { findClosestSource, elementToInspected } from './detection/source-detector.js';
 import { Highlighter } from './highlight/highlighter.js';
+import { BoundingBoxOverlay } from './highlight/bounding-boxes.js';
 import { Popover } from './popover/popover.js';
 import { Overlay } from './overlay/overlay.js';
 import {
@@ -30,7 +31,8 @@ export type {
 export type { ShortcutConfig, HighlightConfig, BadgeConfig, TreePanelConfig } from './types.js';
 
 const DEFAULT_OPTIONS: InspektOptions = {
-  activation: 'click',
+  activation: 'click-mod',
+  showBoundingBoxes: false,
   shortcut: { key: 'click', modifiers: ['ctrl', 'alt'] },
   toggleShortcut: { key: 'i', modifiers: ['ctrl', 'alt'] },
   theme: 'auto',
@@ -99,8 +101,10 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     context: options.snippetContext,
     defaultExpanded: options.defaultSnippetExpanded,
     sourceMapEnabled: options.sourceMapEnabled,
+    staticSnippets: options.staticSnippets,
   });
   const overlay = new Overlay(shadow);
+  const bboxOverlay = new BoundingBoxOverlay(shadow);
   const adapter = detectAdapter();
 
   let treePanel: TreePanel | null = null;
@@ -159,10 +163,15 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   function handleClick(e: MouseEvent): void {
     if (!enabled) return;
 
+    // `click` / `view` modes accept a plain click. `click-mod` (legacy default)
+    // requires the configured modifier set so the inspector doesn't intercept
+    // every interaction on a real app.
+    const requireMods = options.activation === 'click-mod';
+
     const modifiers = options.shortcut.modifiers;
-    const needCtrl = modifiers.includes('ctrl') || modifiers.includes('meta');
-    const needAlt = modifiers.includes('alt');
-    const needShift = modifiers.includes('shift');
+    const needCtrl = requireMods && (modifiers.includes('ctrl') || modifiers.includes('meta'));
+    const needAlt = requireMods && modifiers.includes('alt');
+    const needShift = requireMods && modifiers.includes('shift');
 
     const ctrlOk = !needCtrl || e.ctrlKey || e.metaKey;
     const altOk = !needAlt || e.altKey;
@@ -183,7 +192,11 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       return;
     }
 
-    if (ctrlOk && altOk && shiftOk && options.shortcut.key === 'click') {
+    const isClickMode =
+      options.activation === 'click' ||
+      options.activation === 'click-mod' ||
+      options.activation === 'view';
+    if (ctrlOk && altOk && shiftOk && isClickMode) {
       e.preventDefault();
       e.stopPropagation();
 
@@ -197,8 +210,28 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
         popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
         treePanel?.selectElement(inspected);
         emit('inspect', inspected);
+      } else if (isFallbackTarget(target)) {
+        // DOM-only fallback — no source attrs / fibers, but the user still
+        // expects visible feedback on a Standalone session.
+        showDomFallback(target, e.clientX, e.clientY);
       }
     }
+  }
+
+  function showDomFallback(el: HTMLElement, x: number, y: number): void {
+    highlighter.unhighlightAll();
+    highlighter.highlight(el, 'selected');
+    popover.showDom(
+      el,
+      { x, y },
+      (selector) => {
+        void navigator.clipboard?.writeText(selector).catch(() => {});
+      },
+      () => {
+        // eslint-disable-next-line no-console
+        console.log('[Inspekt]', el);
+      },
+    );
   }
 
   function handleKeydown(e: KeyboardEvent): void {
@@ -266,9 +299,19 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
       treePanel?.selectElement(inspected);
       emit('inspect', inspected);
+    } else if (isFallbackTarget(target)) {
+      showDomFallback(target, e.clientX, e.clientY);
     } else {
       popover.hide();
     }
+  }
+
+  function isFallbackTarget(el: HTMLElement | null): el is HTMLElement {
+    if (!el) return false;
+    if (el === document.body || el === document.documentElement) return false;
+    // Inspekt's own shadow host shows up as e.target due to shadow retargeting.
+    if (el.tagName === 'INSPEKT-ROOT') return false;
+    return true;
   }
 
   // Event emitter
@@ -302,6 +345,12 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     Object.assign(options, newSettings);
     if (newSettings.highlight) highlighter.updateConfig(options.highlight);
     applyTheme(host, options.theme);
+    if (enabled) {
+      const wantBoxes =
+        options.activation === 'view' || options.showBoundingBoxes === true;
+      if (wantBoxes) bboxOverlay.enable();
+      else bboxOverlay.disable();
+    }
   }) as EventListener);
 
   const instance: InspektInstance = {
@@ -335,6 +384,12 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
         setTimeout(() => refreshTree(), 100);
       }
 
+      // Persistent bounding-box overlay: enabled by `view` mode OR by the
+      // explicit `showBoundingBoxes` toggle (independent of activation).
+      if (options.activation === 'view' || options.showBoundingBoxes) {
+        bboxOverlay.enable();
+      }
+
       emit('enable');
     },
 
@@ -344,6 +399,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       popover.hide();
       overlay.hide();
       treePanel?.hide();
+      bboxOverlay.disable();
       highlighter.unhighlightAll();
       capabilityTeardown?.();
       capabilityTeardown = null;
@@ -366,6 +422,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       popover.destroy();
       overlay.destroy();
       treePanel?.destroy();
+      bboxOverlay.destroy();
       mediaQuery.removeEventListener('change', themeHandler);
       listeners.clear();
       customActions.clear();

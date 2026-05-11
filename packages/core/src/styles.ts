@@ -417,4 +417,38 @@ export const STYLES = /* css */ `
     background: var(--dl-accent);
     opacity: 0.5;
   }
+
+  /* Bounding-box overlay — view mode & "Show bounding boxes" toggle */
+  .inspekt-bbox-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2147483646;
+  }
+  .inspekt-bbox {
+    position: fixed;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    border: 1.5px dashed var(--dl-accent, oklch(0.62 0.18 285));
+    background: oklch(0.62 0.18 285 / 0.05);
+    pointer-events: none;
+    will-change: transform, width, height;
+    border-radius: 2px;
+  }
+  .inspekt-bbox-label {
+    position: absolute;
+    top: -18px;
+    left: 0;
+    font: 500 10px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: #fff;
+    background: var(--dl-accent, oklch(0.55 0.18 285));
+    padding: 2px 5px;
+    border-radius: 3px 3px 3px 0;
+    white-space: nowrap;
+    pointer-events: none;
+    max-width: 280px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;

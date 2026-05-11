@@ -1,4 +1,5 @@
 import type { InspectedElement } from '../types.js';
+import { vueSourceFor } from './vue-detector.js';
 
 // Single source attribute, aligned with @code-inspector/core's hardcoded
 // constant. Anything emitting the older `data-inspekt-path` (the rename
@@ -60,6 +61,12 @@ export function findClosestSource(element: HTMLElement): { element: HTMLElement;
     current = current.parentElement;
   }
 
+  // No DOM-attribute hit — try Vue's sync `__vueParentComponent` / `__vue__`
+  // (dev-mode only). Cheap to call on every miss, so we don't need to gate it
+  // on framework detection.
+  const vueSource = vueSourceFor(element);
+  if (vueSource) return { element, source: vueSource };
+
   return null;
 }
 
@@ -119,7 +126,8 @@ export async function resolveElementSource(
     // bippy unavailable or threw — fall through silently
   }
 
-  // Tier 2 — DOM attribute on element or ancestor.
+  // Tier 2 — DOM attribute on element or ancestor (and, as a tail step,
+  // Vue's sync component metadata — see `findClosestSource`).
   const attrHit = findClosestSource(element);
   if (attrHit) {
     return { element: attrHit.element, source: attrHit.source, from: 'attribute' };

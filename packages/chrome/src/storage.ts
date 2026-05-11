@@ -1,7 +1,8 @@
 export interface InspektSettings {
   enabled: boolean;
   editor: string;
-  activation: 'click' | 'hover-mod' | 'hover' | 'manual';
+  activation: 'click-mod' | 'click' | 'view' | 'hover-mod' | 'hover' | 'manual';
+  showBoundingBoxes: boolean;
   theme: 'light' | 'dark' | 'auto';
   highlightColor: string;
   highlightStyle: 'solid' | 'dashed' | 'glow';
@@ -32,7 +33,8 @@ export interface InspektSettings {
 const DEFAULTS: InspektSettings = {
   enabled: true,
   editor: 'cursor',
-  activation: 'click',
+  activation: 'click-mod',
+  showBoundingBoxes: false,
   theme: 'auto',
   highlightColor: '#3b82f6',
   highlightStyle: 'glow',

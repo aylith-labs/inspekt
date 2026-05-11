@@ -186,6 +186,18 @@
       border: 4px solid transparent;
       border-top-color: var(--inspekt-pill-bg);
     }
+    /* Anchored to the right edge of the wrapping button — keeps wide
+       tooltips inside the 300px popup viewport. */
+    .tooltip-end {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+    .tooltip-end::after {
+      left: auto;
+      right: 14px;
+      transform: none;
+    }
     .btn-wrap:hover .tooltip { display: block; }
 
     /* ---- Intro view ---- */
@@ -417,7 +429,7 @@
       <button class="btn" id="settings-btn">Settings</button>
       <div class="btn-wrap">
         <button class="btn" id="standalone-btn">Standalone</button>
-        <div class="tooltip">Inspect any site without the build plugin</div>
+        <div class="tooltip tooltip-end">Inspect any site without a build plugin</div>
       </div>
     </div>
   </div>

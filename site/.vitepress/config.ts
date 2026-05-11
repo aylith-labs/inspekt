@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress';
+import { inspekt } from '@inspekt/vite';
 
 export default defineConfig({
   title: 'Inspekt',
@@ -24,6 +25,21 @@ export default defineConfig({
       },
     ],
   ],
+
+  vite: {
+    plugins: [
+      // Inject `data-insp-path` attributes into the theme's Vue components so
+      // the Chrome extension (and curious visitors) can click through to the
+      // source even on the deployed gh-pages build. `runtimeInjection: false`
+      // keeps `@inspekt/core` out of the bundle — the extension is the only
+      // runtime consumer here.
+      inspekt({
+        framework: 'vue',
+        enableInProduction: true,
+        runtimeInjection: false,
+      }),
+    ],
+  },
 
   themeConfig: {
     logo: '/logo.svg',

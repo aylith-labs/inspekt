@@ -10,6 +10,11 @@ export interface PopoverSnippetConfig {
   defaultExpanded: boolean;
   /** When true, attempts source-map fallback if the dev server can't help. */
   sourceMapEnabled: boolean;
+  /** Pre-baked snippets indexed by filePath (demos/playgrounds). */
+  staticSnippets?: Record<
+    string,
+    { language: string; lines: string[]; startLine?: number }
+  >;
 }
 
 const DEFAULT_SNIPPET_CONFIG: PopoverSnippetConfig = {
@@ -32,6 +37,75 @@ export class Popover {
 
   configureSnippet(config: Partial<PopoverSnippetConfig>): void {
     this.snippetConfig = { ...this.snippetConfig, ...config };
+  }
+
+  /**
+   * Fallback popover for Standalone-on-an-unbuilt-page: no source attrs,
+   * no React fibers — so we show DOM info (selector, classes, id) plus a
+   * minimal action set. Keeps Inspekt useful as a pure inspection tool.
+   */
+  showDom(
+    domElement: HTMLElement,
+    position: { x: number; y: number },
+    onCopySelector: (selector: string) => void,
+    onConsoleLog: () => void,
+  ): void {
+    this.container.innerHTML = '';
+
+    const selector = computeSelector(domElement);
+
+    const header = document.createElement('div');
+    header.className = 'inspekt-popover-header';
+
+    const tagLine = document.createElement('div');
+    tagLine.className = 'inspekt-popover-path-dir';
+    tagLine.textContent = 'DOM element';
+
+    const sel = document.createElement('div');
+    sel.className = 'inspekt-popover-path-file';
+    sel.textContent = selector;
+
+    header.appendChild(tagLine);
+    header.appendChild(sel);
+    this.container.appendChild(header);
+
+    const note = document.createElement('div');
+    note.className = 'inspekt-snippet-empty';
+    note.style.padding = '10px 12px';
+    note.textContent =
+      'No Inspekt source data on this page. Build with the Inspekt plugin for editor-jump and file paths.';
+    this.container.appendChild(note);
+
+    const actionsBar = document.createElement('div');
+    actionsBar.className = 'inspekt-popover-actions';
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'inspekt-popover-action';
+    copyBtn.title = 'Copy CSS selector';
+    copyBtn.textContent = 'Copy selector';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onCopySelector(selector);
+      this.hide();
+    });
+    actionsBar.appendChild(copyBtn);
+
+    const logBtn = document.createElement('button');
+    logBtn.className = 'inspekt-popover-action';
+    logBtn.title = 'console.log this element';
+    logBtn.textContent = 'console.log';
+    logBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onConsoleLog();
+      this.hide();
+    });
+    actionsBar.appendChild(logBtn);
+
+    this.container.appendChild(actionsBar);
+
+    this.positionAt(position.x, position.y);
+    this.container.style.display = 'block';
+    this.visible = true;
   }
 
   show(element: InspectedElement, actions: InspektAction[], position: { x: number; y: number }): void {
@@ -86,6 +160,9 @@ export class Popover {
   private buildSnippetSection(element: InspectedElement): HTMLElement {
     const section = document.createElement('div');
     section.className = 'inspekt-snippet';
+    // Stay hidden until we know a snippet actually resolves. Avoids the
+    // "Show source" toggle that then reveals a useless error message.
+    section.hidden = true;
     const initialState = this.snippetConfig.defaultExpanded ? 'expanded' : 'collapsed';
     section.dataset['state'] = initialState;
 
@@ -99,17 +176,50 @@ export class Popover {
     body.className = 'inspekt-snippet-body';
     if (initialState === 'collapsed') body.hidden = true;
 
-    let loaded = false;
-    const expand = () => {
+    section.appendChild(toggle);
+    section.appendChild(body);
+
+    void this.resolveAndMountSnippet(section, toggle, body, element, initialState);
+
+    return section;
+  }
+
+  private async resolveAndMountSnippet(
+    section: HTMLElement,
+    toggle: HTMLButtonElement,
+    body: HTMLElement,
+    element: InspectedElement,
+    initialState: 'expanded' | 'collapsed',
+  ): Promise<void> {
+    const snippet = await resolveSnippet({
+      filePath: element.filePath,
+      line: element.line,
+      serverUrl: this.snippetConfig.serverUrl,
+      context: this.snippetConfig.context,
+      sourceMapEnabled: this.snippetConfig.sourceMapEnabled,
+      staticSnippets: this.snippetConfig.staticSnippets,
+    });
+    if (!snippet) {
+      // No dev server, no source map — drop the section entirely so the
+      // popover doesn't surface a dead "Show source" affordance.
+      section.remove();
+      return;
+    }
+    element.snippet = snippet;
+    section.hidden = false;
+
+    let rendered = false;
+    const expand = (): void => {
       section.dataset['state'] = 'expanded';
       body.hidden = false;
       toggle.textContent = 'Hide source ▴';
-      if (!loaded) {
-        loaded = true;
-        this.loadSnippetInto(body, element);
+      if (!rendered) {
+        rendered = true;
+        body.innerHTML = '';
+        body.appendChild(this.renderSnippet(snippet));
       }
     };
-    const collapse = () => {
+    const collapse = (): void => {
       section.dataset['state'] = 'collapsed';
       body.hidden = true;
       toggle.textContent = 'Show source ▾';
@@ -121,46 +231,7 @@ export class Popover {
       else collapse();
     });
 
-    section.appendChild(toggle);
-    section.appendChild(body);
-
-    if (initialState === 'expanded') {
-      // Auto-expand fires the load.
-      loaded = true;
-      this.loadSnippetInto(body, element);
-    }
-
-    return section;
-  }
-
-  private async loadSnippetInto(body: HTMLElement, element: InspectedElement): Promise<void> {
-    body.innerHTML = '';
-    const skeleton = document.createElement('div');
-    skeleton.className = 'inspekt-snippet-skeleton';
-    skeleton.textContent = 'Loading source…';
-    body.appendChild(skeleton);
-
-    const snippet = await resolveSnippet({
-      filePath: element.filePath,
-      line: element.line,
-      serverUrl: this.snippetConfig.serverUrl,
-      context: this.snippetConfig.context,
-      sourceMapEnabled: this.snippetConfig.sourceMapEnabled,
-    });
-
-    body.innerHTML = '';
-    if (!snippet) {
-      const empty = document.createElement('div');
-      empty.className = 'inspekt-snippet-empty';
-      empty.textContent =
-        'Source not available — start your dev server, or enable source-map fallback in the extension options.';
-      body.appendChild(empty);
-      return;
-    }
-
-    body.appendChild(this.renderSnippet(snippet));
-    // Stash for downstream consumers (agent grab payload, etc.)
-    element.snippet = snippet;
+    if (initialState === 'expanded') expand();
   }
 
   private renderSnippet(snippet: SourceSnippet): HTMLElement {
@@ -235,4 +306,14 @@ export class Popover {
   destroy(): void {
     this.container.remove();
   }
+}
+
+// Short, human-readable selector for the DOM-only popover. Prefers id, then
+// tag + first 2 classes — not a uniqueness-guaranteed locator.
+function computeSelector(el: HTMLElement): string {
+  const tag = el.tagName.toLowerCase();
+  if (el.id) return `${tag}#${el.id}`;
+  const classes = Array.from(el.classList).slice(0, 2);
+  if (classes.length) return `${tag}.${classes.join('.')}`;
+  return tag;
 }

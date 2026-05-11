@@ -1,4 +1,5 @@
 import { getSettings, updateSettings } from '../storage.js';
+import { wireThemeCycler } from '../theme.js';
 
 const mainView = document.getElementById('main-view') as HTMLDivElement;
 const introView = document.getElementById('intro-view') as HTMLDivElement;
@@ -66,20 +67,23 @@ async function showMain(settings: Awaited<ReturnType<typeof getSettings>>): Prom
   editorEl.textContent = capitalize(settings.editor);
   treeEl.textContent = settings.treePanelEnabled ? 'On' : 'Off';
 
-  // Get current tab status
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id) {
-    try {
-      const response = await chrome.tabs.sendMessage(tab.id, { type: 'GET_STATUS' });
-      if (response) {
-        enabled = response.enabled;
-        updateToggle();
-        updateStatus(response);
-      }
-    } catch {
-      statusEl.textContent = 'No page';
-      statusEl.className = 'status status-inactive';
-    }
+  // Background is the source of truth for tab state (chrome.storage.session).
+  // Content scripts don't track enabled/standalone, so we must ask the SW.
+  const response = (await chrome.runtime
+    .sendMessage({ type: 'GET_STATUS' })
+    .catch(() => null)) as {
+    enabled?: boolean;
+    standalone?: boolean;
+    hasPlugin?: boolean;
+  } | null;
+  if (response) {
+    enabled = response.enabled ?? false;
+    updateToggle();
+    updateStatus({
+      enabled,
+      standalone: response.standalone ?? false,
+      hasPlugin: response.hasPlugin ?? false,
+    });
   }
 }
 
@@ -113,10 +117,63 @@ fullTourLink.addEventListener('click', async () => {
 
 // ---- Main view event handlers ----
 
-toggle.addEventListener('click', () => {
+interface AuthoritativeState {
+  enabled: boolean;
+  standalone: boolean;
+  hasPlugin: boolean;
+}
+
+/**
+ * Sends ENABLE to the active tab's content script. If the content script
+ * isn't loaded (no listener), falls back to injecting `content.js` via
+ * chrome.scripting.executeScript under the activeTab permission — which is
+ * entitled by the popup-button click that just happened.
+ */
+async function ensureEnableOnActiveTab(): Promise<void> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: 'ENABLE' });
+    return;
+  } catch {
+    // Content script wasn't there — inject it, then retry.
+  }
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js'],
+    });
+    // Give the freshly-injected script a moment to register its listeners.
+    await new Promise((r) => setTimeout(r, 100));
+    await chrome.tabs.sendMessage(tab.id, { type: 'ENABLE' }).catch(() => {});
+  } catch {
+    // Injection failed (chrome:// page, web store, etc.) — nothing we can do.
+  }
+}
+
+toggle.addEventListener('click', async () => {
+  // Optimistic flip so the slider feels instant; we reconcile from the
+  // background's authoritative response right after.
   enabled = !enabled;
   updateToggle();
-  chrome.runtime.sendMessage({ type: 'TOGGLE_INSPEKT' }).catch(() => {});
+  const response = (await chrome.runtime.sendMessage({ type: 'TOGGLE_INSPEKT' }).catch(
+    () => null,
+  )) as { enabled?: boolean; standalone?: boolean } | null;
+  if (response) {
+    enabled = response.enabled ?? enabled;
+    updateToggle();
+    updateStatus({
+      enabled,
+      standalone: response.standalone ?? false,
+      hasPlugin: false,
+    });
+  }
+  if (enabled) {
+    // Make sure the content script actually receives ENABLE (it could be a
+    // page that loaded before the extension, in which case message-send
+    // rejects and we fall back to scripting.executeScript).
+    void ensureEnableOnActiveTab();
+  }
 });
 
 settingsBtn.addEventListener('click', () => {
@@ -125,21 +182,17 @@ settingsBtn.addEventListener('click', () => {
 
 standaloneBtn.addEventListener('click', async () => {
   await chrome.runtime.sendMessage({ type: 'INJECT_STANDALONE' });
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab?.id) {
-    chrome.tabs.sendMessage(tab.id, { type: 'ENABLE' }).catch(() => {});
-  }
   enabled = true;
   updateToggle();
-  statusEl.textContent = 'Standalone';
-  statusEl.className = 'status status-standalone';
+  updateStatus({ enabled: true, standalone: true, hasPlugin: false });
+  void ensureEnableOnActiveTab();
 });
 
 function updateToggle(): void {
   toggle.classList.toggle('active', enabled);
 }
 
-function updateStatus(response: { hasPlugin?: boolean; standalone?: boolean; enabled?: boolean }): void {
+function updateStatus(response: AuthoritativeState): void {
   if (response.hasPlugin) {
     statusEl.textContent = 'Plugin';
     statusEl.className = 'status status-plugin';
@@ -147,18 +200,20 @@ function updateStatus(response: { hasPlugin?: boolean; standalone?: boolean; ena
     statusEl.textContent = 'Standalone';
     statusEl.className = 'status status-standalone';
   } else {
-    statusEl.textContent = enabled ? 'Active' : 'Inactive';
-    statusEl.className = `status ${enabled ? 'status-plugin' : 'status-inactive'}`;
+    statusEl.textContent = response.enabled ? 'Active' : 'Inactive';
+    statusEl.className = `status ${response.enabled ? 'status-plugin' : 'status-inactive'}`;
   }
 }
 
 function activationLabel(mode: string): string {
   switch (mode) {
-    case 'click': return 'Click (Ctrl+Alt)';
+    case 'click-mod': return 'Click (Ctrl+Alt)';
+    case 'click':     return 'Click (any)';
+    case 'view':      return 'View (boxes)';
     case 'hover-mod': return 'Hover (Ctrl+Alt)';
-    case 'hover': return 'Hover (always)';
-    case 'manual': return 'Manual';
-    default: return mode;
+    case 'hover':     return 'Hover (always)';
+    case 'manual':    return 'Keyboard only';
+    default:          return mode;
   }
 }
 
@@ -167,43 +222,8 @@ function capitalize(s: string): string {
 }
 
 // ---- Theme cycler ----
-// Single 3-state cycle button shared with the options page and landing site.
-
-const THEME_KEY = 'inspekt-popup-theme';
-type ThemeMode = 'auto' | 'light' | 'dark';
-const THEME_ORDER: ThemeMode[] = ['auto', 'light', 'dark'];
-
-function readTheme(): ThemeMode {
-  const stored = localStorage.getItem(THEME_KEY);
-  return stored === 'auto' || stored === 'light' || stored === 'dark' ? stored : 'auto';
-}
-
-function applyTheme(mode: ThemeMode): void {
-  const isDark =
-    mode === 'dark' ||
-    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.classList.toggle('dark', isDark);
-  const stack = document.getElementById('popup-theme-stack');
-  if (stack) stack.dataset['mode'] = mode;
-}
-
-function setTheme(next: ThemeMode): void {
-  localStorage.setItem(THEME_KEY, next);
-  applyTheme(next);
-  void updateSettings({ theme: next });
-}
-
-document.getElementById('popup-theme')?.addEventListener('click', () => {
-  const current = readTheme();
-  const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]!;
-  setTheme(next);
-});
-
-applyTheme(readTheme());
-window
-  .matchMedia('(prefers-color-scheme: dark)')
-  .addEventListener('change', () => {
-    if (readTheme() === 'auto') applyTheme('auto');
-  });
+// All three extension surfaces share `wireThemeCycler` so a flip on one
+// (popup / options / welcome) propagates live to the others.
+void wireThemeCycler('popup-theme', 'popup-theme-stack');
 
 void init();

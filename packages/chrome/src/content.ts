@@ -44,6 +44,61 @@ function pushSettingsToPlugin(settings: Record<string, unknown>): void {
   );
 }
 
+// Activation-aware hint for the activity banner so the affordance shown
+// matches the user's actual mode (click / hover-mod / hover / manual).
+function bannerForActivation(activation: unknown): string {
+  switch (activation) {
+    case 'click':     return 'Inspekt active · Ctrl+Alt+click to inspect';
+    case 'hover-mod': return 'Inspekt active · Ctrl+Alt+hover to inspect';
+    case 'hover':     return 'Inspekt active · Hover any element to inspect';
+    default:          return 'Inspekt active';
+  }
+}
+
+// Brief in-page confirmation that the inspector engaged. Shadow DOM keeps
+// the banner styles isolated from the host page's CSS.
+function flashActivityBanner(message: string): void {
+  const existing = document.getElementById('inspekt-activity-banner');
+  if (existing) existing.remove();
+
+  const host = document.createElement('div');
+  host.id = 'inspekt-activity-banner';
+  host.style.cssText =
+    'all: initial; position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 2147483647; pointer-events: none;';
+  const shadow = host.attachShadow({ mode: 'closed' });
+  shadow.innerHTML = `
+    <style>
+      :host { all: initial; }
+      .banner {
+        font: 500 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        color: #fff;
+        background: oklch(0.22 0.04 285);
+        padding: 8px 14px;
+        border-radius: 999px;
+        box-shadow: 0 4px 16px oklch(0.18 0.01 285 / 0.25);
+        white-space: nowrap;
+        opacity: 0;
+        transform: translateY(-6px);
+        animation: in 180ms ease-out forwards, out 240ms ease-in 2.6s forwards;
+      }
+      .banner .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: oklch(0.78 0.18 145);
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      @keyframes in  { to { opacity: 1; transform: translateY(0); } }
+      @keyframes out { to { opacity: 0; transform: translateY(-6px); } }
+    </style>
+    <div class="banner"><span class="dot"></span>${message}</div>
+  `;
+  document.documentElement.appendChild(host);
+  setTimeout(() => host.remove(), 3000);
+}
+
 // Bridge: forward in-page capability postMessage to the background script so
 // it can update the toolbar icon. Filtered by the namespaced envelope so we
 // don't react to unrelated postMessages on the page.
@@ -65,10 +120,12 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     case 'ENABLE':
       if (hasPlugin) {
         pushSettingsToPlugin({ enabled: true });
+        flashActivityBanner('Inspekt active');
       } else {
         chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
           initStandalone(settings);
           instance?.enable();
+          flashActivityBanner(bannerForActivation(settings?.['activation']));
         });
       }
       sendResponse({ ok: true });

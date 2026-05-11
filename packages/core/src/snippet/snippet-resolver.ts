@@ -19,6 +19,12 @@ export interface SnippetResolverOptions {
   fetcher?: typeof fetch;
   /** When true, attempts source-map fallback after the dev server fails. */
   sourceMapEnabled?: boolean;
+  /**
+   * Pre-baked snippet content keyed by `filePath`. Checked first, before
+   * the dev server / source map. Lets demo / playground surfaces deliver
+   * working snippets without needing a backend.
+   */
+  staticSnippets?: Record<string, Pick<SourceSnippet, 'language' | 'lines'> & { startLine?: number }>;
 }
 
 const CACHE_LIMIT = 100;
@@ -64,6 +70,21 @@ export async function resolveSnippet(
   const key = cacheKey(opts);
   if (cache.has(key)) {
     return cache.get(key) ?? null;
+  }
+
+  const stat = opts.staticSnippets?.[opts.filePath];
+  if (stat) {
+    const startLine = stat.startLine ?? 1;
+    const snippet: SourceSnippet = {
+      startLine,
+      endLine: startLine + stat.lines.length - 1,
+      targetLine: opts.line,
+      lines: stat.lines,
+      language: stat.language,
+      source: 'devserver',
+    };
+    lruTouch(key, snippet);
+    return snippet;
   }
 
   const fromServer = await fetchFromDevServer(opts);

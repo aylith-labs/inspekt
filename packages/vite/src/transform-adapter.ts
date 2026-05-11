@@ -37,6 +37,11 @@ export async function transformInspekt(
   const fileType = detectFileType(id);
   if (!fileType) return null;
 
+  // Skip Vite's sub-module queries (?vue&type=script, ?vue&type=style …) —
+  // those chunks are pure JS/CSS, not the parent SFC, so feeding them to
+  // @code-inspector/core's Vue transform is wasted work and risks parse errors.
+  if (id.includes('?')) return null;
+
   // Skip files that already have the attribute (idempotent re-runs)
   if (code.includes('data-insp-path')) return null;
 

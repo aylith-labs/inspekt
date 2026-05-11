@@ -23,7 +23,17 @@ export interface TreePanelConfig {
 }
 
 export interface InspektOptions {
-  activation: 'click' | 'hover-mod' | 'hover' | 'manual';
+  /**
+   * - `click-mod` — Ctrl+Alt+click (legacy default; less disruptive on real pages)
+   * - `click`     — plain click; convenient on demos and programmatic testing
+   * - `view`      — passive overlay: every inspectable element gets a labelled bounding box
+   * - `hover-mod` — hover with Ctrl+Alt held
+   * - `hover`     — hover anywhere
+   * - `manual`    — keyboard only (Ctrl+Alt+I to toggle, Shift+Alt+click to open)
+   */
+  activation: 'click-mod' | 'click' | 'view' | 'hover-mod' | 'hover' | 'manual';
+  /** Persistent bounding-box overlay on all inspectable elements. Off by default. */
+  showBoundingBoxes: boolean;
   shortcut: ShortcutConfig;
   toggleShortcut: ShortcutConfig;
   theme: 'light' | 'dark' | 'auto';
@@ -49,6 +59,16 @@ export interface InspektOptions {
    * DevTools/proxies and shouldn't happen without user consent.
    */
   sourceMapEnabled: boolean;
+  /**
+   * Optional pre-baked snippets keyed by `filePath`. Checked first by the
+   * snippet resolver — useful for demos / playgrounds where no dev server
+   * exists. Each entry supplies `language` and `lines`; `startLine`
+   * defaults to 1.
+   */
+  staticSnippets?: Record<
+    string,
+    { language: string; lines: string[]; startLine?: number }
+  >;
 }
 
 export interface SourceSnippet {

@@ -2,15 +2,34 @@ import { getSettings, updateSettings, getSiteSettings } from './storage.js';
 import type { MessageType } from './messaging.js';
 import { applyTabState, type TabState } from './icon.js';
 
-// Track per-tab state
-const tabState = new Map<number, TabState>();
+// ---- Per-tab state, persisted in chrome.storage.session ------------------
+// MV3 service workers unload after ~30s idle, which would otherwise erase an
+// in-memory Map. chrome.storage.session is per-extension session storage that
+// survives the worker unload and evicts on browser restart — the exact
+// lifetime we want for per-tab inspector state.
 
-function getState(tabId: number): TabState {
-  return tabState.get(tabId) ?? { enabled: false, standalone: false };
+const TAB_KEY = (id: number): string => `tab:${id}`;
+
+const DEFAULT_TAB_STATE: TabState = { enabled: false, standalone: false };
+
+async function getTabState(tabId: number): Promise<TabState> {
+  const key = TAB_KEY(tabId);
+  const raw = await chrome.storage.session.get(key);
+  const stored = raw[key] as TabState | undefined;
+  return stored ?? { ...DEFAULT_TAB_STATE };
 }
 
-function refreshIcon(tabId: number): void {
-  applyTabState(tabId, tabState.get(tabId));
+async function setTabState(tabId: number, state: TabState): Promise<void> {
+  await chrome.storage.session.set({ [TAB_KEY(tabId)]: state });
+}
+
+async function clearTabState(tabId: number): Promise<void> {
+  await chrome.storage.session.remove(TAB_KEY(tabId));
+}
+
+async function refreshIcon(tabId: number): Promise<void> {
+  const state = await getTabState(tabId);
+  applyTabState(tabId, state);
 }
 
 // Resolve the target tab ID: use sender.tab.id for content scripts,
@@ -31,18 +50,16 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       } else {
         getSettings().then((settings) => sendResponse(settings));
       }
-      return true; // Async response
+      return true;
 
     case 'UPDATE_SETTINGS':
       updateSettings(message.settings).then(() => {
-        // Notify all tabs of settings change
         chrome.tabs.query({}, (tabs) => {
           for (const tab of tabs) {
             if (tab.id) {
-              chrome.tabs.sendMessage(tab.id, {
-                type: 'SETTINGS_CHANGED',
-                settings: message.settings,
-              }).catch(() => {}); // Tab might not have content script
+              chrome.tabs
+                .sendMessage(tab.id, { type: 'SETTINGS_CHANGED', settings: message.settings })
+                .catch(() => {});
             }
           }
         });
@@ -51,89 +68,94 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       return true;
 
     case 'TOGGLE_INSPEKT':
-      resolveTabId(senderTabId).then((tabId) => {
-        if (tabId) {
-          const state = getState(tabId);
-          state.enabled = !state.enabled;
-          tabState.set(tabId, state);
-          chrome.tabs.sendMessage(tabId, {
-            type: state.enabled ? 'ENABLE' : 'DISABLE',
-          }).catch(() => {});
-          refreshIcon(tabId);
-          sendResponse({ enabled: state.enabled });
-        } else {
-          sendResponse({ enabled: false });
+      (async () => {
+        const tabId = await resolveTabId(senderTabId);
+        if (!tabId) {
+          sendResponse({ enabled: false, standalone: false });
+          return;
         }
-      });
+        const state = await getTabState(tabId);
+        state.enabled = !state.enabled;
+        await setTabState(tabId, state);
+        chrome.tabs
+          .sendMessage(tabId, { type: state.enabled ? 'ENABLE' : 'DISABLE' })
+          .catch(() => {});
+        await refreshIcon(tabId);
+        sendResponse({ enabled: state.enabled, standalone: state.standalone });
+      })();
       return true;
 
     case 'INJECT_STANDALONE':
-      resolveTabId(senderTabId).then((tabId) => {
-        if (tabId) {
-          const state = getState(tabId);
-          state.standalone = true;
-          state.enabled = true;
-          tabState.set(tabId, state);
-          refreshIcon(tabId);
-          sendResponse({ ok: true });
-        } else {
+      (async () => {
+        const tabId = await resolveTabId(senderTabId);
+        if (!tabId) {
           sendResponse({ ok: false });
+          return;
         }
-      });
+        const state = await getTabState(tabId);
+        state.standalone = true;
+        state.enabled = true;
+        await setTabState(tabId, state);
+        await refreshIcon(tabId);
+        sendResponse({ ok: true });
+      })();
       return true;
 
     case 'GET_STATUS':
-      resolveTabId(senderTabId).then((tabId) => {
-        if (tabId) {
-          const state = getState(tabId);
-          sendResponse({
-            type: 'STATUS_RESPONSE',
-            enabled: state.enabled,
-            standalone: state.standalone,
-            hasPlugin: false,
-          });
-        } else {
+      (async () => {
+        const tabId = await resolveTabId(senderTabId);
+        if (!tabId) {
           sendResponse({
             type: 'STATUS_RESPONSE',
             enabled: false,
             standalone: false,
             hasPlugin: false,
           });
+          return;
         }
-      });
+        const state = await getTabState(tabId);
+        sendResponse({
+          type: 'STATUS_RESPONSE',
+          enabled: state.enabled,
+          standalone: state.standalone,
+          hasPlugin: false,
+        });
+      })();
       return true;
 
     case 'INSPEKT_CAPABILITIES':
       if (senderTabId) {
-        const state = getState(senderTabId);
-        state.capabilities = message.capabilities;
-        tabState.set(senderTabId, state);
-        refreshIcon(senderTabId);
+        (async () => {
+          const state = await getTabState(senderTabId);
+          state.capabilities = message.capabilities;
+          await setTabState(senderTabId, state);
+          await refreshIcon(senderTabId);
+        })();
       }
-      // Fire-and-forget; no response needed.
       return false;
   }
 });
 
-// Clean up tab state when tab is closed
+// Clean up tab state when the tab is closed.
 chrome.tabs.onRemoved.addListener((tabId) => {
-  tabState.delete(tabId);
+  void clearTabState(tabId);
 });
 
 // Refresh icon when the active tab changes (e.g. user switches tabs).
 chrome.tabs.onActivated.addListener(({ tabId }) => {
-  refreshIcon(tabId);
+  void refreshIcon(tabId);
 });
 
-// Re-apply on navigation/refresh so the icon doesn't carry stale state from
-// the previous page. The capability probe will re-run after page load and
-// refine the badge from greyscale → color once it detects instrumentation.
+// On navigation/refresh, drop stale capability info but keep the enabled flag.
+// The capability probe will re-run after page load and refine the icon from
+// greyscale → color once it detects instrumentation.
 chrome.tabs.onUpdated.addListener((tabId, info) => {
   if (info.status === 'loading') {
-    // New page navigation — discard capability info, keep enabled flag.
-    const state = getState(tabId);
-    state.capabilities = undefined;
-    tabState.set(tabId, state);
-    refreshIcon(tabId);
+    (async () => {
+      const state = await getTabState(tabId);
+      state.capabilities = undefined;
+      await setTabState(tabId, state);
+      await refreshIcon(tabId);
+    })();
   }
 });

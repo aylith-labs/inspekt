@@ -34,7 +34,7 @@
     },
     "packages/chrome": {
       "name": "@inspekt/chrome",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "dependencies": {
         "@inspekt/core": "*",
       },
@@ -169,6 +169,7 @@
       "name": "inspekt-site",
       "version": "0.0.0",
       "devDependencies": {
+        "@inspekt/vite": "workspace:*",
         "vitepress": "^1.6.4",
       },
     },

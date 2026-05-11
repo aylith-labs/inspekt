@@ -20,6 +20,20 @@ export interface InspektViteOptions {
   include?: string[];
   exclude?: string[];
   escapeTags?: string[];
+  /**
+   * Inject `data-insp-path` attributes in production builds too.
+   * Default `false` (dev only, smaller prod bundles). Set `true` for sites
+   * that want the deployed build to remain Inspekt-readable — e.g. the
+   * Inspekt docs site dogfooding its own attrs.
+   */
+  enableInProduction?: boolean;
+  /**
+   * When `false`, skip injecting the runtime init script + dev-only
+   * middleware (snippet, open-editor, capabilities). Useful when the
+   * Chrome extension is the only consumer and the project doesn't depend
+   * on `@inspekt/core` itself. Default `true`.
+   */
+  runtimeInjection?: boolean;
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
@@ -36,6 +50,8 @@ export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
     include: ['**/*.{tsx,jsx,vue,svelte,astro}'],
     exclude: ['node_modules/**', '**/*.test.*', '**/*.spec.*', '**/*.stories.*'],
     escapeTags: [] as string[],
+    enableInProduction: false,
+    runtimeInjection: true,
     ...userOptions,
   };
 
@@ -79,6 +95,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     configureServer(server) {
+      if (!options.runtimeInjection) return;
       // Serve the Inspekt init script as a Vite-transformed module
       server.middlewares.use((req, res, next) => {
         if (req.url === INIT_PATH) {
@@ -127,8 +144,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     async transform(code, id) {
-      // Skip in production
-      if (process.env['NODE_ENV'] === 'production') return null;
+      if (process.env['NODE_ENV'] === 'production' && !options.enableInProduction) return null;
 
       // Check file extension
       if (!EXTENSION_RE.test(id)) return null;
@@ -150,6 +166,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     transformIndexHtml() {
+      if (!options.runtimeInjection) return [];
       return [
         {
           tag: 'script',

@@ -413,10 +413,12 @@
             </div>
             <div class="control">
               <select id="activation" class="select">
-                <option value="click">Click (Ctrl+Alt+Click)</option>
-                <option value="hover-mod">Hover (Ctrl+Alt)</option>
-                <option value="hover">Hover (always)</option>
-                <option value="manual">Manual</option>
+                <option value="click-mod">Click (Ctrl+Alt+Click) — hold modifiers and click an element</option>
+                <option value="click">Click (any) — plain click opens the popover (good for demos / agent testing)</option>
+                <option value="view">View — passive overlay: bounding boxes on every inspectable element</option>
+                <option value="hover-mod">Hover (Ctrl+Alt) — highlight while modifiers held</option>
+                <option value="hover">Hover (always) — highlight any element under the cursor</option>
+                <option value="manual">Keyboard only — Ctrl+Alt+I to toggle, Shift+Alt+Click to open</option>
               </select>
             </div>
           </div>
@@ -500,6 +502,13 @@
               </select>
             </div>
           </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="showBoundingBoxes">
+            <span class="label-text">Show bounding boxes on all inspectable elements</span>
+          </label>
+          <p class="group-help">
+            Persistent dashed outline + component label on every element with a source. Independent of activation mode.
+          </p>
         </div>
 
         <div class="group">

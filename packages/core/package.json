@@ -1,6 +1,6 @@
 {
   "name": "@inspekt/core",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Inspekt runtime — overlay, popover, tree panel, highlighting",
   "type": "module",
   "main": "./dist/index.cjs",

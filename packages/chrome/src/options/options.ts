@@ -5,6 +5,7 @@ import {
   importSettings,
   type InspektSettings,
 } from '../storage.js';
+import { wireThemeCycler } from '../theme.js';
 
 // ---- Tabs ----------------------------------------------------------------
 // Sidebar tab routing. Persists the active tab in the URL hash so reloads
@@ -38,52 +39,8 @@ function bindTabs(): void {
 }
 
 // ---- Theme cycler --------------------------------------------------------
-// Mirrors the landing's three-state cycler: System → Light → Dark → System.
-// Writes the storage settings AND applies the .dark class on this very page
-// so the live preview reflects the user's choice.
-
-const APPEARANCE_KEY = 'inspekt-options-theme';
-type Mode = 'auto' | 'light' | 'dark';
-const ORDER: Mode[] = ['auto', 'light', 'dark'];
-
-function readMode(): Mode {
-  const stored = localStorage.getItem(APPEARANCE_KEY);
-  if (stored === 'auto' || stored === 'light' || stored === 'dark') return stored;
-  return 'auto';
-}
-
-function applyDarkClass(mode: Mode): void {
-  const isDark =
-    mode === 'dark' ||
-    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.classList.toggle('dark', isDark);
-}
-
-function paintThemeIcon(mode: Mode): void {
-  const stack = document.getElementById('theme-icon-stack');
-  if (stack) stack.dataset['mode'] = mode;
-}
-
-function setTheme(next: Mode, persistToSettings = true): void {
-  localStorage.setItem(APPEARANCE_KEY, next);
-  applyDarkClass(next);
-  paintThemeIcon(next);
-  if (persistToSettings) {
-    void updateSettings({ theme: next });
-    pulseSaved();
-  }
-}
-
-function cycleTheme(): void {
-  const current = readMode();
-  const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length]!;
-  setTheme(next);
-}
-
-const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-mediaQuery.addEventListener('change', () => {
-  if (readMode() === 'auto') applyDarkClass('auto');
-});
+// Shared with popup/welcome via chrome.storage.sync; see ../theme.ts.
+void wireThemeCycler('theme-cycle', 'theme-icon-stack');
 
 // ---- Form fields ---------------------------------------------------------
 
@@ -100,6 +57,7 @@ const fields = {
   defaultSnippetExpanded: document.getElementById('defaultSnippetExpanded') as HTMLInputElement,
   snippetContext: document.getElementById('snippetContext') as HTMLInputElement,
   sourceMapEnabled: document.getElementById('sourceMapEnabled') as HTMLInputElement,
+  showBoundingBoxes: document.getElementById('showBoundingBoxes') as HTMLInputElement,
 };
 
 const savedMsg = document.getElementById('saved-msg')!;
@@ -126,19 +84,15 @@ async function loadSettings(): Promise<void> {
   fields.defaultSnippetExpanded.checked = settings.defaultSnippetExpanded;
   fields.snippetContext.value = String(settings.snippetContext);
   fields.sourceMapEnabled.checked = settings.sourceMapEnabled;
-
-  // Theme: prefer per-options-page localStorage value (set by cycler clicks);
-  // fall back to the synced settings value on first load.
-  const stored = localStorage.getItem(APPEARANCE_KEY) as Mode | null;
-  const initialTheme: Mode = stored ?? (settings.theme as Mode);
-  setTheme(initialTheme, false);
+  fields.showBoundingBoxes.checked = settings.showBoundingBoxes;
+  // Theme is handled by wireThemeCycler — it pulls from settings.theme itself
+  // and watches chrome.storage.onChanged to stay live with the other pages.
 }
 
 function collectSettings(): Partial<InspektSettings> {
   return {
     editor: fields.editor.value,
     activation: fields.activation.value as InspektSettings['activation'],
-    theme: readMode(),
     highlightColor: fields.highlightColor.value,
     highlightStyle: fields.highlightStyle.value as InspektSettings['highlightStyle'],
     animation: fields.animation.value as InspektSettings['animation'],
@@ -149,6 +103,7 @@ function collectSettings(): Partial<InspektSettings> {
     defaultSnippetExpanded: fields.defaultSnippetExpanded.checked,
     snippetContext: Math.max(0, Math.min(30, parseInt(fields.snippetContext.value, 10) || 5)),
     sourceMapEnabled: fields.sourceMapEnabled.checked,
+    showBoundingBoxes: fields.showBoundingBoxes.checked,
   };
 }
 
@@ -160,8 +115,6 @@ async function autoSave(): Promise<void> {
 for (const el of Object.values(fields)) {
   el.addEventListener('change', () => void autoSave());
 }
-
-document.getElementById('theme-cycle')?.addEventListener('click', cycleTheme);
 
 // ---- Import/Export modal -------------------------------------------------
 

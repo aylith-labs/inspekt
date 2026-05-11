@@ -1,5 +1,6 @@
 import { createInspekt, type InspektInstance } from '@inspekt/core';
 import { getSettings, updateSettings } from '../storage.js';
+import { wireThemeCycler } from '../theme.js';
 
 const steps = Array.from(document.querySelectorAll<HTMLElement>('section.step'));
 const dots = Array.from(document.querySelectorAll<HTMLElement>('.dots .dot'));
@@ -48,6 +49,36 @@ function renderStep(): void {
   }
 }
 
+// Demo's `data-insp-path` attrs reference these synthetic file paths. We
+// ship the snippet bodies inline so the popover renders a real source
+// preview — no dev server required.
+const DEMO_SNIPPETS = {
+  'welcome/demo.tsx': {
+    language: 'tsx',
+    startLine: 1,
+    lines: [
+      'export function SandboxNav() {',
+      '  return (',
+      '    <nav className="sandbox-nav">',
+      '      <span className="sandbox-nav-title">Sample App</span>',
+      '      <div className="sandbox-nav-avatar">SP</div>',
+      '    </nav>',
+      '  );',
+      '}',
+      '',
+      'export function SandboxCard() {',
+      '  return (',
+      '    <div className="sandbox-card">',
+      '      <div className="sandbox-card-title">This is a Card</div>',
+      '      <div className="sandbox-card-body">Ctrl+Alt+click me…</div>',
+      '      <button className="sandbox-button">Primary Button</button>',
+      '    </div>',
+      '  );',
+      '}',
+    ],
+  },
+};
+
 function startDemo(): void {
   if (demoInstance) return;
   demoInstance = createInspekt({
@@ -67,6 +98,8 @@ function startDemo(): void {
     actions: ['open-editor', 'copy-path', 'open-github', 'console-log'],
     serverUrl: '',
     githubRepo: '',
+    staticSnippets: DEMO_SNIPPETS,
+    defaultSnippetExpanded: true,
   });
   demoInstance.on('action', (actionId) => {
     if (actionId === 'open-editor' || actionId === 'open-github') {
@@ -135,43 +168,8 @@ function attachHandlers(): void {
   });
 }
 
-// ---- Theme cycler (same 3-state cycle as popup/options/landing) ----
-
-const THEME_KEY = 'inspekt-welcome-theme';
-type ThemeMode = 'auto' | 'light' | 'dark';
-const THEME_ORDER: ThemeMode[] = ['auto', 'light', 'dark'];
-
-function readThemeMode(): ThemeMode {
-  const stored = localStorage.getItem(THEME_KEY);
-  return stored === 'auto' || stored === 'light' || stored === 'dark' ? stored : 'auto';
-}
-
-function applyThemeMode(mode: ThemeMode): void {
-  const isDark =
-    mode === 'dark' ||
-    (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  document.documentElement.classList.toggle('dark', isDark);
-  const stack = document.getElementById('welcome-theme-stack');
-  if (stack) stack.dataset['mode'] = mode;
-}
-
-function setThemeMode(next: ThemeMode): void {
-  localStorage.setItem(THEME_KEY, next);
-  applyThemeMode(next);
-  void updateSettings({ theme: next });
-}
-
-document.getElementById('welcome-theme')?.addEventListener('click', () => {
-  const current = readThemeMode();
-  const next = THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]!;
-  setThemeMode(next);
-});
-
-applyThemeMode(readThemeMode());
-window
-  .matchMedia('(prefers-color-scheme: dark)')
-  .addEventListener('change', () => {
-    if (readThemeMode() === 'auto') applyThemeMode('auto');
-  });
+// ---- Theme cycler ----
+// Shared with popup/options via chrome.storage.sync; see ../theme.ts.
+void wireThemeCycler('welcome-theme', 'welcome-theme-stack');
 
 void init();
