@@ -1,6 +1,6 @@
 {
   "name": "@inspekt/core",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Inspekt runtime — overlay, popover, tree panel, highlighting",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,17 +23,20 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.7.6",
+    "@jridgewell/trace-mapping": "^0.3.31",
     "bippy": "^0.5.39",
-    "react-grab": "^0.1.33",
-    "@jridgewell/trace-mapping": "^0.3.31"
+    "prismjs": "^1.30.0",
+    "react-grab": "^0.1.33"
   },
   "devDependencies": {
+    "@jridgewell/sourcemap-codec": "^1.5.0",
+    "@types/chrome": "^0.0.287",
+    "@types/prismjs": "^1.26.6",
+    "happy-dom": "^15.0.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "happy-dom": "^15.0.0",
-    "@types/chrome": "^0.0.287",
-    "@jridgewell/sourcemap-codec": "^1.5.0"
+    "vitest": "^3.0.0"
   },
   "sideEffects": false,
   "license": "MIT"

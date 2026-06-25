@@ -546,17 +546,8 @@
         </p>
         <div class="picker-wrap">
           <label class="picker-label" for="editor-select">Open source files in</label>
-          <select id="editor-select" class="select">
-            <option value="cursor">Cursor</option>
-            <option value="vscode">VS Code</option>
-            <option value="vscode-insiders">VS Code Insiders</option>
-            <option value="windsurf">Windsurf</option>
-            <option value="webstorm">WebStorm</option>
-            <option value="phpstorm">PhpStorm</option>
-            <option value="idea">IntelliJ IDEA</option>
-            <option value="sublime">Sublime Text</option>
-            <option value="zed">Zed</option>
-          </select>
+          <!-- Populated from buildEditorOptgroupHtml() at init. -->
+          <select id="editor-select" class="select"></select>
           <div class="picker-hint">
             <span class="saved-indicator" id="saved-indicator">Saved</span>
           </div>

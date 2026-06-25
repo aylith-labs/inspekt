@@ -30,8 +30,18 @@ export type {
 };
 export type { ShortcutConfig, HighlightConfig, BadgeConfig, TreePanelConfig } from './types.js';
 
+// Component primitives shared with the Chrome extension.
+export { attachTooltip } from './components/tooltip.js';
+export type { TooltipOptions } from './components/tooltip.js';
+export { createRichSelect } from './components/rich-select.js';
+export type { RichSelectItem, RichSelectController, RichSelectOptions } from './components/rich-select.js';
+export { tokenizeToLines } from './highlight/prism.js';
+export type { CodeToken, CodeLine } from './highlight/prism.js';
+
 const DEFAULT_OPTIONS: InspektOptions = {
-  activation: 'click-mod',
+  // Default preserves the legacy click-mod behavior: page interactions never
+  // intercepted unless Ctrl+Alt is held. Empty array = always-on hover.
+  requireModifiers: ['ctrl', 'alt'],
   showBoundingBoxes: false,
   shortcut: { key: 'click', modifiers: ['ctrl', 'alt'] },
   toggleShortcut: { key: 'i', modifiers: ['ctrl', 'alt'] },
@@ -64,6 +74,7 @@ const DEFAULT_OPTIONS: InspektOptions = {
   defaultSnippetExpanded: false,
   snippetContext: 5,
   sourceMapEnabled: false,
+  customEditors: [],
 };
 
 export function createInspekt(userOptions: Partial<InspektOptions> = {}): InspektInstance {
@@ -140,7 +151,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   // Build actions list
   function getActions(): InspektAction[] {
     const builtInMap: Record<string, () => InspektAction> = {
-      'open-editor': () => createOpenEditorAction(options.serverUrl, options.editor),
+      'open-editor': () => createOpenEditorAction(options.serverUrl, options.editor, options.customEditors),
       'copy-path': () => createCopyPathAction(),
       'open-github': () => createOpenGithubAction(options.githubRepo, options.githubBranch),
       'console-log': () => createConsoleLogAction(),
@@ -159,25 +170,38 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     return result;
   }
 
+  // Engagement gate. The inspector engages only when the user holds every
+  // modifier listed in `options.requireModifiers`. Empty array = always-on.
+  // Cmd (meta) on macOS is treated as Ctrl for ergonomic parity.
+  function modifiersOk(e: MouseEvent | KeyboardEvent): boolean {
+    return options.requireModifiers.every((mod) => {
+      switch (mod) {
+        case 'ctrl':  return e.ctrlKey || e.metaKey;
+        case 'alt':   return e.altKey;
+        case 'shift': return e.shiftKey;
+        case 'meta':  return e.metaKey;
+      }
+    });
+  }
+
   // Event handlers
   function handleClick(e: MouseEvent): void {
     if (!enabled) return;
 
-    // `click` / `view` modes accept a plain click. `click-mod` (legacy default)
-    // requires the configured modifier set so the inspector doesn't intercept
-    // every interaction on a real app.
-    const requireMods = options.activation === 'click-mod';
+    // Outside-click dismisses a pinned popover. The shadow host re-targets
+    // clicks inside the popover to <inspekt-root>, so any other target is
+    // "outside".
+    const clickTarget = e.target as HTMLElement;
+    const isInsideInspekt = clickTarget?.tagName === 'INSPEKT-ROOT';
+    if (popover.isPinned() && !isInsideInspekt) {
+      popover.unpin();
+      popover.hide();
+      highlighter.unhighlightAll();
+      // fall through — the click might also be a fresh inspect target
+    }
 
-    const modifiers = options.shortcut.modifiers;
-    const needCtrl = requireMods && (modifiers.includes('ctrl') || modifiers.includes('meta'));
-    const needAlt = requireMods && modifiers.includes('alt');
-    const needShift = requireMods && modifiers.includes('shift');
-
-    const ctrlOk = !needCtrl || e.ctrlKey || e.metaKey;
-    const altOk = !needAlt || e.altKey;
-    const shiftOk = !needShift || e.shiftKey;
-
-    // Shift+Alt+Click = direct open in editor
+    // Shift+Alt+Click = direct open in editor. Global power-user shortcut,
+    // independent of the engagement gate.
     if (e.shiftKey && e.altKey && !e.ctrlKey && !e.metaKey) {
       e.preventDefault();
       e.stopPropagation();
@@ -192,29 +216,34 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       return;
     }
 
-    const isClickMode =
-      options.activation === 'click' ||
-      options.activation === 'click-mod' ||
-      options.activation === 'view';
-    if (ctrlOk && altOk && shiftOk && isClickMode) {
-      e.preventDefault();
-      e.stopPropagation();
+    // Engagement gate. If the required modifiers aren't held, the click is a
+    // real page click — never intercept.
+    if (!modifiersOk(e)) return;
 
-      const target = e.target as HTMLElement;
-      const result = findClosestSource(target);
+    const target = e.target as HTMLElement;
+    const result = findClosestSource(target);
+    const isFallback = !result && isFallbackTarget(target);
 
-      if (result) {
-        const inspected = elementToInspected(result.element, result.source, options.pathMapping);
-        highlighter.unhighlightAll();
-        highlighter.highlight(result.element, 'selected');
-        popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
-        treePanel?.selectElement(inspected);
-        emit('inspect', inspected);
-      } else if (isFallbackTarget(target)) {
-        // DOM-only fallback — no source attrs / fibers, but the user still
-        // expects visible feedback on a Standalone session.
-        showDomFallback(target, e.clientX, e.clientY);
-      }
+    // Only intercept the click when we have something to inspect; empty
+    // clicks (e.g., on the welcome tour's Next button) must pass through.
+    if (!result && !isFallback) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (result) {
+      const inspected = elementToInspected(result.element, result.source, options.pathMapping);
+      highlighter.unhighlightAll();
+      highlighter.highlight(result.element, 'selected');
+      popover.show(inspected, getActions(), { x: e.clientX, y: e.clientY });
+      popover.pin();
+      treePanel?.selectElement(inspected);
+      emit('inspect', inspected);
+    } else if (isFallback) {
+      // DOM-only fallback — no source attrs / fibers, but the user still
+      // expects visible feedback on a Standalone session.
+      showDomFallback(target, e.clientX, e.clientY);
+      popover.pin();
     }
   }
 
@@ -224,14 +253,48 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     popover.showDom(
       el,
       { x, y },
-      (selector) => {
-        void navigator.clipboard?.writeText(selector).catch(() => {});
-      },
+      async (selector) => copyToClipboard(selector),
+      async (html) => copyToClipboard(html),
       () => {
         // eslint-disable-next-line no-console
         console.log('[Inspekt]', el);
       },
     );
+  }
+
+  /**
+   * Robust clipboard copy. `navigator.clipboard` rejects on:
+   *   - non-secure contexts (http://);
+   *   - documents that don't have transient activation (we're inside a
+   *     capture-phase listener AFTER a stopPropagation — some browsers
+   *     consider activation consumed);
+   *   - sandboxed/embedded frames without clipboard-write permission.
+   * Fall back to the legacy `document.execCommand('copy')` flow which only
+   * needs a focused selection.
+   */
+  async function copyToClipboard(text: string): Promise<boolean> {
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // fall through to execCommand fallback
+      }
+    }
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText =
+        'position:fixed;top:-1000px;left:-1000px;opacity:0;pointer-events:none;';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      ta.remove();
+      return ok;
+    } catch {
+      return false;
+    }
   }
 
   function handleKeydown(e: KeyboardEvent): void {
@@ -244,6 +307,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
 
     // Escape to close popover
     if (e.key === 'Escape' && popover.isVisible()) {
+      popover.unpin();
       popover.hide();
       highlighter.unhighlightAll();
     }
@@ -280,16 +344,17 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
 
   function handleMouseMove(e: MouseEvent): void {
     if (!enabled) return;
-    if (options.activation === 'hover-mod') {
-      // Hover with Ctrl+Alt held — highlight + popover
-      if (!((e.ctrlKey || e.metaKey) && e.altKey)) {
-        highlighter.unhighlightAll();
-        popover.hide();
-        return;
-      }
-    } else if (options.activation !== 'hover') {
+    // Pinned popover stays put — no follow-the-cursor.
+    if (popover.isPinned()) return;
+
+    // Engagement gate. When the user's modifier choice isn't satisfied,
+    // hover does nothing and any previously-shown popover tears down.
+    if (!modifiersOk(e)) {
+      highlighter.unhighlightAll();
+      popover.hide();
       return;
     }
+
     const target = e.target as HTMLElement;
     const result = findClosestSource(target);
     highlighter.unhighlightAll();
@@ -346,9 +411,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     if (newSettings.highlight) highlighter.updateConfig(options.highlight);
     applyTheme(host, options.theme);
     if (enabled) {
-      const wantBoxes =
-        options.activation === 'view' || options.showBoundingBoxes === true;
-      if (wantBoxes) bboxOverlay.enable();
+      if (options.showBoundingBoxes === true) bboxOverlay.enable();
       else bboxOverlay.disable();
     }
   }) as EventListener);
@@ -384,9 +447,9 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
         setTimeout(() => refreshTree(), 100);
       }
 
-      // Persistent bounding-box overlay: enabled by `view` mode OR by the
-      // explicit `showBoundingBoxes` toggle (independent of activation).
-      if (options.activation === 'view' || options.showBoundingBoxes) {
+      // Persistent bounding-box overlay — controlled by the independent
+      // `showBoundingBoxes` toggle (no longer tied to any activation mode).
+      if (options.showBoundingBoxes) {
         bboxOverlay.enable();
       }
 

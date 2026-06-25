@@ -99,16 +99,18 @@
     }
 
     .info {
-      padding: 12px 14px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
     .info-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-size: 12px;
+      gap: 10px;
+      min-height: 26px;
     }
     .info-row .key {
       color: var(--inspekt-ink-3);
@@ -116,12 +118,64 @@
       font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
+      flex-shrink: 0;
     }
     .info-row .val {
       color: var(--inspekt-ink);
       font-weight: 500;
       font-size: 12.5px;
     }
+    /* Compact inline controls so the popup stays at 300px wide. */
+    .info-row .select-mini {
+      max-width: 170px;
+      padding: 3px 22px 3px 8px;
+      font: 500 12px/1.3 inherit;
+      color: var(--inspekt-ink);
+      background-color: var(--inspekt-paper);
+      background-image: linear-gradient(45deg, transparent 50%, var(--inspekt-ink-2) 50%),
+                        linear-gradient(135deg, var(--inspekt-ink-2) 50%, transparent 50%);
+      background-position: calc(100% - 12px) 50%, calc(100% - 7px) 50%;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+      border: 1px solid var(--inspekt-rule);
+      border-radius: 5px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      text-align: right;
+      text-align-last: right;
+      direction: rtl;
+    }
+    .info-row .select-mini option { direction: ltr; }
+    .info-row .select-mini:hover { border-color: var(--inspekt-rule-strong); }
+    .info-row .select-mini:focus {
+      outline: none;
+      border-color: var(--inspekt-violet);
+    }
+    .toggle-mini {
+      position: relative;
+      width: 30px;
+      height: 18px;
+      background: var(--inspekt-rule-strong);
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.18s ease;
+      flex-shrink: 0;
+    }
+    .toggle-mini.active { background: var(--inspekt-violet); }
+    .toggle-mini::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.18s ease;
+      box-shadow: 0 1px 2px oklch(0.18 0.01 285 / 0.2);
+    }
+    .toggle-mini.active::after { transform: translateX(12px); }
 
     .status {
       display: inline-flex;
@@ -157,49 +211,6 @@
       padding: 7px 10px;
       font-size: 12px;
     }
-    .btn-wrap {
-      position: relative;
-    }
-    .btn-wrap .btn { width: 100%; }
-    .tooltip {
-      display: none;
-      position: absolute;
-      bottom: calc(100% + 6px);
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 6px 10px;
-      background: var(--inspekt-pill-bg);
-      color: var(--inspekt-pill-fg);
-      font-size: 11px;
-      line-height: 1.4;
-      border-radius: 5px;
-      white-space: nowrap;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .tooltip::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border: 4px solid transparent;
-      border-top-color: var(--inspekt-pill-bg);
-    }
-    /* Anchored to the right edge of the wrapping button — keeps wide
-       tooltips inside the 300px popup viewport. */
-    .tooltip-end {
-      left: auto;
-      right: 0;
-      transform: none;
-    }
-    .tooltip-end::after {
-      left: auto;
-      right: 14px;
-      transform: none;
-    }
-    .btn-wrap:hover .tooltip { display: block; }
-
     /* ---- Intro view ---- */
     .intro-header {
       display: flex;
@@ -380,7 +391,7 @@
         <h1>Inspekt</h1>
       </div>
       <div class="header-right">
-        <button class="popup-theme" id="popup-theme" aria-label="Cycle theme" title="Theme">
+        <button class="popup-theme" id="popup-theme" aria-label="Cycle theme">
           <span class="icon-stack" id="popup-theme-stack" data-mode="auto">
             <svg class="icon-light" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <circle cx="12" cy="12" r="4" fill="currentColor" />
@@ -409,16 +420,27 @@
     </div>
     <div class="info">
       <div class="info-row">
-        <span class="key">Mode</span>
-        <span class="val" id="mode">Click (Ctrl+Alt)</span>
+        <span class="key">Modifiers</span>
+        <button type="button" class="modifiers-pill" id="modifiers-pill" aria-label="Open Activation settings">
+          <kbd id="modifiers-pill-text">Ctrl+Alt</kbd>
+          <svg class="ext-icon" viewBox="0 0 24 24" width="11" height="11" aria-hidden="true">
+            <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M14 4h6v6M20 4l-9 9M5 6v13h13"/>
+          </svg>
+        </button>
       </div>
       <div class="info-row">
         <span class="key">Editor</span>
-        <span class="val" id="editor">Cursor</span>
+        <!-- Options populated from buildEditorOptgroupHtml() at init so the
+             list stays in sync with EDITOR_META across all surfaces. -->
+        <select class="select-mini" id="editor-select" aria-label="Editor"></select>
       </div>
       <div class="info-row">
         <span class="key">Tree panel</span>
-        <span class="val" id="tree">On</span>
+        <div class="toggle-mini" id="tree-toggle" role="switch" tabindex="0" aria-label="Tree panel"></div>
+      </div>
+      <div class="info-row">
+        <span class="key">Bounding boxes</span>
+        <div class="toggle-mini" id="bbox-toggle" role="switch" tabindex="0" aria-label="Show bounding boxes"></div>
       </div>
       <div class="info-row">
         <span class="key">Status</span>
@@ -427,10 +449,7 @@
     </div>
     <div class="actions">
       <button class="btn" id="settings-btn">Settings</button>
-      <div class="btn-wrap">
-        <button class="btn" id="standalone-btn">Standalone</button>
-        <div class="tooltip tooltip-end">Inspect any site without a build plugin</div>
-      </div>
+      <button class="btn" id="standalone-btn">Standalone</button>
     </div>
   </div>
 

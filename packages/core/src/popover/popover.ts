@@ -1,5 +1,16 @@
 import type { InspektAction, InspectedElement, SourceSnippet } from '../types.js';
 import { resolveSnippet } from '../snippet/snippet-resolver.js';
+import { tokenizeToLines } from '../highlight/prism.js';
+import { attachTooltip } from '../components/tooltip.js';
+
+// Inline SVGs reused by the DOM-fallback popover so it shows the same
+// icon-button toolbar as the instrumented popover (not bare text labels).
+const ICON_COPY = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>`;
+// Angle brackets — universal "code/markup" glyph. Visually nothing like the
+// clipboard outline above, so the two copy buttons can sit next to each other.
+const ICON_HTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`;
+const ICON_CONSOLE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`;
+const ICON_INFO = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.6" fill="currentColor" stroke="none"/></svg>`;
 
 export interface PopoverSnippetConfig {
   /** Where the dev-server lives (set by @inspekt/vite at init time). */
@@ -26,6 +37,7 @@ const DEFAULT_SNIPPET_CONFIG: PopoverSnippetConfig = {
 export class Popover {
   private container: HTMLElement;
   private visible = false;
+  private pinned = false;
   private snippetConfig: PopoverSnippetConfig = { ...DEFAULT_SNIPPET_CONFIG };
 
   constructor(private shadowRoot: ShadowRoot) {
@@ -33,6 +45,20 @@ export class Popover {
     this.container.className = 'inspekt-popover';
     this.container.style.display = 'none';
     this.shadowRoot.appendChild(this.container);
+  }
+
+  /** Lock the popover in place — hover/move handlers will not reposition or
+   *  hide it until {@link unpin} is called. Clicks set this; Escape clears it. */
+  pin(): void {
+    this.pinned = true;
+  }
+
+  unpin(): void {
+    this.pinned = false;
+  }
+
+  isPinned(): boolean {
+    return this.pinned;
   }
 
   configureSnippet(config: Partial<PopoverSnippetConfig>): void {
@@ -47,7 +73,8 @@ export class Popover {
   showDom(
     domElement: HTMLElement,
     position: { x: number; y: number },
-    onCopySelector: (selector: string) => void,
+    onCopySelector: (selector: string) => Promise<boolean> | boolean,
+    onCopyHtml: (html: string) => Promise<boolean> | boolean,
     onConsoleLog: () => void,
   ): void {
     this.container.innerHTML = '';
@@ -57,47 +84,85 @@ export class Popover {
     const header = document.createElement('div');
     header.className = 'inspekt-popover-header';
 
-    const tagLine = document.createElement('div');
-    tagLine.className = 'inspekt-popover-path-dir';
-    tagLine.textContent = 'DOM element';
+    // Eyebrow row: "DOM element" + (i) info badge with tooltip explaining
+    // why no source data is shown (replaces the old inline paragraph).
+    const eyebrow = document.createElement('div');
+    eyebrow.className = 'inspekt-popover-path-dir inspekt-popover-path-dir-row';
+    const eyebrowText = document.createElement('span');
+    eyebrowText.textContent = 'DOM element';
+    eyebrow.appendChild(eyebrowText);
+
+    const infoBadge = document.createElement('span');
+    infoBadge.className = 'inspekt-info-badge';
+    infoBadge.setAttribute('tabindex', '0');
+    infoBadge.setAttribute('aria-label', 'Why no source data?');
+    infoBadge.innerHTML = `${ICON_INFO}<span class="inspekt-info-badge-label">No source</span>`;
+    attachTooltip(
+      infoBadge,
+      'No Inspekt source data on this page. Build with the Inspekt plugin (Vite, Webpack, Rspack, esbuild) to get editor-jump and file paths.',
+      { root: this.shadowRoot as unknown as HTMLElement, enterDelay: 100 },
+    );
+    eyebrow.appendChild(infoBadge);
 
     const sel = document.createElement('div');
     sel.className = 'inspekt-popover-path-file';
     sel.textContent = selector;
 
-    header.appendChild(tagLine);
+    header.appendChild(eyebrow);
     header.appendChild(sel);
     this.container.appendChild(header);
-
-    const note = document.createElement('div');
-    note.className = 'inspekt-snippet-empty';
-    note.style.padding = '10px 12px';
-    note.textContent =
-      'No Inspekt source data on this page. Build with the Inspekt plugin for editor-jump and file paths.';
-    this.container.appendChild(note);
 
     const actionsBar = document.createElement('div');
     actionsBar.className = 'inspekt-popover-actions';
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'inspekt-popover-action';
-    copyBtn.title = 'Copy CSS selector';
-    copyBtn.textContent = 'Copy selector';
-    copyBtn.addEventListener('click', (e) => {
+    copyBtn.setAttribute('aria-label', 'Copy CSS selector');
+    copyBtn.innerHTML = ICON_COPY;
+    attachTooltip(copyBtn, 'Copy CSS selector', {
+      root: this.shadowRoot as unknown as HTMLElement,
+    });
+    copyBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      onCopySelector(selector);
-      this.hide();
+      const ok = await onCopySelector(selector);
+      this.showToast(ok ? 'Copied' : 'Copy failed');
+      // Keep the popover up briefly so the toast is visible.
+      setTimeout(() => this.hide(), 700);
     });
     actionsBar.appendChild(copyBtn);
 
+    // Copy HTML — distinguishable from Copy selector by the angle-brackets icon.
+    const htmlBtn = document.createElement('button');
+    htmlBtn.className = 'inspekt-popover-action';
+    htmlBtn.setAttribute('aria-label', 'Copy HTML');
+    htmlBtn.innerHTML = ICON_HTML;
+    attachTooltip(htmlBtn, 'Copy HTML (outerHTML)', {
+      root: this.shadowRoot as unknown as HTMLElement,
+    });
+    htmlBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      // Capture outerHTML at click time so it reflects the live DOM.
+      const ok = await onCopyHtml(domElement.outerHTML);
+      this.showToast(ok ? 'HTML copied' : 'Copy failed');
+      setTimeout(() => this.hide(), 700);
+    });
+    actionsBar.appendChild(htmlBtn);
+
     const logBtn = document.createElement('button');
     logBtn.className = 'inspekt-popover-action';
-    logBtn.title = 'console.log this element';
-    logBtn.textContent = 'console.log';
+    logBtn.setAttribute('aria-label', 'console.log this element');
+    logBtn.innerHTML = ICON_CONSOLE;
+    attachTooltip(logBtn, 'console.log this element', {
+      root: this.shadowRoot as unknown as HTMLElement,
+    });
     logBtn.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       onConsoleLog();
-      this.hide();
+      this.showToast('Logged to console');
+      setTimeout(() => this.hide(), 700);
     });
     actionsBar.appendChild(logBtn);
 
@@ -106,6 +171,17 @@ export class Popover {
     this.positionAt(position.x, position.y);
     this.container.style.display = 'block';
     this.visible = true;
+  }
+
+  /** Brief feedback toast attached to the shadow root. */
+  private showToast(message: string): void {
+    const existing = this.shadowRoot.querySelector('.inspekt-popover-toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'inspekt-popover-toast';
+    toast.textContent = message;
+    this.shadowRoot.appendChild(toast);
+    setTimeout(() => toast.remove(), 1200);
   }
 
   show(element: InspectedElement, actions: InspektAction[], position: { x: number; y: number }): void {
@@ -139,8 +215,11 @@ export class Popover {
     for (const action of actions) {
       const btn = document.createElement('button');
       btn.className = 'inspekt-popover-action';
-      btn.title = action.label;
+      btn.setAttribute('aria-label', action.label);
       btn.innerHTML = action.icon;
+      attachTooltip(btn, action.label, {
+        root: this.shadowRoot as unknown as HTMLElement,
+      });
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         action.handler(element);
@@ -211,6 +290,8 @@ export class Popover {
     let rendered = false;
     const expand = (): void => {
       section.dataset['state'] = 'expanded';
+      // Mirror data-state on the body so the 1.5×-width CSS rule has a target.
+      body.dataset['state'] = 'expanded';
       body.hidden = false;
       toggle.textContent = 'Hide source ▴';
       if (!rendered) {
@@ -218,9 +299,15 @@ export class Popover {
         body.innerHTML = '';
         body.appendChild(this.renderSnippet(snippet));
       }
+      // Center the target line in the snippet body after layout settles.
+      requestAnimationFrame(() => {
+        const target = body.querySelector<HTMLElement>('.inspekt-line-target');
+        target?.scrollIntoView({ block: 'center', inline: 'nearest' });
+      });
     };
     const collapse = (): void => {
       section.dataset['state'] = 'collapsed';
+      body.dataset['state'] = 'collapsed';
       body.hidden = true;
       toggle.textContent = 'Show source ▾';
     };
@@ -239,7 +326,12 @@ export class Popover {
     pre.className = 'inspekt-snippet-pre';
     pre.dataset['language'] = snippet.language;
 
-    snippet.lines.forEach((text, index) => {
+    // Tokenize the whole snippet, then walk per source line so we keep the
+    // line-number gutter and target-line marker. (Prism would otherwise hand
+    // back a single HTML blob.)
+    const highlighted = tokenizeToLines(snippet.lines.join('\n'), snippet.language);
+
+    snippet.lines.forEach((rawText, index) => {
       const lineNumber = snippet.startLine + index;
       const isTarget = lineNumber === snippet.targetLine;
 
@@ -253,8 +345,23 @@ export class Popover {
 
       const code = document.createElement('span');
       code.className = 'inspekt-line-code';
-      // textContent — never innerHTML, no syntax highlighting yet.
-      code.textContent = text;
+      const tokens = highlighted[index]?.tokens;
+      if (!tokens || tokens.length === 0) {
+        // Empty line or tokenization fallback.
+        code.textContent = rawText;
+      } else {
+        for (const tok of tokens) {
+          if (!tok.type) {
+            code.appendChild(document.createTextNode(tok.text));
+          } else {
+            const span = document.createElement('span');
+            // Prism class convention: "token <type> <subtype …>"
+            span.className = `token ${tok.type}`;
+            span.textContent = tok.text;
+            code.appendChild(span);
+          }
+        }
+      }
       lineEl.appendChild(code);
 
       pre.appendChild(lineEl);
@@ -267,6 +374,7 @@ export class Popover {
   hide(): void {
     this.container.style.display = 'none';
     this.visible = false;
+    this.pinned = false;
   }
 
   isVisible(): boolean {

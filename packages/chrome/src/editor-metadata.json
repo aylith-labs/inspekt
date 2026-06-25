@@ -1,0 +1,149 @@
+{
+  "cursor": {
+    "title": "The best way to code with AI",
+    "description": "Built to make you extraordinarily productive, Cursor is the best way to build software with AI.",
+    "siteName": "Cursor",
+    "favicon": "https://www.cursor.com/marketing-static/icon-512x512.png",
+    "image": "https://cursor.com/public/opengraph-image.png"
+  },
+  "windsurf": {
+    "title": "Windsurf - The best AI for Coding",
+    "description": "Windsurf is the world's most advanced AI coding assistant for developers and enterprises. Windsurf Editor — the first AI-native IDE that keeps developers in flow.",
+    "siteName": "windsurf.com",
+    "favicon": "https://windsurf.com/favicon_512.png",
+    "image": "https://exafunction.github.io/public/images/website_thumbnails/home.jpg"
+  },
+  "trae": {
+    "title": "TRAE - Collaborate with Intelligence",
+    "description": "TRAE IDE integrates seamlessly into your workflow, collaborating with you to maximize performance and efficiency.",
+    "siteName": "trae.ai",
+    "favicon": "https://lf16-web-neutral.traecdn.ai/obj/trae-ai-static/trae_website/favicon.png",
+    "image": null
+  },
+  "kiro": {
+    "title": "Kiro: Bring engineering rigor to agentic development",
+    "description": "Kiro helps you bridge the gap from AI coding to engineering: manage intent, complete long-running tasks across large codebases, validate code correctness with an agent that learns how you work.",
+    "siteName": "kiro.dev",
+    "favicon": "https://kiro.dev/icon.svg?fe599162bb293ea0",
+    "image": "https://kiro.dev/opengraph-image.png?0348916c2e09446b"
+  },
+  "antigravity": {
+    "title": "Google Antigravity",
+    "description": "Google Antigravity - Build the new way",
+    "siteName": "Google Antigravity",
+    "favicon": "https://antigravity.google/favicon.ico",
+    "image": "https://antigravity.google/assets/image/sitecards/sitecard-default.png"
+  },
+  "pearai": {
+    "title": "Redirecting...",
+    "description": null,
+    "siteName": "trypear.ai",
+    "favicon": null,
+    "image": null
+  },
+  "qoder": {
+    "title": "Qoder - AI Coding Assistant | Code Generation IDE Tool",
+    "description": "Qoder is a next-generation AI programming platform that offers intelligent code completion, AI conversational programming, and automatic code generation. It supports mainstream IDEs like VS Code and JetBrains. Download for free.",
+    "siteName": "Qoder",
+    "favicon": "https://img.alicdn.com/imgextra/i3/O1CN01KliT1u1jEq947NlKH_!!6000000004517-55-tps-180-180.svg",
+    "image": "https://img.alicdn.com/imgextra/i1/O1CN014VgOox1c2HzUD67Eg_!!6000000003542-0-tps-2400-1260.jpg"
+  },
+  "codebuddy": {
+    "title": "腾讯云代码助手 CodeBuddy - AI 时代的智能编程伙伴",
+    "description": "腾讯云代码助手CodeBuddy，是一款辅助编码工具，基于混元代码大模型，提供技术对话、代码补全、代码诊断和优化等能力。为你生成优质代码，帮你解决技术难题，提升编码效率。",
+    "siteName": "copilot.tencent.com",
+    "favicon": "https://acc-1258344699.cos.accelerate.myqcloud.com/web/website/c0a0f25c5401dab281be310436e3fd65bea87e26/assets/logo.svg",
+    "image": null
+  },
+  "vscode": {
+    "title": "Visual Studio Code - The open source AI code editor | Your home for multi-agent development",
+    "description": "Visual Studio Code redefines AI-powered coding with GitHub Copilot for building and debugging modern web and cloud applications. Visual Studio Code is free and available on your favorite platform - Linux, macOS, and Windows.",
+    "siteName": "code.visualstudio.com",
+    "favicon": "https://code.visualstudio.com/assets/favicon.ico",
+    "image": "https://code.visualstudio.com/opengraphimg/opengraph-home.png"
+  },
+  "vscode-insiders": {
+    "title": "Download Visual Studio Code Insiders",
+    "description": "For early adopters, you can get the latest release of VS Code each day with the Insiders Build.  Available on Mac, Linux and Windows.",
+    "siteName": "code.visualstudio.com",
+    "favicon": "https://code.visualstudio.com/assets/favicon.ico",
+    "image": "https://code.visualstudio.com/opengraphimg/opengraph-home-insiders.png"
+  },
+  "vscodium": {
+    "title": "VSCodium - Open Source Binaries of VSCode",
+    "description": "Free/Libre Open Source Software Binaries of VSCode",
+    "siteName": "vscodium.com",
+    "favicon": "https://vscodium.com/img/favicon.svg",
+    "image": null
+  },
+  "idea": {
+    "title": "The Leading IDE for Professional Java and Kotlin Development",
+    "description": "IntelliJ IDEA is the JetBrains IDE for pro development in Java and Kotlin. Built for your comfort, it unlocks productivity, ensures quality code, supports cutting-edge tech, and protects your privacy.",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/intellij-idea/img/meta/preview.png"
+  },
+  "webstorm": {
+    "title": "WebStorm: The JavaScript and TypeScript IDE, by JetBrains",
+    "description": "Make development more productive and enjoyable with WebStorm, the IDE for JavaScript and related technologies.",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/webstorm/img/meta/preview.png"
+  },
+  "phpstorm": {
+    "title": "PhpStorm: The PHP IDE by JetBrains",
+    "description": "Explore the PhpStorm IDE for web projects. Get everything you need for PHP, JavaScript, and SQL coding out of the box",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/phpstorm/img/meta/preview.png"
+  },
+  "pycharm": {
+    "title": "PyCharm: The only Python IDE you need",
+    "description": "Built for web, data, and AI/ML professionals. Supercharged with an AI-enhanced IDE experience.",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/pycharm/img/meta/preview.png"
+  },
+  "rubymine": {
+    "title": "The Ruby on Rails IDE by JetBrains",
+    "description": "Cross-platform Ruby on Rails IDE with first-class support for Ruby-related technologies. Download now!",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/rubymine/img/meta/preview.png"
+  },
+  "goland": {
+    "title": "GoLand by JetBrains: More than just a Go IDE",
+    "description": "The complete Go IDE",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/goland/img/meta/preview.png"
+  },
+  "clion": {
+    "title": "CLion: A cross-platform IDE for C and C++",
+    "description": "Boost your productivity with CLion’s smart code assistance, deep language insight, extensive build system support, advanced debugging, and features for embedded development.",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/clion/img/meta/preview.png"
+  },
+  "rider": {
+    "title": "Rider: the cross-platform .NET and game development IDE from JetBrains",
+    "description": "Develop .NET, ASP.NET, MAUI, Blazor, and Azure applications – as well as games with Unity, Unreal Engine, and Godot – on Windows, macOS, and Linux.",
+    "siteName": "JetBrains",
+    "favicon": "https://www.jetbrains.com/icon-512.png?r=1234",
+    "image": "https://resources.jetbrains.com/storage/products/rider/img/meta/preview.png"
+  },
+  "sublime": {
+    "title": "Sublime Text - the sophisticated text editor for code, markup and prose",
+    "description": "Available on Mac, Windows and Linux",
+    "siteName": "sublimetext.com",
+    "favicon": "https://www.sublimetext.com/images/icon.png",
+    "image": "https://www.sublimetext.com/images/og-full.jpg"
+  },
+  "zed": {
+    "title": "Zed — Your last next editor",
+    "description": "Zed is a high-performance, multiplayer code editor from the creators of Atom and Tree-sitter.",
+    "siteName": "Zed",
+    "favicon": "https://zed.dev/favicon_black_64.png",
+    "image": "https://zed.dev/img/home/og.webp"
+  }
+}

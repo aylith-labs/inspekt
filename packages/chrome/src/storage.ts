@@ -1,7 +1,34 @@
+export type ModifierKey = 'ctrl' | 'alt' | 'shift' | 'meta';
+
+/**
+ * A user-defined editor. Appears in the Editor picker's "Custom" group.
+ * Stored in chrome.storage.sync so the entry travels with the user.
+ */
+export interface CustomEditor {
+  /** Storage key. Must match /^[a-z][a-z0-9-]*$/i. Used as settings.editor. */
+  value: string;
+  /** Display name in the dropdown. */
+  label: string;
+  /**
+   * URL template expanded at "Open in editor" time. Placeholders:
+   *   {file}   → absolute file path (URL-encoded automatically)
+   *   {line}   → 1-based line number
+   *   {column} → 1-based column number
+   * Example: `txmt://open?url=file://{file}&line={line}&column={column}`
+   */
+  urlTemplate: string;
+  /** Optional vendor homepage URL surfaced in the side popover. */
+  homepage?: string;
+}
+
 export interface InspektSettings {
   enabled: boolean;
   editor: string;
-  activation: 'click-mod' | 'click' | 'view' | 'hover-mod' | 'hover' | 'manual';
+  /**
+   * Modifier keys that must be held for the inspector to engage (highlight on
+   * hover / pin on click). Empty array → always-on (plain hover engages).
+   */
+  requireModifiers: ModifierKey[];
   showBoundingBoxes: boolean;
   theme: 'light' | 'dark' | 'auto';
   highlightColor: string;
@@ -28,12 +55,17 @@ export interface InspektSettings {
   selectedAgent: 'claude-code' | 'cursor' | 'codex' | 'gemini-cli' | 'antigravity' | null;
   /** Opt-in: fetch .map files when dev server is unreachable. Default false. */
   sourceMapEnabled: boolean;
+  /** User-defined editors (Custom group at the bottom of the picker). */
+  customEditors: CustomEditor[];
 }
 
 const DEFAULTS: InspektSettings = {
   enabled: true,
   editor: 'cursor',
-  activation: 'click-mod',
+  // Default preserves the old `click-mod` behavior: page interactions are
+  // never intercepted unless the user is holding Ctrl+Alt. Empty array =
+  // always-on hover; the user opts in via the options-page checkboxes.
+  requireModifiers: ['ctrl', 'alt'],
   showBoundingBoxes: false,
   theme: 'auto',
   highlightColor: '#3b82f6',
@@ -54,11 +86,39 @@ const DEFAULTS: InspektSettings = {
   agentEndpoint: 'http://127.0.0.1:5678',
   selectedAgent: null,
   sourceMapEnabled: false,
+  customEditors: [],
 };
 
 export async function getSettings(): Promise<InspektSettings> {
   const result = await chrome.storage.sync.get(DEFAULTS);
-  return result as InspektSettings;
+  return migrate(result as Record<string, unknown>);
+}
+
+/**
+ * Read-side schema migration. Old installs may have `activation: 'click-mod'`
+ * etc. in `chrome.storage.sync`; map those to the new `requireModifiers`
+ * model (and turn on `showBoundingBoxes` for users who chose `'view'`).
+ *
+ * Applied on every read — cheap, no I/O. We never write back to storage from
+ * here; users implicitly migrate the first time the options page calls
+ * `updateSettings` (which omits `activation`).
+ */
+function migrate(raw: Record<string, unknown>): InspektSettings {
+  const oldActivation = typeof raw['activation'] === 'string' ? (raw['activation'] as string) : null;
+  if (oldActivation && !Array.isArray(raw['requireModifiers'])) {
+    const map: Record<string, ModifierKey[]> = {
+      'click-mod': ['ctrl', 'alt'],
+      'hover-mod': ['ctrl', 'alt'],
+      'click':     [],
+      'hover':     [],
+      'view':      ['ctrl', 'alt'],
+      'manual':    ['ctrl', 'alt', 'shift'],
+    };
+    raw['requireModifiers'] = map[oldActivation] ?? ['ctrl', 'alt'];
+    if (oldActivation === 'view') raw['showBoundingBoxes'] = true;
+  }
+  delete raw['activation'];
+  return raw as unknown as InspektSettings;
 }
 
 export async function updateSettings(updates: Partial<InspektSettings>): Promise<void> {

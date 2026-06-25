@@ -1,4 +1,4 @@
-import type { InspektAction, InspectedElement } from '../types.js';
+import type { InspektAction, InspectedElement, InspektCustomEditor } from '../types.js';
 
 const EDITOR_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>`;
 const COPY_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`;
@@ -57,7 +57,11 @@ export function createSendToAgentAction(opts: SendToAgentOptions): InspektAction
   };
 }
 
-export function createOpenEditorAction(serverUrl: string, editor: string): InspektAction {
+export function createOpenEditorAction(
+  serverUrl: string,
+  editor: string,
+  customEditors: InspektCustomEditor[] = [],
+): InspektAction {
   return {
     id: 'open-editor',
     label: 'Open in Editor',
@@ -77,7 +81,7 @@ export function createOpenEditorAction(serverUrl: string, editor: string): Inspe
         body,
       }).catch(() => {
         // Fallback to protocol handler
-        const protocol = editorProtocol(editor, element);
+        const protocol = editorProtocol(editor, element, customEditors);
         if (protocol) window.open(protocol, '_blank');
       });
     },
@@ -135,8 +139,25 @@ export function createConsoleLogAction(): InspektAction {
   };
 }
 
-function editorProtocol(editor: string, element: InspectedElement): string | null {
+function editorProtocol(
+  editor: string,
+  element: InspectedElement,
+  customEditors: InspektCustomEditor[] = [],
+): string | null {
   const { filePath, line, column } = element;
+
+  // User-defined editors win over built-in defaults — lets a user patch
+  // a broken built-in scheme (or add a brand-new editor) without an
+  // Inspekt release.
+  for (const ce of customEditors) {
+    if (ce.value === editor) {
+      return ce.urlTemplate
+        .replace(/\{file\}/g, encodeURIComponent(filePath))
+        .replace(/\{line\}/g, String(line))
+        .replace(/\{column\}/g, String(column));
+    }
+  }
+
   switch (editor) {
     case 'vscode':
       return `vscode://file/${filePath}:${line}:${column}`;
@@ -156,6 +177,40 @@ function editorProtocol(editor: string, element: InspectedElement): string | nul
       return `zed://file/${filePath}:${line}:${column}`;
     case 'sublime':
       return `subl://open?url=file://${filePath}&line=${line}&column=${column}`;
+
+    // JetBrains family — query-string shape, same as webstorm/phpstorm/idea.
+    case 'pycharm':
+      return `pycharm://open?file=${filePath}&line=${line}&column=${column}`;
+    case 'rubymine':
+      return `rubymine://open?file=${filePath}&line=${line}&column=${column}`;
+    case 'goland':
+      return `goland://open?file=${filePath}&line=${line}&column=${column}`;
+    case 'clion':
+      return `clion://open?file=${filePath}&line=${line}&column=${column}`;
+    case 'rider':
+      return `rider://open?file=${filePath}&line=${line}&column=${column}`;
+
+    // VS Code family
+    case 'vscodium':
+      return `vscodium://file/${filePath}:${line}:${column}`;
+
+    // AI editors — VS Code fork URL shape. Trae/Antigravity/Qoder/CodeBuddy
+    // are inferred (vendor docs don't enumerate the file-open scheme); we
+    // surface this in the UI as "(unverified)" so users can test before
+    // committing.
+    case 'trae':
+      return `trae://file/${filePath}:${line}:${column}`;
+    case 'kiro':
+      return `kiro://file/${filePath}:${line}:${column}`;
+    case 'antigravity':
+      return `antigravity://file/${filePath}:${line}:${column}`;
+    case 'pearai':
+      return `pearai://file/${filePath}:${line}:${column}`;
+    case 'qoder':
+      return `qoder://file/${filePath}:${line}:${column}`;
+    case 'codebuddy':
+      return `codebuddy://file/${filePath}:${line}:${column}`;
+
     default:
       return `vscode://file/${filePath}:${line}:${column}`;
   }

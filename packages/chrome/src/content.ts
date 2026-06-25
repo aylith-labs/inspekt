@@ -13,11 +13,13 @@ function detectPlugin(): boolean {
 }
 
 // Initialize in standalone mode (no build plugin)
-function initStandalone(settings: Record<string, unknown>): void {
-  if (instance) return;
+function initStandalone(settings: Record<string, unknown>): InspektInstance {
+  if (instance) return instance;
 
   instance = createInspekt({
-    activation: (settings['activation'] as 'click') ?? 'click',
+    requireModifiers: Array.isArray(settings['requireModifiers'])
+      ? (settings['requireModifiers'] as Array<'ctrl' | 'alt' | 'shift' | 'meta'>)
+      : ['ctrl', 'alt'],
     theme: (settings['theme'] as 'auto') ?? 'auto',
     editor: (settings['editor'] as string) ?? 'cursor',
     highlight: {
@@ -34,7 +36,11 @@ function initStandalone(settings: Record<string, unknown>): void {
     defaultSnippetExpanded: (settings['defaultSnippetExpanded'] as boolean) ?? false,
     snippetContext: (settings['snippetContext'] as number) ?? 5,
     sourceMapEnabled: (settings['sourceMapEnabled'] as boolean) ?? false,
+    customEditors: Array.isArray(settings['customEditors'])
+      ? (settings['customEditors'] as Array<{ value: string; urlTemplate: string }>)
+      : [],
   });
+  return instance;
 }
 
 // Push settings to the build plugin's runtime
@@ -44,15 +50,24 @@ function pushSettingsToPlugin(settings: Record<string, unknown>): void {
   );
 }
 
-// Activation-aware hint for the activity banner so the affordance shown
-// matches the user's actual mode (click / hover-mod / hover / manual).
-function bannerForActivation(activation: unknown): string {
-  switch (activation) {
-    case 'click':     return 'Inspekt active · Ctrl+Alt+click to inspect';
-    case 'hover-mod': return 'Inspekt active · Ctrl+Alt+hover to inspect';
-    case 'hover':     return 'Inspekt active · Hover any element to inspect';
-    default:          return 'Inspekt active';
+// Activity banner derived from the user's modifier choice.
+function humanizeMod(mod: unknown): string {
+  switch (mod) {
+    case 'ctrl':  return 'Ctrl';
+    case 'alt':   return 'Alt';
+    case 'shift': return 'Shift';
+    case 'meta':  return '⌘';
+    default:      return '';
   }
+}
+
+function activeBanner(settings: Record<string, unknown> | null | undefined): string {
+  const mods = Array.isArray(settings?.['requireModifiers'])
+    ? (settings['requireModifiers'] as unknown[]).map(humanizeMod).filter(Boolean)
+    : [];
+  return mods.length > 0
+    ? `Inspekt active · ${mods.join('+')}+hover to inspect`
+    : 'Inspekt active · Hover any element to inspect';
 }
 
 // Brief in-page confirmation that the inspector engaged. Shadow DOM keeps
@@ -123,9 +138,8 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         flashActivityBanner('Inspekt active');
       } else {
         chrome.runtime.sendMessage({ type: 'GET_SETTINGS' }, (settings) => {
-          initStandalone(settings);
-          instance?.enable();
-          flashActivityBanner(bannerForActivation(settings?.['activation']));
+          initStandalone(settings).enable();
+          flashActivityBanner(activeBanner(settings));
         });
       }
       sendResponse({ ok: true });
@@ -147,8 +161,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         // Re-create with new settings
         instance.destroy();
         instance = null;
-        initStandalone(message.settings);
-        instance?.enable();
+        initStandalone(message.settings).enable();
       }
       sendResponse({ ok: true });
       break;

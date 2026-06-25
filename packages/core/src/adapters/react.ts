@@ -26,7 +26,14 @@ interface FunctionWithDisplayName {
 }
 
 function getComponentName(fiber: Record<string, unknown>): string {
-  const type = fiber['type'] as Record<string, unknown> | FunctionWithDisplayName | null;
+  // A fiber's `type` is a host string ("div"), a component function, or an
+  // object wrapper (forwardRef/memo). Keep all three in the union so the
+  // `typeof` checks below narrow correctly.
+  const type = fiber['type'] as
+    | string
+    | (FunctionWithDisplayName & ((...args: unknown[]) => unknown))
+    | Record<string, unknown>
+    | null;
   if (!type) return 'Unknown';
 
   if (typeof type === 'function') {

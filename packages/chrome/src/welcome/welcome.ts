@@ -1,5 +1,6 @@
 import { createInspekt, type InspektInstance } from '@inspekt/core';
 import { getSettings, updateSettings } from '../storage.js';
+import { buildEditorOptgroupHtml } from '../selects.js';
 import { wireThemeCycler } from '../theme.js';
 
 const steps = Array.from(document.querySelectorAll<HTMLElement>('section.step'));
@@ -19,6 +20,10 @@ let savedTimer: ReturnType<typeof setTimeout> | null = null;
 
 async function init(): Promise<void> {
   const settings = await getSettings();
+  // Populate the editor <select> with grouped options from the shared
+  // EDITOR_META source of truth + any user-defined custom editors before
+  // setting the initial value.
+  editorSelect.innerHTML = buildEditorOptgroupHtml(settings.customEditors ?? []);
   editorSelect.value = settings.editor;
 
   renderStep();
@@ -82,7 +87,8 @@ const DEMO_SNIPPETS = {
 function startDemo(): void {
   if (demoInstance) return;
   demoInstance = createInspekt({
-    activation: 'click',
+    // Demo follows the new model: Ctrl+Alt-gated, hover inspects, click pins.
+    requireModifiers: ['ctrl', 'alt'],
     theme: 'auto',
     highlight: {
       color: '#3b82f6',

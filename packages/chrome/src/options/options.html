@@ -393,33 +393,24 @@
               <span class="help">Used when you click "Open in Editor" or when an agent calls <code>open_grab_in_editor</code>.</span>
             </div>
             <div class="control">
-              <select id="editor" class="select">
-                <option value="cursor">Cursor</option>
-                <option value="vscode">VS Code</option>
-                <option value="vscode-insiders">VS Code Insiders</option>
-                <option value="windsurf">Windsurf</option>
-                <option value="webstorm">WebStorm</option>
-                <option value="phpstorm">PhpStorm</option>
-                <option value="idea">IntelliJ IDEA</option>
-                <option value="sublime">Sublime Text</option>
-                <option value="zed">Zed</option>
-              </select>
+              <div id="editor-anchor" class="select-anchor"></div>
             </div>
           </div>
           <div class="field">
             <div class="label">
               <span class="title">Activation</span>
-              <span class="help">How the inspector engages when you interact with a page.</span>
+              <span class="help">Hover any element to inspect. Click pins the popover. Esc dismisses.</span>
             </div>
             <div class="control">
-              <select id="activation" class="select">
-                <option value="click-mod">Click (Ctrl+Alt+Click) — hold modifiers and click an element</option>
-                <option value="click">Click (any) — plain click opens the popover (good for demos / agent testing)</option>
-                <option value="view">View — passive overlay: bounding boxes on every inspectable element</option>
-                <option value="hover-mod">Hover (Ctrl+Alt) — highlight while modifiers held</option>
-                <option value="hover">Hover (always) — highlight any element under the cursor</option>
-                <option value="manual">Keyboard only — Ctrl+Alt+I to toggle, Shift+Alt+Click to open</option>
-              </select>
+              <fieldset class="modifier-fieldset" aria-label="Engagement modifiers">
+                <legend class="visually-hidden">Hold these keys while hovering to engage. Leave all empty for always-on.</legend>
+                <label><input type="checkbox" id="mod-ctrl"><span>Ctrl</span></label>
+                <label><input type="checkbox" id="mod-alt"><span>Alt</span></label>
+                <label><input type="checkbox" id="mod-shift"><span>Shift</span></label>
+                <label><input type="checkbox" id="mod-meta"><span>Cmd&nbsp;(⌘)</span></label>
+                <div class="modifier-help">Hold these keys while hovering to engage. Leave all empty for always-on hover.</div>
+                <div class="modifier-preview">Active now: <kbd id="mod-preview">Ctrl+Alt</kbd></div>
+              </fieldset>
             </div>
           </div>
           <div class="field">
@@ -661,6 +652,46 @@
     </main>
   </div>
 
+  <!-- Add custom editor modal -->
+  <div class="modal-overlay" id="ce-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add custom editor</h3>
+        <button type="button" class="modal-close" id="ce-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="add-custom-editor-form" class="modal-body custom-editor-form">
+        <p class="modal-lede">
+          Define an editor we don't ship by default. Use
+          <code>{file}</code>, <code>{line}</code>, <code>{column}</code>
+          placeholders in the URL template.
+        </p>
+        <div class="custom-editor-form-row">
+          <label>
+            <span>Label</span>
+            <input type="text" id="ce-label" placeholder="TextMate" autocomplete="off">
+          </label>
+          <label>
+            <span>Key</span>
+            <input type="text" id="ce-value" placeholder="mate" pattern="^[a-z][a-z0-9-]*$" autocomplete="off">
+          </label>
+        </div>
+        <label>
+          <span>URL template</span>
+          <input type="text" id="ce-url-template" placeholder="txmt://open?url=file://{file}&line={line}&column={column}" autocomplete="off">
+        </label>
+        <label>
+          <span>Homepage <span class="optional">(optional)</span></span>
+          <input type="url" id="ce-homepage" placeholder="https://macromates.com/" autocomplete="off">
+        </label>
+        <div id="ce-error" class="ce-error" hidden></div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="ce-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="ce-save">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Import/Export Modal -->
   <div class="modal-overlay" id="ie-modal">
     <div class="modal">
@@ -669,6 +700,7 @@
         <button type="button" class="modal-close" id="ie-modal-close" aria-label="Close">&times;</button>
       </div>
       <div class="modal-body">
+        <pre id="ie-json-view" class="inspekt-code-pre" style="display:none;max-height:240px;"></pre>
         <textarea id="ie-json"></textarea>
         <div id="ie-preview"></div>
       </div>

@@ -427,3 +427,516 @@ p code {
   border-radius: 3px;
   color: var(--inspekt-ink);
 }
+
+/* ---- Activation: modifier checkboxes + live preview ---- */
+.modifier-fieldset {
+  display: grid;
+  grid-template-columns: repeat(4, max-content);
+  gap: 8px 16px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.modifier-fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--inspekt-ink);
+}
+.modifier-fieldset input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--inspekt-violet);
+}
+.modifier-help {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--inspekt-ink-3);
+  line-height: 1.4;
+}
+.modifier-preview {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--inspekt-ink-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.modifier-preview kbd {
+  font-family: var(--inspekt-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--inspekt-paper-2);
+  border: 1px solid var(--inspekt-rule);
+  border-radius: 4px;
+  color: var(--inspekt-ink);
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Popup: Modifiers row → read-only pill linking to options ---- */
+.modifiers-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  background: var(--inspekt-paper);
+  border: 1px solid var(--inspekt-rule);
+  border-radius: 999px;
+  cursor: pointer;
+  color: var(--inspekt-ink-2);
+  font: inherit;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.modifiers-pill:hover {
+  border-color: var(--inspekt-violet);
+  color: var(--inspekt-ink);
+}
+.modifiers-pill kbd {
+  font-family: var(--inspekt-font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--inspekt-ink);
+  background: transparent;
+  padding: 0;
+  border: 0;
+}
+.modifiers-pill .ext-icon {
+  color: var(--inspekt-ink-3);
+  flex-shrink: 0;
+}
+
+/* ---- Custom editors (modal form + dropdown affordances) ---- */
+.custom-editor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.modal-lede {
+  font-size: 12px;
+  color: var(--inspekt-ink-3);
+  margin: 0;
+  line-height: 1.5;
+}
+.modal-lede code {
+  font-family: var(--inspekt-font-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  background: var(--inspekt-paper-2);
+  border-radius: 3px;
+}
+.custom-editor-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--inspekt-ink-2);
+}
+.custom-editor-form input {
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--inspekt-paper);
+  border: 1px solid var(--inspekt-rule-strong);
+  border-radius: var(--inspekt-radius-sm);
+  color: var(--inspekt-ink);
+}
+.custom-editor-form input:focus {
+  outline: none;
+  border-color: var(--inspekt-violet);
+  box-shadow: 0 0 0 3px var(--inspekt-violet-tint);
+}
+#ce-url-template {
+  font-family: var(--inspekt-font-mono);
+  font-size: 12px;
+}
+.custom-editor-form-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 10px;
+}
+.custom-editor-form .optional {
+  color: var(--inspekt-ink-3);
+  font-weight: normal;
+}
+.ce-error {
+  font-size: 12px;
+  color: var(--inspekt-danger);
+  padding: 6px 8px;
+  background: oklch(0.95 0.04 27);
+  border-radius: 4px;
+}
+
+/* "+ Add custom editor" row inside the rich-select Custom group. */
+.inspekt-rich-select-item.inspekt-rich-select-item-action {
+  color: var(--inspekt-violet);
+  font-weight: 500;
+}
+.inspekt-rich-select-item-action:hover,
+.inspekt-rich-select-item-action[data-active="true"] {
+  background: var(--inspekt-violet-tint);
+}
+
+/* Delete button inside the side popover of a custom editor row. */
+.inspekt-rs-popover-custom-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inspekt-rs-popover-delete {
+  align-self: flex-start;
+  padding: 4px 10px;
+  font: 500 11px var(--inspekt-font-sans);
+  color: var(--inspekt-danger);
+  background: transparent;
+  border: 1px solid var(--inspekt-danger);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.inspekt-rs-popover-delete:hover {
+  background: var(--inspekt-danger);
+  color: #fff;
+}
+
+/* Mono URL line inside the rich-select custom-editor popover. */
+.inspekt-custom-url-template {
+  font-family: var(--inspekt-font-mono);
+  font-size: 11px;
+  color: var(--inspekt-pill-fg-dim);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 4px 6px;
+  border-radius: 4px;
+  display: block;
+  word-break: break-all;
+  margin-top: 2px;
+}
+
+/* ---- Tooltip (drop-in for native title="") ---- */
+.inspekt-tooltip {
+  position: fixed;
+  max-width: 280px;
+  padding: 6px 10px;
+  background: var(--inspekt-pill-bg);
+  color: var(--inspekt-pill-fg);
+  border-radius: 6px;
+  box-shadow: var(--inspekt-shadow-md);
+  font-size: 12px;
+  line-height: 1.4;
+  font-family: var(--inspekt-font-sans);
+  pointer-events: none;
+  z-index: 2147483647;
+  opacity: 0;
+  animation: inspekt-tt-in 120ms ease-out forwards;
+}
+.inspekt-tooltip--rich {
+  pointer-events: auto;
+  max-width: 640px;
+  padding: 10px 12px;
+}
+.inspekt-tooltip a {
+  color: var(--inspekt-violet-bright);
+  text-decoration: none;
+}
+.inspekt-tooltip a:hover { text-decoration: underline; }
+/* The rich editor popover IS an anchor and uses an arrow-slide affordance —
+   override the generic tooltip-link underline-on-hover. */
+.inspekt-tooltip a.inspekt-rs-popover,
+.inspekt-tooltip a.inspekt-rs-popover:hover { text-decoration: none; }
+@keyframes inspekt-tt-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- Rich select (custom dropdown w/ icons + side popovers) ---- */
+.inspekt-rich-select {
+  position: relative;
+  font-family: var(--inspekt-font-sans);
+}
+.inspekt-rich-select-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+  padding: 8px 30px 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--inspekt-ink);
+  background: var(--inspekt-paper);
+  border: 1px solid var(--inspekt-rule-strong);
+  border-radius: var(--inspekt-radius-sm);
+  cursor: pointer;
+  text-align: left;
+  position: relative;
+  font-family: inherit;
+}
+.inspekt-rich-select-trigger:hover { border-color: var(--inspekt-ink-3); }
+.inspekt-rich-select-trigger[aria-expanded="true"] {
+  border-color: var(--inspekt-violet);
+  outline: 2px solid var(--inspekt-violet-soft);
+}
+.inspekt-rich-select-trigger::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid var(--inspekt-ink-3);
+  border-bottom: 1.5px solid var(--inspekt-ink-3);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.inspekt-rich-select-trigger .rs-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.inspekt-rich-select-trigger .rs-label { flex: 1; min-width: 0; }
+.inspekt-rich-select-list {
+  position: fixed;
+  background: var(--inspekt-paper);
+  border: 1px solid var(--inspekt-rule-strong);
+  border-radius: var(--inspekt-radius-md);
+  box-shadow: var(--inspekt-shadow-lg);
+  padding: 4px;
+  min-width: 260px;
+  max-height: 360px;
+  overflow-y: auto;
+  z-index: 2147483646;
+  font-family: var(--inspekt-font-sans);
+  font-size: 13px;
+}
+.inspekt-rich-select-group-header {
+  padding: 8px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--inspekt-ink-3);
+  pointer-events: none;
+  user-select: none;
+}
+.inspekt-rich-select-group-header:first-child {
+  padding-top: 2px;
+}
+.inspekt-rich-select-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--inspekt-radius-sm);
+  cursor: pointer;
+  color: var(--inspekt-ink);
+}
+.inspekt-rich-select-item:hover,
+.inspekt-rich-select-item[data-active="true"] {
+  background: var(--inspekt-violet-tint);
+}
+.inspekt-rich-select-item[data-selected="true"] {
+  color: var(--inspekt-violet-on-soft);
+  font-weight: 600;
+}
+.inspekt-rich-select-item .rs-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+  border-radius: 4px;
+  margin-top: 1px;
+}
+.inspekt-rich-select-item-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 12px;
+  background: var(--inspekt-paper-2);
+  color: var(--inspekt-ink-2);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.inspekt-rich-select-item-body { flex: 1; min-width: 0; }
+.inspekt-rich-select-item-label {
+  display: block;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.inspekt-rich-select-item-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--inspekt-ink-3);
+  line-height: 1.35;
+}
+
+/* Side popover for editor items inside a rich select.
+   The entire card is a single anchor that links to the editor's homepage —
+   inspired by the notes app's LinkWithPreview MetadataPreview card. */
+a.inspekt-rs-popover {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 480px;
+  max-width: 640px;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  /* The outer .inspekt-tooltip already provides padding + background +
+     radius + shadow, so we only own the inner layout. */
+}
+.inspekt-rs-popover-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--inspekt-violet-bright);
+  letter-spacing: 0.01em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.inspekt-rs-popover-arrow {
+  display: inline-block;
+  transition: transform 160ms ease-out;
+  will-change: transform;
+}
+a.inspekt-rs-popover:hover .inspekt-rs-popover-arrow {
+  transform: translateX(4px);
+}
+
+/* Metadata block — site favicon header, title, description, OG image. */
+.inspekt-rs-popover-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.inspekt-rs-popover-meta-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--inspekt-pill-fg-dim);
+}
+.inspekt-rs-popover-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.inspekt-rs-popover-meta-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--inspekt-pill-fg);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.inspekt-rs-popover-meta-description {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--inspekt-pill-fg-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.inspekt-rs-popover-meta-image {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-top: 2px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.inspekt-rs-popover-unverified {
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--inspekt-warn);
+  padding: 2px 6px;
+  border: 1px dashed var(--inspekt-warn);
+  border-radius: 4px;
+  align-self: flex-start;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Prism token colors (light + dark) ---- */
+.inspekt-code-pre {
+  margin: 0;
+  font-family: var(--inspekt-font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--inspekt-ink);
+  background: var(--inspekt-paper-2);
+  border-radius: var(--inspekt-radius-sm);
+  border: 1px solid var(--inspekt-rule);
+  padding: 10px 12px;
+  white-space: pre;
+  overflow: auto;
+}
+.inspekt-code-pre .token.comment,
+.inspekt-code-pre .token.prolog,
+.inspekt-code-pre .token.doctype,
+.inspekt-code-pre .token.cdata { color: oklch(0.55 0.04 260); font-style: italic; }
+.inspekt-code-pre .token.punctuation { color: oklch(0.5 0.02 285); }
+.inspekt-code-pre .token.property,
+.inspekt-code-pre .token.tag,
+.inspekt-code-pre .token.constant,
+.inspekt-code-pre .token.symbol,
+.inspekt-code-pre .token.deleted { color: oklch(0.55 0.18 27); }
+.inspekt-code-pre .token.boolean,
+.inspekt-code-pre .token.number { color: oklch(0.55 0.16 50); }
+.inspekt-code-pre .token.selector,
+.inspekt-code-pre .token.attr-name,
+.inspekt-code-pre .token.string,
+.inspekt-code-pre .token.char,
+.inspekt-code-pre .token.builtin,
+.inspekt-code-pre .token.inserted { color: oklch(0.5 0.16 145); }
+.inspekt-code-pre .token.operator,
+.inspekt-code-pre .token.entity,
+.inspekt-code-pre .token.url { color: oklch(0.55 0.12 200); }
+.inspekt-code-pre .token.atrule,
+.inspekt-code-pre .token.attr-value,
+.inspekt-code-pre .token.keyword { color: oklch(0.5 0.2 290); }
+.inspekt-code-pre .token.function,
+.inspekt-code-pre .token.class-name { color: oklch(0.55 0.17 240); }
+.inspekt-code-pre .token.regex,
+.inspekt-code-pre .token.variable { color: oklch(0.55 0.16 50); }
+html.dark .inspekt-code-pre {
+  background: oklch(0.22 0.012 285);
+  border-color: oklch(0.3 0.012 285);
+}
+html.dark .inspekt-code-pre .token.comment { color: oklch(0.62 0.02 260); }
+html.dark .inspekt-code-pre .token.punctuation { color: oklch(0.72 0.012 285); }
+html.dark .inspekt-code-pre .token.property,
+html.dark .inspekt-code-pre .token.tag,
+html.dark .inspekt-code-pre .token.constant,
+html.dark .inspekt-code-pre .token.symbol,
+html.dark .inspekt-code-pre .token.deleted { color: oklch(0.75 0.16 27); }
+html.dark .inspekt-code-pre .token.string,
+html.dark .inspekt-code-pre .token.attr-name,
+html.dark .inspekt-code-pre .token.inserted { color: oklch(0.78 0.14 145); }
+html.dark .inspekt-code-pre .token.function,
+html.dark .inspekt-code-pre .token.class-name { color: oklch(0.78 0.14 240); }
+html.dark .inspekt-code-pre .token.keyword,
+html.dark .inspekt-code-pre .token.atrule { color: oklch(0.78 0.16 290); }

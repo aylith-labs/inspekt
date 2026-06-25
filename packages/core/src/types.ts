@@ -22,16 +22,28 @@ export interface TreePanelConfig {
   showLineNumbers: boolean;
 }
 
+export type ModifierKey = 'ctrl' | 'alt' | 'shift' | 'meta';
+
+/**
+ * Runtime shape of a user-defined editor. The full UI shape (label, homepage)
+ * lives in the extension settings; the core runtime only needs the key to
+ * match against and the URL template to expand at "Open in editor" time.
+ */
+export interface InspektCustomEditor {
+  value: string;
+  urlTemplate: string;
+}
+
 export interface InspektOptions {
   /**
-   * - `click-mod` — Ctrl+Alt+click (legacy default; less disruptive on real pages)
-   * - `click`     — plain click; convenient on demos and programmatic testing
-   * - `view`      — passive overlay: every inspectable element gets a labelled bounding box
-   * - `hover-mod` — hover with Ctrl+Alt held
-   * - `hover`     — hover anywhere
-   * - `manual`    — keyboard only (Ctrl+Alt+I to toggle, Shift+Alt+click to open)
+   * Modifier keys that must be held for the inspector to engage (highlight on
+   * hover / pin on click). Empty array means always-on. The Cmd (meta) key
+   * counts as Ctrl for the purposes of this gate (macOS convention).
+   *
+   * The toggle shortcut (Ctrl+Alt+I) and the direct-to-editor bypass
+   * (Shift+Alt+Click) remain global and are not gated by this setting.
    */
-  activation: 'click-mod' | 'click' | 'view' | 'hover-mod' | 'hover' | 'manual';
+  requireModifiers: ModifierKey[];
   /** Persistent bounding-box overlay on all inspectable elements. Off by default. */
   showBoundingBoxes: boolean;
   shortcut: ShortcutConfig;
@@ -69,6 +81,12 @@ export interface InspektOptions {
     string,
     { language: string; lines: string[]; startLine?: number }
   >;
+  /**
+   * User-defined editor entries. Their `value` keys are checked before the
+   * built-in URL-scheme switch in `editorProtocol`, so a user can override
+   * a broken built-in without waiting for an Inspekt release.
+   */
+  customEditors: InspektCustomEditor[];
 }
 
 export interface SourceSnippet {

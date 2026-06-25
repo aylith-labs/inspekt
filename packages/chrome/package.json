@@ -1,6 +1,6 @@
 {
   "name": "@inspekt/chrome",
-  "version": "0.5.0",
+  "version": "0.8.2",
   "private": true,
   "description": "Inspekt Chrome extension — global settings and standalone inspector",
   "type": "module",
@@ -8,16 +8,18 @@
     "build": "tsup && cp -r public/* ../../dist/ && cp src/popup/popup.html ../../dist/popup/ && cp src/options/options.html ../../dist/options/ && cp src/welcome/welcome.html ../../dist/welcome/",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
+    "fetch-metadata": "node scripts/fetch-editor-metadata.mjs",
     "clean": "rm -rf ../../dist"
   },
   "dependencies": {
     "@inspekt/core": "*"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "node-html-parser": "^7.1.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "@types/chrome": "^0.0.287"
+    "vitest": "^3.0.0"
   },
   "license": "MIT"
 }

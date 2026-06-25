@@ -203,6 +203,133 @@ export const STYLES = /* css */ `
     height: 16px;
   }
 
+  /* Popover toast — brief feedback after Copy / console.log actions */
+  .inspekt-popover-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    background: var(--dl-text);
+    color: var(--dl-bg);
+    font: 500 12px/1.4 inherit;
+    border-radius: 999px;
+    box-shadow: var(--dl-shadow);
+    pointer-events: none;
+    z-index: 2147483647;
+    animation: inspekt-toast 1.2s ease;
+  }
+  @keyframes inspekt-toast {
+    0% { opacity: 0; transform: translate(-50%, 6px); }
+    15%, 80% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, 0); }
+  }
+
+  /* Info badge — small pill rendered in the DOM-fallback popover header.
+     Shows an info icon + "No source" label so users see it without hover. */
+  .inspekt-info-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px 2px 6px;
+    border-radius: 999px;
+    background: var(--dl-bg-hover);
+    color: var(--dl-text-dim);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    line-height: 1.4;
+    cursor: help;
+    flex-shrink: 0;
+    margin-left: 8px;
+    border: 1px solid var(--dl-border);
+    text-transform: none;
+  }
+  .inspekt-info-badge:hover,
+  .inspekt-info-badge:focus-visible {
+    color: var(--dl-text);
+    border-color: var(--dl-accent);
+    outline: none;
+  }
+  .inspekt-info-badge svg { display: block; }
+  .inspekt-info-badge-label {
+    white-space: nowrap;
+  }
+  .inspekt-popover-path-dir-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* Tooltip (replaces native title="") */
+  .inspekt-tooltip {
+    position: fixed;
+    max-width: 280px;
+    padding: 6px 10px;
+    background: var(--dl-bg);
+    color: var(--dl-text);
+    border: 1px solid var(--dl-border);
+    border-radius: 6px;
+    box-shadow: var(--dl-shadow);
+    font-size: 12px;
+    line-height: 1.4;
+    pointer-events: none;
+    z-index: 2147483647;
+    opacity: 0;
+    animation: inspekt-tt-in 120ms ease-out forwards;
+  }
+  .inspekt-tooltip--rich {
+    pointer-events: auto;
+    max-width: 320px;
+    padding: 10px 12px;
+  }
+  @keyframes inspekt-tt-in {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Wider source snippet body when accordion is expanded (1.5× collapsed) */
+  .inspekt-snippet-body[data-state='expanded'] {
+    max-width: 900px;
+  }
+
+  /* Prism syntax tokens — neutral palette mapped to theme variables. */
+  .inspekt-snippet-pre .token.comment,
+  .inspekt-snippet-pre .token.prolog,
+  .inspekt-snippet-pre .token.doctype,
+  .inspekt-snippet-pre .token.cdata { color: var(--dl-text-dim); font-style: italic; }
+  .inspekt-snippet-pre .token.punctuation { color: var(--dl-text-dim); }
+  .inspekt-snippet-pre .token.namespace { opacity: 0.7; }
+  .inspekt-snippet-pre .token.property,
+  .inspekt-snippet-pre .token.tag,
+  .inspekt-snippet-pre .token.constant,
+  .inspekt-snippet-pre .token.symbol,
+  .inspekt-snippet-pre .token.deleted { color: #e06c75; }
+  .inspekt-snippet-pre .token.boolean,
+  .inspekt-snippet-pre .token.number { color: #d19a66; }
+  .inspekt-snippet-pre .token.selector,
+  .inspekt-snippet-pre .token.attr-name,
+  .inspekt-snippet-pre .token.string,
+  .inspekt-snippet-pre .token.char,
+  .inspekt-snippet-pre .token.builtin,
+  .inspekt-snippet-pre .token.inserted { color: #98c379; }
+  .inspekt-snippet-pre .token.operator,
+  .inspekt-snippet-pre .token.entity,
+  .inspekt-snippet-pre .token.url,
+  .inspekt-snippet-pre .language-css .token.string,
+  .inspekt-snippet-pre .style .token.string { color: #56b6c2; }
+  .inspekt-snippet-pre .token.atrule,
+  .inspekt-snippet-pre .token.attr-value,
+  .inspekt-snippet-pre .token.keyword { color: #c678dd; }
+  .inspekt-snippet-pre .token.function,
+  .inspekt-snippet-pre .token.class-name { color: #61afef; }
+  .inspekt-snippet-pre .token.regex,
+  .inspekt-snippet-pre .token.important,
+  .inspekt-snippet-pre .token.variable { color: #d19a66; }
+  .inspekt-snippet-pre .token.important,
+  .inspekt-snippet-pre .token.bold { font-weight: bold; }
+  .inspekt-snippet-pre .token.italic { font-style: italic; }
+
   /* Overlay badges */
   .inspekt-overlay {
     position: absolute;

@@ -1,16 +1,35 @@
-import { getSettings, updateSettings } from '../storage.js';
+import { attachTooltip } from '@inspekt/core';
+import { getSettings, updateSettings, type InspektSettings, type ModifierKey } from '../storage.js';
+import { buildEditorOptgroupHtml } from '../selects.js';
 import { wireThemeCycler } from '../theme.js';
 
 const mainView = document.getElementById('main-view') as HTMLDivElement;
 const introView = document.getElementById('intro-view') as HTMLDivElement;
 
 const toggle = document.getElementById('toggle') as HTMLDivElement;
-const modeEl = document.getElementById('mode') as HTMLSpanElement;
-const editorEl = document.getElementById('editor') as HTMLSpanElement;
-const treeEl = document.getElementById('tree') as HTMLSpanElement;
+const modifiersPill = document.getElementById('modifiers-pill') as HTMLButtonElement;
+const modifiersPillText = document.getElementById('modifiers-pill-text') as HTMLElement;
+const editorSelect = document.getElementById('editor-select') as HTMLSelectElement;
+const treeToggle = document.getElementById('tree-toggle') as HTMLDivElement;
+const bboxToggle = document.getElementById('bbox-toggle') as HTMLDivElement;
 const statusEl = document.getElementById('status') as HTMLSpanElement;
 const settingsBtn = document.getElementById('settings-btn') as HTMLButtonElement;
 const standaloneBtn = document.getElementById('standalone-btn') as HTMLButtonElement;
+
+const MOD_ORDER: ModifierKey[] = ['ctrl', 'alt', 'shift', 'meta'];
+function humanizeMod(mod: ModifierKey): string {
+  switch (mod) {
+    case 'ctrl':  return 'Ctrl';
+    case 'alt':   return 'Alt';
+    case 'shift': return 'Shift';
+    case 'meta':  return '⌘';
+  }
+}
+function renderModifiersPill(mods: ModifierKey[]): void {
+  modifiersPillText.textContent = mods.length === 0
+    ? '(none)'
+    : MOD_ORDER.filter((m) => mods.includes(m)).map(humanizeMod).join('+');
+}
 
 // Intro controls
 const introSkip = document.getElementById('intro-skip') as HTMLButtonElement;
@@ -26,6 +45,10 @@ let enabled = false;
 
 async function init(): Promise<void> {
   const settings = await getSettings();
+  // Populate the editor <select> with grouped options from the shared
+  // EDITOR_META source of truth + any user-defined custom editors. Done
+  // before any value is set so the option exists when `.value =` lands.
+  editorSelect.innerHTML = buildEditorOptgroupHtml(settings.customEditors ?? []);
 
   if (!settings.popupIntroSeen) {
     showIntro();
@@ -63,9 +86,12 @@ async function dismissIntro(): Promise<void> {
 async function showMain(settings: Awaited<ReturnType<typeof getSettings>>): Promise<void> {
   mainView.classList.remove('hidden');
 
-  modeEl.textContent = activationLabel(settings.activation);
-  editorEl.textContent = capitalize(settings.editor);
-  treeEl.textContent = settings.treePanelEnabled ? 'On' : 'Off';
+  renderModifiersPill(settings.requireModifiers ?? ['ctrl', 'alt']);
+  editorSelect.value = settings.editor;
+  treeToggle.classList.toggle('active', settings.treePanelEnabled);
+  treeToggle.setAttribute('aria-checked', String(settings.treePanelEnabled));
+  bboxToggle.classList.toggle('active', settings.showBoundingBoxes);
+  bboxToggle.setAttribute('aria-checked', String(settings.showBoundingBoxes));
 
   // Background is the source of truth for tab state (chrome.storage.session).
   // Content scripts don't track enabled/standalone, so we must ask the SW.
@@ -176,6 +202,45 @@ toggle.addEventListener('click', async () => {
   }
 });
 
+// ---- Inline settings controls ----
+// Broadcast through the background so open tabs receive SETTINGS_CHANGED
+// and apply the new value live (without a refresh).
+function pushSettings(patch: Partial<InspektSettings>): void {
+  void chrome.runtime
+    .sendMessage({ type: 'UPDATE_SETTINGS', settings: patch })
+    .catch(() => void updateSettings(patch));
+}
+
+// The Modifiers row is a read-only pill linking to the options page. Settings
+// for Activation modifiers live there (4 checkboxes + live preview); the
+// popup is too narrow to host all four cleanly.
+modifiersPill.addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+});
+
+editorSelect.addEventListener('change', () => {
+  pushSettings({ editor: editorSelect.value });
+});
+
+function wireToggleMini(el: HTMLDivElement, apply: (next: boolean) => void): void {
+  const flip = (): void => {
+    const next = !el.classList.contains('active');
+    el.classList.toggle('active', next);
+    el.setAttribute('aria-checked', String(next));
+    apply(next);
+  };
+  el.addEventListener('click', flip);
+  el.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      flip();
+    }
+  });
+}
+
+wireToggleMini(treeToggle, (next) => pushSettings({ treePanelEnabled: next }));
+wireToggleMini(bboxToggle, (next) => pushSettings({ showBoundingBoxes: next }));
+
 settingsBtn.addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
@@ -205,25 +270,14 @@ function updateStatus(response: AuthoritativeState): void {
   }
 }
 
-function activationLabel(mode: string): string {
-  switch (mode) {
-    case 'click-mod': return 'Click (Ctrl+Alt)';
-    case 'click':     return 'Click (any)';
-    case 'view':      return 'View (boxes)';
-    case 'hover-mod': return 'Hover (Ctrl+Alt)';
-    case 'hover':     return 'Hover (always)';
-    case 'manual':    return 'Keyboard only';
-    default:          return mode;
-  }
-}
-
-function capitalize(s: string): string {
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 // ---- Theme cycler ----
 // All three extension surfaces share `wireThemeCycler` so a flip on one
 // (popup / options / welcome) propagates live to the others.
 void wireThemeCycler('popup-theme', 'popup-theme-stack');
+
+// Tooltips (replace native title="" — see `attachTooltip` in @inspekt/core).
+const popupThemeBtn = document.getElementById('popup-theme');
+if (popupThemeBtn) attachTooltip(popupThemeBtn, 'Theme');
+attachTooltip(standaloneBtn, 'Inspect any site without a build plugin');
 
 void init();
