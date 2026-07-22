@@ -1,6 +1,6 @@
 {
   "name": "@aylith/inspekt",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Everything-in-one package for Inspekt — the element inspector runtime, Vite/bundler plugins, CLI, daemon, and MCP server. Installs every @aylith/inspekt-* package and exposes the inspekt, inspekt-daemon, and inspekt-mcp commands.",
   "license": "MIT",
   "type": "module",

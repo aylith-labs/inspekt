@@ -1,6 +1,6 @@
 {
   "name": "@aylith/inspekt-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Inspekt MCP server — exposes the grab queue to agents (Claude Code, Cursor, Codex, Gemini CLI, Antigravity) over stdio",
   "type": "module",
   "main": "./dist/index.js",
