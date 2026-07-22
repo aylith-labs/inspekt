@@ -1,6 +1,6 @@
 {
   "name": "@aylith/inspekt-daemon",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Inspekt daemon — localhost HTTP server with grab queue for agent integration",
   "type": "module",
   "main": "./dist/index.js",
@@ -34,7 +34,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@aylith/inspekt-cli": "*",
+    "@aylith/inspekt-cli": "workspace:*",
     "hono": "^4.12.31",
     "@hono/node-server": "^2.0.11",
     "proper-lockfile": "^4.1.2"

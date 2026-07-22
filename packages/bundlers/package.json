@@ -1,6 +1,6 @@
 {
   "name": "@aylith/inspekt-bundlers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Inspekt plugins for Webpack, Rspack, esbuild, and Rollup — injects source location attributes at build time",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -25,7 +25,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@aylith/inspekt-vite": "*"
+    "@aylith/inspekt-vite": "workspace:*"
   },
   "peerDependencies": {
     "webpack": ">=5.0.0",

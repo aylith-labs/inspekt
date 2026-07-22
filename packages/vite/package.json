@@ -1,6 +1,6 @@
 {
   "name": "@aylith/inspekt-vite",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Inspekt Vite plugin — injects source location attributes at build time",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -47,8 +47,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@aylith/inspekt-core": "*",
-    "@aylith/inspekt-cli": "*",
+    "@aylith/inspekt-core": "workspace:*",
+    "@aylith/inspekt-cli": "workspace:*",
     "@code-inspector/core": "^2.0.4",
     "unplugin": "^3.3.0"
   },
