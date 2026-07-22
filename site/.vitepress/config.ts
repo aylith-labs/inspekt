@@ -82,7 +82,7 @@ export default defineConfig({
     search: { provider: 'local' },
     editLink: {
       pattern:
-        'https://github.com/steven-pribilinskiy/inspekt/edit/main/site/:path',
+        'https://github.com/aylith-labs/inspekt/edit/main/site/:path',
       text: 'Edit this page on GitHub',
     },
     footer: {

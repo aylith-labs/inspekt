@@ -6,7 +6,7 @@ allowed-tools: mcp__inspekt__grab_latest, mcp__inspekt__list_grabs, mcp__inspekt
 
 # Inspekt grabs
 
-The user has the [Inspekt](https://github.com/steven-pribilinskiy/inspekt)
+The user has the [Inspekt](https://github.com/aylith-labs/inspekt)
 Chrome extension installed. When they click a UI element, Inspekt captures the
 source file path, line/column, component name, surrounding source snippet, and
 the page URL, then queues it on the local daemon. This skill makes that queue

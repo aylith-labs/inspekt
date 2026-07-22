@@ -48,7 +48,7 @@ onMounted(() => {
           <span class="prompt">$</span>
           <span class="cmd">npx inspekt setup</span>
         </code>
-        <a class="hero-source" href="https://github.com/steven-pribilinskiy/inspekt">View on GitHub →</a>
+        <a class="hero-source" href="https://github.com/aylith-labs/inspekt">View on GitHub →</a>
       </div>
     </header>
 

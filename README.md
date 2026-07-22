@@ -193,7 +193,7 @@ All Inspekt UI renders inside Shadow DOM to prevent any style conflicts with you
 ## Development
 
 ```bash
-git clone https://github.com/steven-pribilinskiy/inspekt.git
+git clone https://github.com/aylith-labs/inspekt.git
 cd inspekt
 bun install
 bun run build

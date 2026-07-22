@@ -6,7 +6,7 @@ installable via [`npx skills`](https://skillsmp.com).
 ## Install
 
 ```bash
-npx skills add steven-pribilinskiy/inspekt@skill -g -a claude-code -y
+npx skills add aylith-labs/inspekt@skill -g -a claude-code -y
 ```
 
 This drops `SKILL.md` into `~/.claude/skills/inspekt/`. Then run:
@@ -25,5 +25,5 @@ When you reference a UI element you grabbed with the Inspekt Chrome extension
 `grab_latest()` automatically and uses the returned file/line/snippet to
 answer your request.
 
-See the [Inspekt repository](https://github.com/steven-pribilinskiy/inspekt)
+See the [Inspekt repository](https://github.com/aylith-labs/inspekt)
 for the full agent-grab story.

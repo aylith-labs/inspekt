@@ -6,7 +6,7 @@
 <template>
   <a
     class="inspekt-gh"
-    href="https://github.com/steven-pribilinskiy/inspekt"
+    href="https://github.com/aylith-labs/inspekt"
     target="_blank"
     rel="noopener noreferrer"
     aria-label="GitHub repository"

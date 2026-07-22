@@ -39,7 +39,7 @@ npx inspekt setup --agents claude-code,cursor
 You can also install just the skill via:
 
 ```bash
-npx skills add steven-pribilinskiy/inspekt@skill -g -a claude-code -y
+npx skills add aylith-labs/inspekt@skill -g -a claude-code -y
 ```
 
 ### Cursor

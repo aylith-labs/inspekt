@@ -1,6 +1,6 @@
 <script setup lang="ts">
-// Long-form credit roll. Reinforces principle #1 (don't reinvent the wheel)
-// from PRODUCT.md. Lists every reused OSS lib with one line on what it does.
+// Long-form credit roll — every reused OSS lib with one line on what it does.
+// Reinforces the project principle of not reinventing the wheel.
 
 const credits = [
   { name: 'launch-editor', author: 'yyx990803', role: 'opens files in the user IDE', url: 'https://github.com/yyx990803/launch-editor' },
@@ -35,7 +35,7 @@ const credits = [
     <div class="meta">
       <span>MIT licensed</span>
       <span>·</span>
-      <a href="https://github.com/steven-pribilinskiy/inspekt">github.com/steven-pribilinskiy/inspekt</a>
+      <a href="https://github.com/aylith-labs/inspekt">github.com/aylith-labs/inspekt</a>
     </div>
   </footer>
 </template>
