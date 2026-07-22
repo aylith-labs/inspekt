@@ -23,20 +23,20 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@floating-ui/dom": "^1.7.6",
+    "@floating-ui/dom": "^1.8.0",
     "@jridgewell/trace-mapping": "^0.3.31",
-    "bippy": "^0.5.39",
+    "bippy": "^0.6.0",
     "prismjs": "^1.30.0",
-    "react-grab": "^0.1.33"
+    "react-grab": "^0.1.48"
   },
   "devDependencies": {
-    "@jridgewell/sourcemap-codec": "^1.5.0",
-    "@types/chrome": "^0.0.287",
+    "@jridgewell/sourcemap-codec": "^1.5.5",
+    "@types/chrome": "^0.2.2",
     "@types/prismjs": "^1.26.6",
-    "happy-dom": "^15.0.0",
-    "tsup": "^8.3.0",
+    "happy-dom": "^20.11.0",
+    "tsup": "^8.5.1",
     "typescript": "^7.0.2",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.10"
   },
   "sideEffects": false,
   "license": "MIT"

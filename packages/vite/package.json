@@ -44,16 +44,16 @@
   "dependencies": {
     "@aylith/inspekt-core": "*",
     "@aylith/inspekt-cli": "*",
-    "@code-inspector/core": "^1.5.1",
-    "unplugin": "^2.2.0"
+    "@code-inspector/core": "^2.0.4",
+    "unplugin": "^3.3.0"
   },
   "devDependencies": {
-    "tsup": "^8.3.0",
+    "tsup": "^8.5.1",
     "typescript": "^7.0.2",
-    "vitest": "^3.0.0",
-    "vite": "^6.0.0",
-    "@swc/core": "^1.10.0",
-    "@types/node": "^22.0.0"
+    "vitest": "^4.1.10",
+    "vite": "^8.1.5",
+    "@swc/core": "^1.15.46",
+    "@types/node": "^26.1.1"
   },
   "peerDependencies": {
     "vite": ">=4.0.0"

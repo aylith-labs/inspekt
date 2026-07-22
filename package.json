@@ -2,7 +2,7 @@
   "name": "inspekt",
   "private": true,
   "description": "Framework-agnostic element inspector for developers",
-  "packageManager": "bun@1.3.13",
+  "packageManager": "bun@1.3.14",
   "workspaces": [
     "packages/*",
     "playground",

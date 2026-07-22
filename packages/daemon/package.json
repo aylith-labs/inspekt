@@ -30,15 +30,15 @@
   },
   "dependencies": {
     "@aylith/inspekt-cli": "*",
-    "hono": "^4.12.18",
-    "@hono/node-server": "^1.13.0",
+    "hono": "^4.12.31",
+    "@hono/node-server": "^2.0.11",
     "proper-lockfile": "^4.1.2"
   },
   "devDependencies": {
-    "tsup": "^8.3.0",
+    "tsup": "^8.5.1",
     "typescript": "^7.0.2",
-    "vitest": "^3.0.0",
-    "@types/node": "^22.0.0",
+    "vitest": "^4.1.10",
+    "@types/node": "^26.1.1",
     "@types/proper-lockfile": "^4.1.4"
   },
   "license": "MIT"

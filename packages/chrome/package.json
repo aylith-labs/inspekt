@@ -15,11 +15,11 @@
     "@aylith/inspekt-core": "*"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.287",
-    "node-html-parser": "^7.1.0",
-    "tsup": "^8.3.0",
+    "@types/chrome": "^0.2.2",
+    "node-html-parser": "^9.0.0",
+    "tsup": "^8.5.1",
     "typescript": "^7.0.2",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.10"
   },
   "license": "MIT"
 }
