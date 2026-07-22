@@ -13,7 +13,9 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist --rootDir src",
     "typecheck": "tsc --noEmit",
@@ -28,13 +30,22 @@
     "esbuild": ">=0.17.0"
   },
   "peerDependenciesMeta": {
-    "webpack": { "optional": true },
-    "@rspack/core": { "optional": true },
-    "esbuild": { "optional": true }
+    "webpack": {
+      "optional": true
+    },
+    "@rspack/core": {
+      "optional": true
+    },
+    "esbuild": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^7.0.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

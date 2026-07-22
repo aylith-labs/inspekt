@@ -20,7 +20,9 @@
     },
     "./cli": "./dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist --rootDir src",
     "dev": "tsup --watch",
@@ -41,5 +43,8 @@
     "@types/node": "^26.1.1",
     "@types/proper-lockfile": "^4.1.4"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

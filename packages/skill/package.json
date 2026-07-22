@@ -14,5 +14,8 @@
   "devDependencies": {
     "vitest": "^4.1.10"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }

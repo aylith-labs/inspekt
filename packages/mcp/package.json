@@ -14,7 +14,9 @@
     },
     "./cli": "./dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -34,5 +36,8 @@
     "vitest": "^4.1.10",
     "@types/node": "^26.1.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  }
 }
