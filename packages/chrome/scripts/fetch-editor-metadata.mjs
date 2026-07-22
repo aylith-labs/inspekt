@@ -6,7 +6,7 @@
  * Inspekt has no backend — this is run on demand and the JSON output is
  * committed. Re-run when editor home pages change or when adding new editors.
  *
- *   bun run --filter '@inspekt/chrome' fetch-metadata
+ *   bun run --filter '@aylith/inspekt-chrome' fetch-metadata
  *
  * For each editor URL, we extract:
  *   - title       → og:title || <title>

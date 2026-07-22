@@ -1,5 +1,5 @@
 {
-  "name": "@inspekt/daemon",
+  "name": "@aylith/inspekt-daemon",
   "version": "0.1.0",
   "description": "Inspekt daemon — localhost HTTP server with grab queue for agent integration",
   "type": "module",
@@ -17,25 +17,26 @@
     "./queue": {
       "import": "./dist/queue.js",
       "types": "./dist/queue.d.ts"
-    }
+    },
+    "./cli": "./dist/cli.js"
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist --rootDir src",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@inspekt/cli": "*",
+    "@aylith/inspekt-cli": "*",
     "hono": "^4.12.18",
     "@hono/node-server": "^1.13.0",
     "proper-lockfile": "^4.1.2"
   },
   "devDependencies": {
     "tsup": "^8.3.0",
-    "typescript": "^5.7.0",
+    "typescript": "^7.0.2",
     "vitest": "^3.0.0",
     "@types/node": "^22.0.0",
     "@types/proper-lockfile": "^4.1.4"

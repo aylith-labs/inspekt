@@ -1,3 +1,4 @@
+/// <reference types="chrome" />
 // Caches for the source-map resolver.
 //
 // Two layers:

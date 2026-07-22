@@ -1,4 +1,4 @@
-import { attachTooltip } from '@inspekt/core';
+import { attachTooltip } from '@aylith/inspekt-core';
 import { getSettings, updateSettings, type InspektSettings, type ModifierKey } from '../storage.js';
 import { buildEditorOptgroupHtml } from '../selects.js';
 import { wireThemeCycler } from '../theme.js';
@@ -275,7 +275,7 @@ function updateStatus(response: AuthoritativeState): void {
 // (popup / options / welcome) propagates live to the others.
 void wireThemeCycler('popup-theme', 'popup-theme-stack');
 
-// Tooltips (replace native title="" — see `attachTooltip` in @inspekt/core).
+// Tooltips (replace native title="" — see `attachTooltip` in @aylith/inspekt-core).
 const popupThemeBtn = document.getElementById('popup-theme');
 if (popupThemeBtn) attachTooltip(popupThemeBtn, 'Theme');
 attachTooltip(standaloneBtn, 'Inspect any site without a build plugin');

@@ -28,7 +28,7 @@
 
       <div class="box daemon">
         <span class="box-tag">node</span>
-        <h4>@inspekt/daemon</h4>
+        <h4>@aylith/inspekt-daemon</h4>
         <ul>
           <li>Hono on <code>127.0.0.1:5678</code></li>
           <li>token-gated <code>POST /__inspekt/grab</code></li>
@@ -48,7 +48,7 @@
 
       <div class="box mcp">
         <span class="box-tag">stdio</span>
-        <h4>@inspekt/mcp</h4>
+        <h4>@aylith/inspekt-mcp</h4>
         <ul>
           <li>grab_latest · list_grabs · get_grab</li>
           <li>mark_grab_processed · clear_queue</li>

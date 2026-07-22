@@ -13,12 +13,12 @@ A framework-agnostic element inspector for developers. Click any UI element to s
 ## Quick Start
 
 ```bash
-npm install -D @inspekt/vite
+npm install -D @aylith/inspekt-vite
 ```
 
 ```ts
 // vite.config.ts
-import { inspekt } from '@inspekt/vite';
+import { inspekt } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [
@@ -48,18 +48,19 @@ On Mac, `Cmd` replaces `Ctrl`.
 
 | Package | Description |
 |---------|-------------|
-| [`@inspekt/core`](packages/core) | Runtime UI — overlay, popover, tree panel, highlighting. Pure vanilla JS/CSS in Shadow DOM |
-| [`@inspekt/vite`](packages/vite) | Vite plugin — injects source location attributes at build time |
-| [`@inspekt/bundlers`](packages/bundlers) | Webpack, Rspack, esbuild, and Rollup plugins (via unplugin) |
-| [`@inspekt/cli`](packages/cli) | CLI utility — open files in IDE from terminal |
-| [`@inspekt/chrome`](packages/chrome) | Chrome extension — global settings and standalone inspector |
+| [`@aylith/inspekt`](packages/inspekt) | **Everything in one** — installs every package below and provides the `inspekt`, `inspekt-daemon`, and `inspekt-mcp` commands |
+| [`@aylith/inspekt-core`](packages/core) | Runtime UI — overlay, popover, tree panel, highlighting. Pure vanilla JS/CSS in Shadow DOM |
+| [`@aylith/inspekt-vite`](packages/vite) | Vite plugin — injects source location attributes at build time |
+| [`@aylith/inspekt-bundlers`](packages/bundlers) | Webpack, Rspack, esbuild, and Rollup plugins (via unplugin) |
+| [`@aylith/inspekt-cli`](packages/cli) | CLI utility — open files in IDE from terminal |
+| [`@aylith/inspekt-chrome`](packages/chrome) | Chrome extension — global settings and standalone inspector |
 
 ## Bundler Setup
 
 ### Vite
 
 ```ts
-import { inspekt } from '@inspekt/vite';
+import { inspekt } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [inspekt()],
@@ -69,7 +70,7 @@ export default defineConfig({
 ### Webpack
 
 ```ts
-import { webpack } from '@inspekt/bundlers';
+import { webpack } from '@aylith/inspekt-bundlers';
 
 module.exports = {
   plugins: [webpack()],
@@ -79,7 +80,7 @@ module.exports = {
 ### Rspack / Rsbuild
 
 ```ts
-import { rspack } from '@inspekt/bundlers';
+import { rspack } from '@aylith/inspekt-bundlers';
 
 module.exports = {
   plugins: [rspack()],
@@ -89,7 +90,7 @@ module.exports = {
 ### esbuild
 
 ```ts
-import { esbuild } from '@inspekt/bundlers';
+import { esbuild } from '@aylith/inspekt-bundlers';
 
 await build({
   plugins: [esbuild()],
@@ -141,7 +142,7 @@ inspekt({
 Add your own actions to the inspector popover:
 
 ```ts
-import { createInspekt } from '@inspekt/core';
+import { createInspekt } from '@aylith/inspekt-core';
 
 const inspekt = createInspekt();
 

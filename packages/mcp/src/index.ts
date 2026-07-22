@@ -8,8 +8,8 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { GrabQueue } from '@inspekt/daemon/queue';
-import { openInEditor } from '@inspekt/cli';
+import { GrabQueue } from '@aylith/inspekt-daemon/queue';
+import { openInEditor } from '@aylith/inspekt-cli';
 import path from 'node:path';
 import os from 'node:os';
 
@@ -121,7 +121,7 @@ export function createMcpServer(opts: CreateMcpServerOptions = {}): McpServer {
     'open_grab_in_editor',
     {
       description:
-        "Opens the source file referenced by a grab in the user's IDE. Falls through to @inspekt/cli → launch-editor.",
+        "Opens the source file referenced by a grab in the user's IDE. Falls through to @aylith/inspekt-cli → launch-editor.",
       inputSchema: {
         id: z.string().describe('The grab ID.'),
         editor: z

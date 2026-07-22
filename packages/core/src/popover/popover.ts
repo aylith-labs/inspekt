@@ -13,7 +13,7 @@ const ICON_CONSOLE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 const ICON_INFO = `<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.8" r="0.6" fill="currentColor" stroke="none"/></svg>`;
 
 export interface PopoverSnippetConfig {
-  /** Where the dev-server lives (set by @inspekt/vite at init time). */
+  /** Where the dev-server lives (set by @aylith/inspekt-vite at init time). */
   serverUrl?: string;
   /** Lines of context above and below the target line. */
   context: number;

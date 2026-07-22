@@ -5,7 +5,7 @@
 
 import { Hono, type Context } from 'hono';
 import { cors } from 'hono/cors';
-import { openInEditor } from '@inspekt/cli';
+import { openInEditor } from '@aylith/inspekt-cli';
 import { GrabQueue } from './queue.js';
 import type { DaemonConfig, Grab } from './types.js';
 
@@ -28,7 +28,7 @@ export function createServer(config: DaemonConfig): Hono {
   }
 
   // Capability ping — also used by Phase 2's probe to detect agentConnected.
-  // HEAD requests get 200, just like the @inspekt/vite endpoint.
+  // HEAD requests get 200, just like the @aylith/inspekt-vite endpoint.
   app.on(['GET', 'HEAD'], '/__inspekt/daemon', (c) =>
     c.json({ ok: true, version: '0.1.0', mcp: true }),
   );
@@ -75,7 +75,7 @@ export function createServer(config: DaemonConfig): Hono {
     return c.json({ ok: true });
   });
 
-  // Open a grab in the user's IDE (fall through to @inspekt/cli → launch-editor).
+  // Open a grab in the user's IDE (fall through to @aylith/inspekt-cli → launch-editor).
   app.post('/__inspekt/open', async (c) => {
     if (!authOk(c)) return c.json({ error: 'unauthorized' }, 401);
     try {

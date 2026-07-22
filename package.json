@@ -19,9 +19,12 @@
     "site:build": "cd site && bun run docs:build"
   },
   "devDependencies": {
-    "turbo": "^2.4.0",
-    "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "prettier": "^3.4.0"
+    "turbo": "^2.10.5",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10",
+    "prettier": "^3.9.6"
+  },
+  "overrides": {
+    "zod": "^4.4.3"
   }
 }

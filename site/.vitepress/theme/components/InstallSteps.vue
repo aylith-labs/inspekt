@@ -30,8 +30,8 @@ function copy(text: string) {
           <h3>Add the Vite plugin <span class="aside">(skip for React)</span>.</h3>
           <p>React and Preact read source location from fiber data. For Vue, Svelte, Solid, Astro:</p>
           <div class="code-wrap">
-            <code>bun add -D @inspekt/vite</code>
-            <button class="copy" @click="copy('bun add -D @inspekt/vite')">{{ copied ? 'copied' : 'copy' }}</button>
+            <code>bun add -D @aylith/inspekt-vite</code>
+            <button class="copy" @click="copy('bun add -D @aylith/inspekt-vite')">{{ copied ? 'copied' : 'copy' }}</button>
           </div>
         </div>
       </li>

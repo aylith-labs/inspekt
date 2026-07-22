@@ -1,4 +1,4 @@
-import { createInspekt, type InspektInstance } from '@inspekt/core';
+import { createInspekt, type InspektInstance } from '@aylith/inspekt-core';
 import { getSettings, updateSettings } from '../storage.js';
 import { buildEditorOptgroupHtml } from '../selects.js';
 import { wireThemeCycler } from '../theme.js';

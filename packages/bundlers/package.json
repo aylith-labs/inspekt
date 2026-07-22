@@ -1,5 +1,5 @@
 {
-  "name": "@inspekt/bundlers",
+  "name": "@aylith/inspekt-bundlers",
   "version": "0.1.0",
   "description": "Inspekt plugins for Webpack, Rspack, esbuild, and Rollup — injects source location attributes at build time",
   "type": "module",
@@ -15,12 +15,12 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist --rootDir src",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@inspekt/vite": "*"
+    "@aylith/inspekt-vite": "*"
   },
   "peerDependencies": {
     "webpack": ">=5.0.0",
@@ -34,7 +34,7 @@
   },
   "devDependencies": {
     "tsup": "^8.3.0",
-    "typescript": "^5.7.0"
+    "typescript": "^7.0.2"
   },
   "license": "MIT"
 }

@@ -1,4 +1,4 @@
-import { createInspekt, type InspektInstance } from '@inspekt/core';
+import { createInspekt, type InspektInstance } from '@aylith/inspekt-core';
 
 let instance: InspektInstance | null = null;
 let hasPlugin = false;

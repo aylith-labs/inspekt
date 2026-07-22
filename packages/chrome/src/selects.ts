@@ -9,7 +9,7 @@
  * pre-fetched at build time into `editor-metadata.json` via
  * `scripts/fetch-editor-metadata.mjs`.
  */
-import type { RichSelectItem } from '@inspekt/core';
+import type { RichSelectItem } from '@aylith/inspekt-core';
 import type { CustomEditor } from './storage.js';
 import metadata from './editor-metadata.json' with { type: 'json' };
 

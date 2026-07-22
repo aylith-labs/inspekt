@@ -1,0 +1,59 @@
+{
+  "name": "@aylith/inspekt",
+  "version": "0.4.0",
+  "description": "Everything-in-one package for Inspekt — the element inspector runtime, Vite/bundler plugins, CLI, daemon, and MCP server. Installs every @aylith/inspekt-* package and exposes the inspekt, inspekt-daemon, and inspekt-mcp commands.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./bundlers": {
+      "types": "./dist/bundlers.d.ts",
+      "import": "./dist/bundlers.js"
+    }
+  },
+  "bin": {
+    "inspekt": "./bin/inspekt.js",
+    "inspekt-daemon": "./bin/inspekt-daemon.js",
+    "inspekt-mcp": "./bin/inspekt-mcp.js"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aylith-labs/inspekt.git",
+    "directory": "packages/inspekt"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup && tsc -p tsconfig.json",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aylith/inspekt-core": "*",
+    "@aylith/inspekt-cli": "*",
+    "@aylith/inspekt-vite": "*",
+    "@aylith/inspekt-bundlers": "*",
+    "@aylith/inspekt-daemon": "*",
+    "@aylith/inspekt-mcp": "*",
+    "@aylith/inspekt-skill": "*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

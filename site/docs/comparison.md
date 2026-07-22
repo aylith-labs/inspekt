@@ -13,7 +13,7 @@ How Inspekt differs from peer click-to-source devtools.
 | **Chrome extension** | ✅ | ✅ | ❌ | ✅ |
 | **MCP server for agents** | ✅ | ❌ | ❌ | ❌ |
 | **Cross-app config sync** | ✅ | ❌ | ❌ | ❌ |
-| **Setup CLI (`npx inspekt setup`)** | ✅ | ❌ | ❌ | ❌ |
+| **Setup CLI (`npx @aylith/inspekt setup`)** | ✅ | ❌ | ❌ | ❌ |
 | **Maintained 2026** | ✅ | dormant | ✅ | ✅ |
 
 ## What Inspekt reuses

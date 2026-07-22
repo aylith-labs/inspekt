@@ -16,23 +16,23 @@ bun run build
 bun run test
 
 # Run a single package's tests
-bun run --filter '@inspekt/core' test
-bun run --filter '@inspekt/vite' test
+bun run --filter '@aylith/inspekt-core' test
+bun run --filter '@aylith/inspekt-vite' test
 
 # Build a single package
-bun run --filter '@inspekt/core' build
+bun run --filter '@aylith/inspekt-core' build
 
 # Start the playground (React + Vite demo app)
 bun run --filter 'inspekt-playground' dev   # http://localhost:5173
 
 # Watch mode for a package during development
-bun run --filter '@inspekt/core' dev
+bun run --filter '@aylith/inspekt-core' dev
 
 # Typecheck
 bun run typecheck
 ```
 
-Build order matters: `@inspekt/core` and `@inspekt/cli` must build before `@inspekt/vite`, which must build before `@inspekt/bundlers`. Turbo handles this automatically via `^build` dependencies.
+Build order matters: `@aylith/inspekt-core` and `@aylith/inspekt-cli` must build before `@aylith/inspekt-vite`, which must build before `@aylith/inspekt-bundlers`. Turbo handles this automatically via `^build` dependencies.
 
 ## Architecture
 
@@ -43,11 +43,11 @@ Bun workspaces + Turborepo. All packages use tsup for bundling and output dual E
 ### Package Dependency Graph
 
 ```
-@inspekt/core          ← Foundation: runtime UI, adapters, detection
-├── @inspekt/cli       ← IDE opening utility (launch-editor)
-├── @inspekt/vite      ← Vite plugin (depends on core + cli)
-│   └── @inspekt/bundlers  ← Webpack/Rspack/esbuild/Rollup via unplugin
-├── @inspekt/chrome    ← Chrome extension (bundles core into content script)
+@aylith/inspekt-core          ← Foundation: runtime UI, adapters, detection
+├── @aylith/inspekt-cli       ← IDE opening utility (launch-editor)
+├── @aylith/inspekt-vite      ← Vite plugin (depends on core + cli)
+│   └── @aylith/inspekt-bundlers  ← Webpack/Rspack/esbuild/Rollup via unplugin
+├── @aylith/inspekt-chrome    ← Chrome extension (bundles core into content script)
 └── playground/        ← React + Vite demo app
 ```
 
@@ -55,7 +55,7 @@ Bun workspaces + Turborepo. All packages use tsup for bundling and output dual E
 
 **Build time**: The Vite plugin (`packages/vite/src/transform.ts`) runs a regex-based JSX/template transform that injects `data-insp-path="filePath:line:col:componentName"` attributes onto every element's opening tag. Uses `magic-string` for source-map-safe string manipulation. The `findTagClose()` function properly tracks brace/paren/string depth to avoid breaking arrow functions in JSX attributes.
 
-**Runtime injection**: The Vite plugin serves a virtual module at `/@inspekt/init.js` via dev server middleware + `resolveId`/`load` hooks. This module imports `@inspekt/core`, calls `createInspekt()`, and enables the inspector. The `transformIndexHtml` hook injects a `<script>` tag pointing to this virtual module.
+**Runtime injection**: The Vite plugin serves a virtual module at `/@aylith/inspekt-init.js` via dev server middleware + `resolveId`/`load` hooks. This module imports `@aylith/inspekt-core`, calls `createInspekt()`, and enables the inspector. The `transformIndexHtml` hook injects a `<script>` tag pointing to this virtual module.
 
 **Runtime**: `createInspekt()` in `packages/core/src/index.ts` creates a `<inspekt-root>` custom element with Shadow DOM (`attachShadow({ mode: 'open' })`). All UI (popover, tree panel, overlay badges) renders inside this shadow root, preventing CSS conflicts with the host app. Highlights are applied as inline styles on the actual DOM elements.
 
@@ -67,6 +67,6 @@ Bun workspaces + Turborepo. All packages use tsup for bundling and output dual E
 
 - **Source detection**: `findClosestSource()` walks up the DOM looking for `data-insp-path` or `data-insp-path` (backward compat with code-inspector-plugin)
 - **Actions**: Built-in (open-editor, copy-path, open-github, console-log) + custom via `registerAction()`. Editor opening uses dev server POST to `/__inspekt/open` with fallback to protocol handlers (`cursor://file/...`)
-- **Multi-bundler**: `packages/vite/src/unplugin.ts` wraps the transform in `createUnplugin()`. `@inspekt/bundlers` re-exports webpack/rspack/esbuild/rollup variants as named exports
+- **Multi-bundler**: `packages/vite/src/unplugin.ts` wraps the transform in `createUnplugin()`. `@aylith/inspekt-bundlers` re-exports webpack/rspack/esbuild/rollup variants as named exports
 - **Docker path mapping**: Parses `docker-compose.yaml` volume mounts to map container paths → host paths. Manual override via `pathMapping` config option
 - **Transform skip list**: Tags like `template`, `script`, `style`, `Fragment`, `svelte:*` are excluded from attribute injection

@@ -4,7 +4,7 @@ Inspekt has three pieces you install once each:
 
 1. The **Chrome extension** (the UI surface for grabbing and inspecting).
 2. The **Vite plugin** in any project where you want snippets + click-to-source for Vue/Svelte/Solid/Astro. React/Preact need nothing.
-3. The **agent integration** via `npx inspekt setup` (one-shot CLI that wires Inspekt into Claude Code, Cursor, Codex, Gemini CLI, and Antigravity).
+3. The **agent integration** via `npx @aylith/inspekt setup` (one-shot CLI that wires Inspekt into Claude Code, Cursor, Codex, Gemini CLI, and Antigravity).
 
 ## 1. Chrome extension
 
@@ -25,15 +25,15 @@ For Vue, Svelte, Solid, Astro:
 ::: code-group
 
 ```bash [bun]
-bun add -D @inspekt/vite
+bun add -D @aylith/inspekt-vite
 ```
 
 ```bash [pnpm]
-pnpm add -D @inspekt/vite
+pnpm add -D @aylith/inspekt-vite
 ```
 
 ```bash [npm]
-npm install -D @inspekt/vite
+npm install -D @aylith/inspekt-vite
 ```
 
 :::
@@ -41,7 +41,7 @@ npm install -D @inspekt/vite
 ```ts
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { inspekt } from '@inspekt/vite';
+import { inspekt } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [
@@ -62,7 +62,7 @@ The plugin only injects in development. Production builds are untouched.
 ## 3. Agent integration
 
 ```bash
-npx inspekt setup
+npx @aylith/inspekt setup
 ```
 
 This generates an auth token, writes it to `~/.inspekt/config.json`, and adds
@@ -72,7 +72,7 @@ preserves the token and refreshes config entries.
 To target specific agents:
 
 ```bash
-npx inspekt setup --agents claude-code,cursor
+npx @aylith/inspekt setup --agents claude-code,cursor
 ```
 
 See [Agent integration](/docs/agent-integration) for the per-agent details.
@@ -83,7 +83,7 @@ Inspekt's daemon auto-starts on the first grab. If you prefer to run it
 manually:
 
 ```bash
-npx @inspekt/daemon
+npx @aylith/inspekt-daemon
 ```
 
 Useful when you want grabs to be queued even before any agent has spawned its
@@ -97,7 +97,7 @@ loaded. The Inspekt toolbar icon should:
 
 - Be **greyscale** on plain sites (no instrumentation).
 - Be **full color** on Inspekt-instrumented sites (React in dev, or any project
-  with `@inspekt/vite` configured).
+  with `@aylith/inspekt-vite` configured).
 - Show a **DEV** badge when the local dev server is up.
 
 Click an element → the popover shows the file path. Expand the snippet section

@@ -1,5 +1,5 @@
 {
-  "name": "@inspekt/chrome",
+  "name": "@aylith/inspekt-chrome",
   "version": "0.8.2",
   "private": true,
   "description": "Inspekt Chrome extension — global settings and standalone inspector",
@@ -12,13 +12,13 @@
     "clean": "rm -rf ../../dist"
   },
   "dependencies": {
-    "@inspekt/core": "*"
+    "@aylith/inspekt-core": "*"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",
     "node-html-parser": "^7.1.0",
     "tsup": "^8.3.0",
-    "typescript": "^5.7.0",
+    "typescript": "^7.0.2",
     "vitest": "^3.0.0"
   },
   "license": "MIT"

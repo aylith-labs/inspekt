@@ -1,9 +1,9 @@
 # API
 
-## `@inspekt/vite`
+## `@aylith/inspekt-vite`
 
 ```ts
-import { inspekt, type InspektViteOptions } from '@inspekt/vite';
+import { inspekt, type InspektViteOptions } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [inspekt({ /* options */ })],
@@ -25,10 +25,10 @@ interface InspektViteOptions {
 }
 ```
 
-## `@inspekt/core`
+## `@aylith/inspekt-core`
 
 ```ts
-import { createInspekt } from '@inspekt/core';
+import { createInspekt } from '@aylith/inspekt-core';
 
 const instance = createInspekt({
   serverUrl: 'http://localhost:5173',
@@ -41,10 +41,10 @@ instance.enable();
 
 Full options shape in `packages/core/src/types.ts`.
 
-## `@inspekt/daemon`
+## `@aylith/inspekt-daemon`
 
 ```ts
-import { startDaemon, GrabQueue } from '@inspekt/daemon';
+import { startDaemon, GrabQueue } from '@aylith/inspekt-daemon';
 
 const { port, stop } = await startDaemon({
   token: 'your-token',
@@ -64,20 +64,20 @@ Endpoints:
 | DELETE | `/__inspekt/queue` | Token | Clear all |
 | POST | `/__inspekt/open` | Token | Open grab in IDE |
 
-## `@inspekt/mcp`
+## `@aylith/inspekt-mcp`
 
 ```ts
-import { createMcpServer } from '@inspekt/mcp';
+import { createMcpServer } from '@aylith/inspekt-mcp';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
 const server = createMcpServer({ queuePath: '~/.inspekt/queue.jsonl' });
 await server.connect(new StdioServerTransport());
 ```
 
-## `@inspekt/cli`
+## `@aylith/inspekt-cli`
 
 ```ts
-import { openInEditor } from '@inspekt/cli';
+import { openInEditor } from '@aylith/inspekt-cli';
 
 openInEditor({
   file: 'src/Button.tsx',
@@ -90,7 +90,7 @@ openInEditor({
 Setup API:
 
 ```ts
-import { runSetup } from '@inspekt/cli/setup';
+import { runSetup } from '@aylith/inspekt-cli/setup';
 
 await runSetup({
   agents: ['claude-code', 'cursor'],

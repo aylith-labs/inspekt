@@ -1,4 +1,4 @@
-# @inspekt/skill
+# @aylith/inspekt-skill
 
 Inspekt's [Claude Code](https://docs.claude.com/en/docs/claude-code/) skill,
 installable via [`npx skills`](https://skillsmp.com).
@@ -12,7 +12,7 @@ npx skills add aylith-labs/inspekt@skill -g -a claude-code -y
 This drops `SKILL.md` into `~/.claude/skills/inspekt/`. Then run:
 
 ```bash
-npx inspekt setup
+npx @aylith/inspekt setup
 ```
 
 to register the `inspekt` MCP server with Claude Code so the skill's tool

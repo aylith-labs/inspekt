@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { GrabQueue } from '@inspekt/daemon/queue';
-import type { SerializedElement } from '@inspekt/daemon';
+import { GrabQueue } from '@aylith/inspekt-daemon/queue';
+import type { SerializedElement } from '@aylith/inspekt-daemon';
 import { createMcpServer } from '../index';
 
 function fakeElement(over: Partial<SerializedElement> = {}): SerializedElement {

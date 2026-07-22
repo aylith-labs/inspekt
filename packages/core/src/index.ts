@@ -432,7 +432,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       // Start capability probe: publishes via window.postMessage so the Chrome
       // extension content script can forward to the background and update the
       // toolbar icon. Lives behind a dynamic import so headless / SSR use of
-      // @inspekt/core doesn't pay for it.
+      // @aylith/inspekt-core doesn't pay for it.
       void import('./detection/capability-probe.js').then(({ watchCapabilities }) => {
         if (!enabled) return; // Could have been disabled during the import.
         capabilityTeardown = watchCapabilities({

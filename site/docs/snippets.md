@@ -11,7 +11,7 @@ Inspekt tries two sources in order:
 
 ### 1. Dev server (default)
 
-When `@inspekt/vite` is running, the plugin registers a `GET /__inspekt/snippet`
+When `@aylith/inspekt-vite` is running, the plugin registers a `GET /__inspekt/snippet`
 endpoint. The runtime fetches:
 
 ```
@@ -51,7 +51,7 @@ In the Chrome extension's options page:
 - **Lines of context** — context above and below the target line. Default: 5.
   Server-side clamped to 30.
 
-Programmatically (when using `@inspekt/vite` directly):
+Programmatically (when using `@aylith/inspekt-vite` directly):
 
 ```ts
 inspekt({

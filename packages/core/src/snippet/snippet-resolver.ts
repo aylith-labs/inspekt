@@ -1,6 +1,6 @@
 // Resolves source snippets for the overlay popover.
 //
-// Phase 1: dev-server fetch only — when @inspekt/vite is running, hits
+// Phase 1: dev-server fetch only — when @aylith/inspekt-vite is running, hits
 // `/__inspekt/snippet?file=&line=&context=` and renders the response.
 //
 // Phase 5 will extend this with an opt-in source-map fallback for production

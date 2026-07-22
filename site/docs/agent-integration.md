@@ -17,7 +17,7 @@ context window without copy-paste. The mechanism is the
 ## One-command setup
 
 ```bash
-npx inspekt setup
+npx @aylith/inspekt setup
 ```
 
 Detects every agent installed on your machine and registers the inspekt
@@ -26,7 +26,7 @@ MCP server with each one. Re-running is idempotent.
 To target a subset:
 
 ```bash
-npx inspekt setup --agents claude-code,cursor
+npx @aylith/inspekt setup --agents claude-code,cursor
 ```
 
 ## Per-agent details

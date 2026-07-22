@@ -3,7 +3,7 @@
 //
 //   [mcp_servers.inspekt]
 //   command = "npx"
-//   args = ["-y", "@inspekt/mcp"]
+//   args = ["-y", "@aylith/inspekt-mcp"]
 //   [mcp_servers.inspekt.env]
 //   INSPEKT_TOKEN = "..."
 //

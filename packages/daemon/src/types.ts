@@ -1,5 +1,5 @@
 // Wire types for the daemon's HTTP + queue surface.
-// Mirrors @inspekt/core's InspectedElement subset that's safe to serialize —
+// Mirrors @aylith/inspekt-core's InspectedElement subset that's safe to serialize —
 // no DOM nodes, no DOMRects, no functions. Snippets travel along when
 // available; the agent sees the actual source instead of just `file:line:col`.
 

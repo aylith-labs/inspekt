@@ -1,5 +1,5 @@
 {
-  "name": "@inspekt/vite",
+  "name": "@aylith/inspekt-vite",
   "version": "0.2.0",
   "description": "Inspekt Vite plugin — injects source location attributes at build time",
   "type": "module",
@@ -35,21 +35,21 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.json --noEmit false --declaration --emitDeclarationOnly --outDir dist --rootDir src",
     "dev": "tsup --watch",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@inspekt/core": "*",
-    "@inspekt/cli": "*",
+    "@aylith/inspekt-core": "*",
+    "@aylith/inspekt-cli": "*",
     "@code-inspector/core": "^1.5.1",
     "unplugin": "^2.2.0"
   },
   "devDependencies": {
     "tsup": "^8.3.0",
-    "typescript": "^5.7.0",
+    "typescript": "^7.0.2",
     "vitest": "^3.0.0",
     "vite": "^6.0.0",
     "@swc/core": "^1.10.0",

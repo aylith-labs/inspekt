@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { inspekt } from '@inspekt/vite';
+import { inspekt } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [

@@ -31,13 +31,13 @@ export interface InspektViteOptions {
    * When `false`, skip injecting the runtime init script + dev-only
    * middleware (snippet, open-editor, capabilities). Useful when the
    * Chrome extension is the only consumer and the project doesn't depend
-   * on `@inspekt/core` itself. Default `true`.
+   * on `@aylith/inspekt-core` itself. Default `true`.
    */
   runtimeInjection?: boolean;
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
-const INIT_PATH = '/@inspekt/init.js';
+const INIT_PATH = '/@aylith/inspekt-init.js';
 
 export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
   const options = {
@@ -67,7 +67,7 @@ export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
       pathMapping: pathMapping ?? options.pathMapping,
     };
     return `
-import { createInspekt } from '@inspekt/core';
+import { createInspekt } from '@aylith/inspekt-core';
 const inspekt = createInspekt(${JSON.stringify(runtimeOptions)});
 inspekt.enable();
 window.__INSPEKT_INSTANCE__ = inspekt;
@@ -99,7 +99,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
       // Serve the Inspekt init script as a Vite-transformed module
       server.middlewares.use((req, res, next) => {
         if (req.url === INIT_PATH) {
-          // Let Vite transform the module (resolves @inspekt/core import)
+          // Let Vite transform the module (resolves @aylith/inspekt-core import)
           server.transformRequest(INIT_PATH).then((result) => {
             if (result) {
               res.writeHead(200, {

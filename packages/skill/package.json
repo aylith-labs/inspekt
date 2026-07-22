@@ -1,5 +1,5 @@
 {
-  "name": "@inspekt/skill",
+  "name": "@aylith/inspekt-skill",
   "version": "0.1.0",
   "description": "Inspekt skill package — installable via `npx skills add` for Claude Code and other skill-aware agents",
   "type": "module",

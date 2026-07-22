@@ -14,7 +14,7 @@ available to you via the `inspekt` MCP server.
 
 ## Prerequisites
 
-The user has run `npx inspekt setup` once, which registered the `inspekt` MCP
+The user has run `npx @aylith/inspekt setup` once, which registered the `inspekt` MCP
 server with Claude Code's config. If the MCP tools below aren't available, ask
 the user to run that command and restart Claude Code.
 

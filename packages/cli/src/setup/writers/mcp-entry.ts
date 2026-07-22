@@ -15,7 +15,7 @@ export interface McpEntry {
 export function buildMcpEntry(config: InspektConfig): McpEntry {
   return {
     command: 'npx',
-    args: ['-y', '@inspekt/mcp'],
+    args: ['-y', '@aylith/inspekt-mcp'],
     env: {
       INSPEKT_TOKEN: config.token,
       INSPEKT_QUEUE_PATH: config.queuePath,

@@ -72,7 +72,7 @@ describe('runSetup', () => {
     const claudePath = path.join(home, '.config', 'claude', 'mcp.json');
     const claude = JSON.parse(readFileSync(claudePath, 'utf8'));
     expect(claude.mcpServers.inspekt.command).toBe('npx');
-    expect(claude.mcpServers.inspekt.args).toEqual(['-y', '@inspekt/mcp']);
+    expect(claude.mcpServers.inspekt.args).toEqual(['-y', '@aylith/inspekt-mcp']);
     expect(claude.mcpServers.inspekt.env.INSPEKT_TOKEN).toBe(result.token);
 
     // Skill file is present.

@@ -1,4 +1,4 @@
-import { createRichSelect, tokenizeToLines, type RichSelectController } from '@inspekt/core';
+import { createRichSelect, tokenizeToLines, type RichSelectController } from '@aylith/inspekt-core';
 import {
   getSettings,
   updateSettings,

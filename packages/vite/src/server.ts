@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { URL } from 'node:url';
-import { openInEditor } from '@inspekt/cli';
+import { openInEditor } from '@aylith/inspekt-cli';
 
 export interface InspektServerOptions {
   editor: string;

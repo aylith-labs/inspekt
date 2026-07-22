@@ -89,7 +89,7 @@ function fileNameOf(path: string): string {
  * Vue strips line/column from `__file`, so this surfaces `line: 1` —
  * good enough to open the file in the user's editor. The DOM-attribute
  * path (`data-insp-path`) remains the line-accurate option for Vue
- * projects that opt into `@inspekt/vite`.
+ * projects that opt into `@aylith/inspekt-vite`.
  */
 export function vueSourceFor(element: Element): SourceInfo | null {
   const el = element as VueAugmentedElement;

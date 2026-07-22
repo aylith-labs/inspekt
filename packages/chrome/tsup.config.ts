@@ -13,7 +13,7 @@ export default defineConfig([
     format: ['esm'],
     sourcemap: true,
     clean: true,
-    noExternal: ['@inspekt/core'],
+    noExternal: ['@aylith/inspekt-core'],
     splitting: false,
   },
 ]);
