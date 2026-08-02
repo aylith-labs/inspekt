@@ -8,7 +8,8 @@ A framework-agnostic element inspector for developers. Click any UI element to s
 - **Component tree** — full hierarchy with props, search, and highlighting
 - **Custom actions** — open in IDE, copy path, open on GitHub, or add your own
 - **Chrome extension** — global settings that sync across all your projects
-- **Zero runtime cost** — no overhead when disabled; ~13KB gzipped when active
+- **Agent integration** — grab an element and hand it to Claude Code, Cursor, Codex, Gemini CLI, or Antigravity over MCP
+- **Small runtime** — nothing runs when disabled; the core bundle is ~23 KB gzipped (its dependencies are external)
 
 ## Quick Start
 
@@ -54,6 +55,9 @@ On Mac, `Cmd` replaces `Ctrl`.
 | [`@aylith/inspekt-bundlers`](packages/bundlers) | Webpack, Rspack, esbuild, and Rollup plugins (via unplugin) |
 | [`@aylith/inspekt-cli`](packages/cli) | CLI utility — open files in IDE from terminal |
 | [`@aylith/inspekt-chrome`](packages/chrome) | Chrome extension — global settings and standalone inspector |
+| [`@aylith/inspekt-daemon`](packages/daemon) | Localhost HTTP server holding the grab queue the extension writes to |
+| [`@aylith/inspekt-mcp`](packages/mcp) | MCP server exposing the grab queue to agents over stdio |
+| [`@aylith/inspekt-skill`](packages/skill) | Installable skill telling a skill-aware agent when to read a grab |
 
 ## Bundler Setup
 
@@ -179,6 +183,21 @@ The Chrome extension provides:
 
 Load the extension from `packages/chrome/dist/` after building.
 
+## Agent Integration
+
+`npx inspekt setup` generates a token, writes it to `~/.inspekt/config.json`, and
+registers the Inspekt MCP server with every agent it finds installed (Claude Code,
+Cursor, Codex, Gemini CLI, Antigravity).
+
+With the daemon running (`inspekt-daemon`), "Send to Agent" in the popover appends
+the grabbed element — file, line, component, surrounding source, page URL — to a
+shared queue. The agent reads it through the MCP tools `grab_latest`, `list_grabs`,
+`get_grab`, `mark_grab_processed`, `clear_queue`, and `open_grab_in_editor`, so
+"fix this button" resolves to a real file and line.
+
+Every mutating daemon route requires the `X-Inspekt-Token` header. The token and
+handshake files are written owner-only.
+
 ## Supported IDEs
 
 VS Code, VS Code Insiders, Cursor, Windsurf, WebStorm, PhpStorm, PyCharm, IntelliJ IDEA, Sublime Text, Zed, Vim/Neovim, Emacs.
@@ -199,6 +218,16 @@ cd inspekt
 bun install
 bun run build
 bun run --filter 'inspekt-playground' dev
+```
+
+The checks CI runs, in order:
+
+```bash
+bun run lint            # biome check .
+bun run typecheck
+bun run test
+bun run build
+bun run verify:exports  # declared entrypoints resolve against the built output
 ```
 
 ## License

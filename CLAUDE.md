@@ -4,69 +4,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What is Inspekt
 
-Inspekt is a framework-agnostic element inspector for web developers. Click any UI element to see its source component, file path, and component tree. Works with React, Vue, Svelte, Solid, and any bundler (Vite, Webpack, Rspack, esbuild). Supports Docker path mapping and cross-project settings via a Chrome extension.
+Inspekt is a framework-agnostic element inspector for web developers. Click any UI element to see its source component, file path, and component tree. Works with React, Vue, Svelte, Solid, and any bundler (Vite, Webpack, Rspack, esbuild). Supports Docker path mapping, cross-project settings via a Chrome extension, and handing a grabbed element to a coding agent over MCP.
 
 ## Commands
 
 ```bash
-# Build all packages (respects dependency order via Turbo)
-bun run build
+# Everything CI runs, in order
+bun run lint            # biome check .
+bun run typecheck       # turbo run typecheck
+bun run test            # turbo run test
+bun run build           # turbo run build (respects dependency order)
+bun run verify:exports  # declared entrypoints resolve against the built output
+bun run site:build      # VitePress docs (needs `bun run build` first)
 
-# Run all tests (19 total: 7 core + 12 vite transform)
-bun run test
+bun run lint:fix        # biome check --write .
 
-# Run a single package's tests
+# One package at a time
 bun run --filter '@aylith/inspekt-core' test
-bun run --filter '@aylith/inspekt-vite' test
-
-# Build a single package
 bun run --filter '@aylith/inspekt-core' build
+bun run --filter '@aylith/inspekt-core' dev     # tsup --watch
 
-# Start the playground (React + Vite demo app)
-bun run --filter 'inspekt-playground' dev   # http://localhost:5173
-
-# Watch mode for a package during development
-bun run --filter '@aylith/inspekt-core' dev
-
-# Typecheck
-bun run typecheck
+# Playground (React + Vite demo app)
+bun run --filter 'inspekt-playground' dev
 ```
 
-Build order matters: `@aylith/inspekt-core` and `@aylith/inspekt-cli` must build before `@aylith/inspekt-vite`, which must build before `@aylith/inspekt-bundlers`. Turbo handles this automatically via `^build` dependencies.
+Build order matters: `core` and `cli` build before `vite`, which builds before `bundlers`; `daemon` builds before `mcp`. Turbo handles this via `^build` dependencies.
+
+`bun run site:build` fails on a clean tree unless `bun run build` ran first — the site's Vite config imports `@aylith/inspekt-vite`, which resolves to `dist`.
 
 ## Architecture
 
 ### Monorepo Structure
 
-Bun workspaces + Turborepo. All packages use tsup for bundling and output dual ESM/CJS (except Chrome extension which is ESM-only).
+Bun workspaces + Turborepo. Packages bundle with tsup and emit declarations through a separate `tsc --emitDeclarationOnly` pass (tsup's rollup-plugin-dts is incompatible with TypeScript 7). Output is dual ESM/CJS except the Chrome extension, the daemon, and the MCP server, which are ESM-only.
 
 ### Package Dependency Graph
 
 ```
-@aylith/inspekt-core          ← Foundation: runtime UI, adapters, detection
-├── @aylith/inspekt-cli       ← IDE opening utility (launch-editor)
-├── @aylith/inspekt-vite      ← Vite plugin (depends on core + cli)
-│   └── @aylith/inspekt-bundlers  ← Webpack/Rspack/esbuild/Rollup via unplugin
-├── @aylith/inspekt-chrome    ← Chrome extension (bundles core into content script)
-└── playground/        ← React + Vite demo app
+@aylith/inspekt-core            ← Runtime UI, adapters, detection
+@aylith/inspekt-cli             ← IDE opening + `inspekt setup`
+├── @aylith/inspekt-vite        ← Vite plugin (depends on core + cli)
+│   └── @aylith/inspekt-bundlers   ← Webpack/Rspack/esbuild/Rollup via unplugin
+├── @aylith/inspekt-daemon      ← Localhost HTTP server + grab queue
+│   └── @aylith/inspekt-mcp     ← MCP server over the same queue file
+├── @aylith/inspekt-chrome      ← Chrome extension (private; bundles core)
+└── @aylith/inspekt-skill       ← SKILL.md bundle, no code
+
+@aylith/inspekt                 ← Meta-package; depends on all of the above
+playground/                     ← React + Vite demo app
+site/                           ← VitePress docs
 ```
 
 ### How It Works End-to-End
 
-**Build time**: The Vite plugin (`packages/vite/src/transform.ts`) runs a regex-based JSX/template transform that injects `data-insp-path="filePath:line:col:componentName"` attributes onto every element's opening tag. Uses `magic-string` for source-map-safe string manipulation. The `findTagClose()` function properly tracks brace/paren/string depth to avoid breaking arrow functions in JSX attributes.
+**Build time**: `packages/vite/src/transform-adapter.ts` delegates to `@code-inspector/core`'s AST transform, which injects `data-insp-path="filePath:line:col:componentName"` onto each element's opening tag. It handles JSX/TSX, Vue SFCs, and Svelte. Files that already contain `data-insp-path`, and Vite's sub-module queries (`?vue&type=script`), are skipped.
 
-**Runtime injection**: The Vite plugin serves a virtual module at `/@aylith/inspekt-init.js` via dev server middleware + `resolveId`/`load` hooks. This module imports `@aylith/inspekt-core`, calls `createInspekt()`, and enables the inspector. The `transformIndexHtml` hook injects a `<script>` tag pointing to this virtual module.
+**Runtime injection**: The Vite plugin serves a virtual module at `/@aylith/inspekt-init.js` via dev-server middleware + `resolveId`/`load`. It imports `@aylith/inspekt-core`, calls `createInspekt()` with `serverUrl: window.location.origin`, and enables the inspector. `transformIndexHtml` injects the `<script>` tag.
 
-**Runtime**: `createInspekt()` in `packages/core/src/index.ts` creates a `<inspekt-root>` custom element with Shadow DOM (`attachShadow({ mode: 'open' })`). All UI (popover, tree panel, overlay badges) renders inside this shadow root, preventing CSS conflicts with the host app. Highlights are applied as inline styles on the actual DOM elements.
+**Runtime**: `createInspekt()` in `packages/core/src/index.ts` creates an `<inspekt-root>` custom element with an open Shadow DOM. All UI (popover, tree panel, overlay badges) renders inside that shadow root; highlights are inline styles on the real elements.
 
-**Framework detection**: `detectAdapter()` tries adapters in order: React (checks `__reactFiber$`/`__reactContainer$`) → Vue (`__vue__`/`__vue_app__`) → Svelte (`svelte:` markers) → Solid (`data-hk`) → generic fallback (DOM walking via `data-insp-path` attributes).
+**Framework detection**: `detectAdapter()` tries React (`__reactFiber$`/`__reactContainer$`) → Vue (`__vue__`/`__vue_app__`) → Svelte (`svelte:` markers) → Solid (`data-hk`) → a generic fallback that walks the DOM via `data-insp-path`.
 
-**Chrome extension**: Content script detects whether the build plugin is present (`<inspekt-root>` or `window.__INSPEKT__`). If present, it pushes chrome.storage.sync settings via `CustomEvent('inspekt:settings-update')`. If absent (standalone mode), it creates its own `createInspekt()` instance. Background service worker manages per-tab state and broadcasts settings changes.
+**Agent path**: "Send to Agent" POSTs the grab to the daemon, which appends it to an NDJSON queue under a `proper-lockfile` lock. `@aylith/inspekt-mcp` reads the same file directly — agents never talk HTTP to the daemon.
 
-### Key Patterns
+**Chrome extension**: The content script detects whether the build plugin is present (`<inspekt-root>` or `window.__INSPEKT__`). If so it pushes `chrome.storage.sync` settings via `CustomEvent('inspekt:settings-update')`; if not it creates its own `createInspekt()` instance. The background worker tracks per-tab state and broadcasts settings changes.
 
-- **Source detection**: `findClosestSource()` walks up the DOM looking for `data-insp-path` or `data-insp-path` (backward compat with code-inspector-plugin)
-- **Actions**: Built-in (open-editor, copy-path, open-github, console-log) + custom via `registerAction()`. Editor opening uses dev server POST to `/__inspekt/open` with fallback to protocol handlers (`cursor://file/...`)
-- **Multi-bundler**: `packages/vite/src/unplugin.ts` wraps the transform in `createUnplugin()`. `@aylith/inspekt-bundlers` re-exports webpack/rspack/esbuild/rollup variants as named exports
-- **Docker path mapping**: Parses `docker-compose.yaml` volume mounts to map container paths → host paths. Manual override via `pathMapping` config option
-- **Transform skip list**: Tags like `template`, `script`, `style`, `Fragment`, `svelte:*` are excluded from attribute injection
+## Conventions
+
+- **Dev-server and daemon endpoints are attack surface.** `/__inspekt/snippet` and `/__inspekt/open` answer unauthenticated cross-origin requests, so any file path arriving over the wire goes through `resolveExposedFile` (must land inside the Vite root or a `pathMapping` host directory), and any `editor` must match `/^[A-Za-z0-9._-]+$/` — `launch-editor` shell-splits that string and spawns the first token. Only the plugin's own `editor` option, which comes from the project's Vite config, may be freeform. Daemon routes additionally require `X-Inspekt-Token`.
+- **Anything holding the daemon token is written 0600** (`~/.inspekt/config.json`, `extension-handshake.json`).
+- Each package that reports a version at runtime keeps it in `src/version.ts`, with a unit test asserting it matches `package.json`. Never inline a version literal.
+- `exports` condition maps list `types` first, then `import`/`require`. `verify:exports` enforces this along with the existence of every declared entrypoint.
+- No inline `biome-ignore`; fix the code or add a scoped override in `biome.json`.
+- The glob matcher for plugin `include`/`exclude` lives in `packages/vite/src/glob.ts` and is shared by the Vite plugin and the unplugin — don't reintroduce a local copy.
+- The bundler plugins have no dev server, so they carry no `pathMapping`/`dockerCompose` options; those are Vite-plugin-only.
