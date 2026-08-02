@@ -6,33 +6,48 @@
 
 import { startDaemon } from './index.js';
 
+/** Port 0 is legitimate (bind anywhere), so only a non-numeric value is rejected. */
+function parsePort(raw: string | undefined): number | undefined {
+  if (raw === undefined || raw === '') return undefined;
+  const port = Number(raw);
+  if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    throw new Error(`INSPEKT_PORT must be a port number, got ${JSON.stringify(raw)}`);
+  }
+  return port;
+}
+
 async function main(): Promise<void> {
-  const config = {
-    token: process.env['INSPEKT_TOKEN'],
-    host: process.env['INSPEKT_HOST'],
-    port: process.env['INSPEKT_PORT'] ? Number(process.env['INSPEKT_PORT']) : undefined,
-    queuePath: process.env['INSPEKT_QUEUE_PATH'],
-  };
-  const { port, stop } = await startDaemon({
-    ...(config.token ? { token: config.token } : {}),
-    ...(config.host ? { host: config.host } : {}),
-    ...(config.port ? { port: config.port } : {}),
-    ...(config.queuePath ? { queuePath: config.queuePath } : {}),
+  const token = process.env['INSPEKT_TOKEN'];
+  const host = process.env['INSPEKT_HOST'];
+  const port = parsePort(process.env['INSPEKT_PORT']);
+  const queuePath = process.env['INSPEKT_QUEUE_PATH'];
+
+  const daemon = await startDaemon({
+    ...(token ? { token } : {}),
+    ...(host ? { host } : {}),
+    ...(port !== undefined ? { port } : {}),
+    ...(queuePath ? { queuePath } : {}),
   });
-  // eslint-disable-next-line no-console
-  console.log(`[inspekt-daemon] listening on http://127.0.0.1:${port}`);
+  console.log(`[inspekt-daemon] listening on http://${host ?? '127.0.0.1'}:${daemon.port}`);
+
+  let stopping = false;
   const shutdown = () => {
-    // eslint-disable-next-line no-console
+    if (stopping) return;
+    stopping = true;
     console.log('[inspekt-daemon] shutting down');
-    stop();
-    process.exit(0);
+    daemon
+      .stop()
+      .then(() => process.exit(0))
+      .catch((err: unknown) => {
+        console.error('[inspekt-daemon]', err);
+        process.exit(1);
+      });
   };
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
 }
 
-main().catch((err) => {
-  // eslint-disable-next-line no-console
+main().catch((err: unknown) => {
   console.error('[inspekt-daemon]', err);
   process.exit(1);
 });

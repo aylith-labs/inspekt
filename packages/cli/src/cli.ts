@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { openInEditor } from './index.js';
+import { openInEditor, parseFileTarget } from './index.js';
 import { runSetup } from './setup/index.js';
 
 const args = process.argv.slice(2);
@@ -42,25 +42,14 @@ if (sub === 'setup') {
   let editor: string | undefined;
   const editorIdx = args.indexOf('--editor', restStart);
   const editorIdxShort = args.indexOf('-e', restStart);
-  const idx = editorIdx !== -1 ? editorIdx : editorIdxShort;
-  if (idx !== -1 && args[idx + 1]) {
-    editor = args[idx + 1];
+  const flagIdx = editorIdx !== -1 ? editorIdx : editorIdxShort;
+  if (flagIdx !== -1) {
+    editor = args[flagIdx + 1];
+    if (!editor) {
+      console.error(`[inspekt] ${args[flagIdx]} requires an editor name`);
+      process.exit(1);
+    }
   }
 
-  // Parse file:line:column (with Windows-path awareness)
-  const parts = filePart.split(':');
-  let file: string;
-  let line: number | undefined;
-  let column: number | undefined;
-  if (/^[A-Z]$/i.test(parts[0] ?? '') && (parts[1] ?? '').includes('\\')) {
-    file = `${parts[0]}:${parts[1]}`;
-    line = parts[2] ? parseInt(parts[2], 10) : undefined;
-    column = parts[3] ? parseInt(parts[3], 10) : undefined;
-  } else {
-    file = parts[0]!;
-    line = parts[1] ? parseInt(parts[1], 10) : undefined;
-    column = parts[2] ? parseInt(parts[2], 10) : undefined;
-  }
-
-  openInEditor({ file, line, column, editor });
+  openInEditor({ ...parseFileTarget(filePart), editor });
 }

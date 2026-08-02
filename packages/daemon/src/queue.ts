@@ -8,7 +8,7 @@
 // safe under POSIX append guarantees, but we still take a brief lock for
 // writes to serialize against compaction/clear operations.
 
-import { existsSync, promises as fs, mkdirSync } from 'node:fs';
+import { existsSync, promises as fs, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { lock as plLock } from 'proper-lockfile';
 import type { Grab } from './types.js';
@@ -37,11 +37,10 @@ export class GrabQueue {
   constructor(private readonly filePath: string) {
     const dir = path.dirname(filePath);
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-    if (!existsSync(filePath)) {
-      // Touch — proper-lockfile needs the file to exist to lock it.
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      void fs.writeFile(filePath, '', 'utf8');
-    }
+    // Touch — proper-lockfile needs the file to exist to lock it. Synchronous so
+    // the constructor cannot hand back a queue whose file is still being created,
+    // and so a failure surfaces here instead of as an unhandled rejection.
+    if (!existsSync(filePath)) writeFileSync(filePath, '', 'utf8');
   }
 
   async append(
@@ -69,25 +68,32 @@ export class GrabQueue {
     return full;
   }
 
+  /**
+   * Reads the queue. `since` keeps grabs strictly newer than the given
+   * unix-millis; `limit` keeps the N most recent. A negative or fractional
+   * `limit` is clamped rather than passed through — `slice(-limit)` on a
+   * negative would return the oldest grabs instead of the newest.
+   */
   async list(opts: { since?: number; limit?: number } = {}): Promise<Grab[]> {
     const content = await this.readAll();
     const all = content
       .split('\n')
-      .filter((l) => l.length > 0)
-      .map((l) => {
+      .filter((line) => line.length > 0)
+      .map((line) => {
         try {
-          return JSON.parse(l) as Grab;
+          return JSON.parse(line) as Grab;
         } catch {
           return null;
         }
       })
-      .filter((g): g is Grab => g !== null);
+      .filter((grab): grab is Grab => grab !== null);
 
-    const filtered = opts.since !== undefined ? all.filter((g) => g.timestamp > opts.since!) : all;
-    if (opts.limit !== undefined && filtered.length > opts.limit) {
-      return filtered.slice(-opts.limit);
-    }
-    return filtered;
+    const since = opts.since;
+    const filtered = since !== undefined ? all.filter((grab) => grab.timestamp > since) : all;
+    if (opts.limit === undefined) return filtered;
+
+    const limit = Math.max(0, Math.floor(opts.limit));
+    return filtered.length > limit ? filtered.slice(filtered.length - limit) : filtered;
   }
 
   async latest(): Promise<Grab | null> {
@@ -97,7 +103,7 @@ export class GrabQueue {
 
   async getById(id: string): Promise<Grab | null> {
     const all = await this.list();
-    return all.find((g) => g.id === id) ?? null;
+    return all.find((grab) => grab.id === id) ?? null;
   }
 
   async markProcessed(id: string): Promise<boolean> {

@@ -3,6 +3,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { URL } from 'node:url';
 import { openInEditor } from '@aylith/inspekt-cli';
+import { VERSION } from './version.js';
 
 export interface InspektServerOptions {
   editor: string;
@@ -17,6 +18,17 @@ const CORS_HEADERS = {
 } as const;
 
 const MAX_CONTEXT_LINES = 30;
+
+/** Cap on the `/__inspekt/open` request body — the payload is a handful of fields. */
+const MAX_OPEN_BODY_BYTES = 64 * 1024;
+
+/**
+ * Editor identifiers reaching us over HTTP are passed to `launch-editor`, which
+ * shell-splits them and spawns the first token. Anything but a bare identifier
+ * would therefore be a command-injection vector, so only the plugin's own
+ * `editor` option (which comes from the project's vite config) may be freeform.
+ */
+const EDITOR_ID_RE = /^[A-Za-z0-9._-]+$/;
 
 interface CacheEntry {
   mtimeMs: number;
@@ -51,6 +63,34 @@ function applyPathMapping(
     resolved = path.join(root, resolved);
   }
   return resolved;
+}
+
+function isWithin(directory: string, candidate: string): boolean {
+  const relative = path.relative(directory, candidate);
+  return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+}
+
+/**
+ * Maps a client-supplied path to an absolute one and confirms it lands inside a
+ * directory the project actually exposes: the Vite root, or a host directory
+ * named by `pathMapping`. Returns null otherwise.
+ *
+ * These endpoints answer unauthenticated cross-origin requests, so without this
+ * any page open in the developer's browser could read arbitrary files off the
+ * machine through the dev server. Containment is lexical — a symlink inside the
+ * root that points elsewhere is still followed, which keeps linked workspace
+ * packages resolvable.
+ */
+function resolveExposedFile(
+  filePath: string,
+  options: InspektServerOptions,
+): { absPath: string } | { error: 'outside-root' } {
+  const absPath = path.resolve(applyPathMapping(filePath, options.pathMapping, options.root));
+  const exposed = [options.root, ...Object.values(options.pathMapping)].map((dir) =>
+    path.resolve(dir),
+  );
+  if (!exposed.some((dir) => isWithin(dir, absPath))) return { error: 'outside-root' };
+  return { absPath };
 }
 
 function languageFromExt(ext: string): string {
@@ -104,7 +144,14 @@ export async function handleSnippetRequest(
     return true;
   }
 
-  const absPath = applyPathMapping(file, options.pathMapping, options.root);
+  const resolution = resolveExposedFile(file, options);
+  if ('error' in resolution) {
+    res.writeHead(403, { 'Content-Type': 'application/json', ...CORS_HEADERS });
+    res.end(JSON.stringify({ error: 'File is outside the project root' }));
+    return true;
+  }
+
+  const { absPath } = resolution;
   const content = await readFileWithCache(absPath);
   if (content === null) {
     res.writeHead(404, { 'Content-Type': 'application/json', ...CORS_HEADERS });
@@ -138,7 +185,7 @@ export function handleCapabilitiesRequest(req: IncomingMessage, res: ServerRespo
   res.end(
     JSON.stringify({
       ok: true,
-      version: '0.1.0',
+      version: VERSION,
       snippetEndpoint: true,
       // Source-map resolution is client-side only (Phase 5); the server has
       // nothing to advertise here besides "yes, we exist".
@@ -156,35 +203,75 @@ export function handleInspektRequest(
     return false;
   }
 
+  function fail(status: number, message: string): void {
+    res.writeHead(status, { 'Content-Type': 'application/json', ...CORS_HEADERS });
+    res.end(JSON.stringify({ error: message }));
+  }
+
   let body = '';
+  let size = 0;
+  let aborted = false;
+
+  req.on('error', () => {
+    aborted = true;
+  });
+
   req.on('data', (chunk: Buffer) => {
+    if (aborted) return;
+    size += chunk.length;
+    if (size > MAX_OPEN_BODY_BYTES) {
+      aborted = true;
+      fail(413, 'Request body too large');
+      req.destroy();
+      return;
+    }
     body += chunk.toString();
   });
 
   req.on('end', () => {
+    if (aborted) return;
+    let data: { file?: unknown; line?: unknown; column?: unknown; editor?: unknown };
     try {
-      const data = JSON.parse(body) as {
-        file: string;
-        line?: number;
-        column?: number;
-        editor?: string;
-      };
-
-      const filePath = applyPathMapping(data.file, options.pathMapping, options.root);
-
-      openInEditor({
-        file: filePath,
-        line: data.line,
-        column: data.column,
-        editor: data.editor ?? options.editor,
-      });
-
-      res.writeHead(200, { 'Content-Type': 'application/json', ...CORS_HEADERS });
-      res.end(JSON.stringify({ ok: true }));
-    } catch (error) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Invalid request' }));
+      data = JSON.parse(body) as typeof data;
+    } catch {
+      fail(400, 'Invalid JSON body');
+      return;
     }
+
+    if (typeof data.file !== 'string' || data.file.length === 0) {
+      fail(400, 'Missing required field: file');
+      return;
+    }
+
+    let editor = options.editor;
+    if (data.editor !== undefined) {
+      if (typeof data.editor !== 'string' || !EDITOR_ID_RE.test(data.editor)) {
+        fail(400, 'Invalid editor identifier');
+        return;
+      }
+      editor = data.editor;
+    }
+
+    const resolution = resolveExposedFile(data.file, options);
+    if ('error' in resolution) {
+      fail(403, 'File is outside the project root');
+      return;
+    }
+
+    const line =
+      typeof data.line === 'number' && Number.isFinite(data.line) ? data.line : undefined;
+    const column =
+      typeof data.column === 'number' && Number.isFinite(data.column) ? data.column : undefined;
+
+    try {
+      openInEditor({ file: resolution.absPath, line, column, editor });
+    } catch (error) {
+      fail(500, `Failed to launch editor: ${(error as Error).message}`);
+      return;
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json', ...CORS_HEADERS });
+    res.end(JSON.stringify({ ok: true }));
   });
 
   return true;

@@ -22,18 +22,38 @@ import { buildMcpEntry } from './mcp-entry.js';
 const BLOCK_START = '# >>> inspekt managed mcp entry — do not edit between markers >>>';
 const BLOCK_END = '# <<< inspekt managed mcp entry <<<';
 
+/**
+ * Escapes a value for a TOML basic string. Windows queue paths carry
+ * backslashes, and an unescaped `C:\Users\…` renders `\U` — an invalid TOML
+ * escape that makes Codex reject the whole config file.
+ */
+export function tomlBasicString(value: string): string {
+  let escaped = '';
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0;
+    if (char === '\\') escaped += '\\\\';
+    else if (char === '"') escaped += '\\"';
+    else if (char === '\n') escaped += '\\n';
+    else if (char === '\r') escaped += '\\r';
+    else if (char === '\t') escaped += '\\t';
+    else if (code < 0x20 || code === 0x7f) escaped += `\\u${code.toString(16).padStart(4, '0')}`;
+    else escaped += char;
+  }
+  return `"${escaped}"`;
+}
+
 function buildBlock(config: InspektConfig): string {
   const entry = buildMcpEntry(config);
-  const argsArr = entry.args.map((a) => `"${a}"`).join(', ');
+  const argsArr = entry.args.map(tomlBasicString).join(', ');
   return [
     BLOCK_START,
     '[mcp_servers.inspekt]',
-    `command = "${entry.command}"`,
+    `command = ${tomlBasicString(entry.command)}`,
     `args = [${argsArr}]`,
     '',
     '[mcp_servers.inspekt.env]',
-    `INSPEKT_TOKEN = "${entry.env['INSPEKT_TOKEN']}"`,
-    `INSPEKT_QUEUE_PATH = "${entry.env['INSPEKT_QUEUE_PATH']}"`,
+    `INSPEKT_TOKEN = ${tomlBasicString(entry.env['INSPEKT_TOKEN'] ?? '')}`,
+    `INSPEKT_QUEUE_PATH = ${tomlBasicString(entry.env['INSPEKT_QUEUE_PATH'] ?? '')}`,
     BLOCK_END,
   ].join('\n');
 }

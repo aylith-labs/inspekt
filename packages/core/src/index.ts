@@ -19,6 +19,7 @@ import type {
   InspektInstance,
   InspektOptions,
 } from './types.js';
+import { VERSION } from './version.js';
 
 export type { ComponentNode } from './adapters/index.js';
 export type {
@@ -417,8 +418,9 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   mediaQuery.addEventListener('change', themeHandler);
 
   // Listen for settings from Chrome extension
-  document.addEventListener('inspekt:settings-update', ((e: CustomEvent) => {
-    const newSettings = e.detail;
+  const settingsHandler = ((event: CustomEvent) => {
+    const newSettings = event.detail;
+    if (!newSettings || typeof newSettings !== 'object') return;
     Object.assign(options, newSettings);
     if (newSettings.highlight) highlighter.updateConfig(options.highlight);
     applyTheme(host, options.theme);
@@ -426,7 +428,8 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       if (options.showBoundingBoxes === true) bboxOverlay.enable();
       else bboxOverlay.disable();
     }
-  }) as EventListener);
+  }) as EventListener;
+  document.addEventListener('inspekt:settings-update', settingsHandler);
 
   const instance: InspektInstance = {
     enable() {
@@ -438,7 +441,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       document.addEventListener('mousemove', handleMouseMove);
 
       // Signal to Chrome extension
-      (window as unknown as Record<string, unknown>).__INSPEKT__ = { version: '0.1.0', options };
+      (window as unknown as Record<string, unknown>).__INSPEKT__ = { version: VERSION, options };
       document.dispatchEvent(new CustomEvent('inspekt:status', { detail: { enabled: true } }));
 
       // Start capability probe: publishes via window.postMessage so the Chrome
@@ -499,6 +502,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       treePanel?.destroy();
       bboxOverlay.destroy();
       mediaQuery.removeEventListener('change', themeHandler);
+      document.removeEventListener('inspekt:settings-update', settingsHandler);
       listeners.clear();
       customActions.clear();
       delete (window as unknown as Record<string, unknown>).__INSPEKT__;

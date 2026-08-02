@@ -1,52 +1,38 @@
 import path from 'node:path';
 import { createUnplugin } from 'unplugin';
-import { findComposeFile, parsePathMappings } from './docker.js';
+import { isPathSelected } from './glob.js';
 import { type TransformOptions, transformInspekt } from './transform-adapter.js';
 
 export interface InspektPluginOptions {
   framework?: 'react' | 'vue' | 'svelte' | 'solid' | 'auto';
   pathType?: 'relative' | 'absolute';
   root?: string;
-  pathMapping?: Record<string, string>;
-  dockerCompose?: boolean;
   include?: string[];
   exclude?: string[];
   escapeTags?: string[];
+  /**
+   * Inject `data-insp-path` attributes when `NODE_ENV=production` too.
+   * Default `false`. Unlike the Vite plugin there is no resolved config to read,
+   * so `NODE_ENV` is the only signal available here.
+   */
+  enableInProduction?: boolean;
 }
 
 const EXTENSION_RE = /\.(tsx|jsx|vue|svelte|astro)(\?.*)?$/;
-
-function minimatch(filePath: string, pattern: string): boolean {
-  const re = pattern
-    .replace(/\./g, '\\.')
-    .replace(/\*\*/g, '{{GLOBSTAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\{\{GLOBSTAR\}\}/g, '.*');
-  return new RegExp(`^${re}$`).test(filePath);
-}
 
 export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions = {}) => {
   const options = {
     framework: 'auto' as const,
     pathType: 'relative' as const,
     root: process.cwd(),
-    pathMapping: {} as Record<string, string>,
-    dockerCompose: false,
     include: ['**/*.{tsx,jsx,vue,svelte,astro}'],
     exclude: ['node_modules/**', '**/*.test.*', '**/*.spec.*', '**/*.stories.*'],
     escapeTags: [] as string[],
+    enableInProduction: false,
     ...userOptions,
   };
 
   const resolvedRoot = options.root;
-  let pathMapping = { ...options.pathMapping };
-
-  if (options.dockerCompose) {
-    const composeFile = findComposeFile(resolvedRoot);
-    if (composeFile) {
-      pathMapping = { ...parsePathMappings(composeFile), ...pathMapping };
-    }
-  }
 
   return {
     name: 'inspekt',
@@ -54,9 +40,9 @@ export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions
 
     transformInclude(id: string) {
       if (!EXTENSION_RE.test(id)) return false;
-      if (process.env['NODE_ENV'] === 'production') return false;
-      const rel = path.relative(resolvedRoot, id);
-      return !options.exclude.some((p) => minimatch(rel, p));
+      if (process.env['NODE_ENV'] === 'production' && !options.enableInProduction) return false;
+      const relativePath = path.relative(resolvedRoot, id);
+      return isPathSelected(relativePath, options.include, options.exclude);
     },
 
     async transform(code: string, id: string) {

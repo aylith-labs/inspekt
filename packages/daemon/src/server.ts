@@ -8,6 +8,26 @@ import { type Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { GrabQueue } from './queue.js';
 import type { DaemonConfig, Grab } from './types.js';
+import { VERSION } from './version.js';
+
+/**
+ * `launch-editor` shell-splits the editor string and spawns the first token, so
+ * a value arriving over HTTP must be a bare identifier and nothing else.
+ */
+const EDITOR_ID_RE = /^[A-Za-z0-9._-]+$/;
+
+/**
+ * Reads a numeric query param. Returns undefined when absent and the `invalid`
+ * sentinel for anything that is not a finite non-negative number — a negative
+ * `limit` would otherwise reach `Array.slice` and silently return the wrong
+ * end of the queue.
+ */
+function parseNonNegative(raw: string | undefined): number | undefined | 'invalid' {
+  if (raw === undefined || raw === '') return undefined;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0) return 'invalid';
+  return value;
+}
 
 export function createServer(config: DaemonConfig): Hono {
   const app = new Hono();
@@ -22,15 +42,17 @@ export function createServer(config: DaemonConfig): Hono {
     }),
   );
 
+  // An empty configured token would otherwise match a request that simply omits
+  // the header, so a server built without one refuses every mutating request.
   function authOk(c: Context): boolean {
-    const token = c.req.header('x-inspekt-token');
-    return token === config.token;
+    if (!config.token) return false;
+    return c.req.header('x-inspekt-token') === config.token;
   }
 
   // Capability ping — also used by Phase 2's probe to detect agentConnected.
   // HEAD requests get 200, just like the @aylith/inspekt-vite endpoint.
   app.on(['GET', 'HEAD'], '/__inspekt/daemon', (c) =>
-    c.json({ ok: true, version: '0.1.0', mcp: true }),
+    c.json({ ok: true, version: VERSION, mcp: true }),
   );
 
   // Append a new grab. Returns the persisted record (with id + timestamp set).
@@ -57,14 +79,12 @@ export function createServer(config: DaemonConfig): Hono {
   // Read grabs (since=<ms>, limit=<n>).
   app.get('/__inspekt/queue', async (c) => {
     if (!authOk(c)) return c.json({ error: 'unauthorized' }, 401);
-    const sinceParam = c.req.query('since');
-    const limitParam = c.req.query('limit');
-    const since = sinceParam ? Number(sinceParam) : undefined;
-    const limit = limitParam ? Number(limitParam) : undefined;
-    const all = await queue.list({
-      since: Number.isFinite(since) ? since : undefined,
-      limit: Number.isFinite(limit) ? limit : undefined,
-    });
+    const since = parseNonNegative(c.req.query('since'));
+    const limit = parseNonNegative(c.req.query('limit'));
+    if (since === 'invalid' || limit === 'invalid') {
+      return c.json({ error: 'since and limit must be non-negative numbers' }, 400);
+    }
+    const all = await queue.list({ since, limit });
     return c.json({ grabs: all });
   });
 
@@ -101,6 +121,9 @@ export function createServer(config: DaemonConfig): Hono {
         column = body.column;
       } else {
         return c.json({ error: 'id or file required' }, 400);
+      }
+      if (body.editor !== undefined && !EDITOR_ID_RE.test(body.editor)) {
+        return c.json({ error: 'invalid editor identifier' }, 400);
       }
       openInEditor({ file, line, column, editor: body.editor });
       return c.json({ ok: true });

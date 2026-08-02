@@ -12,8 +12,15 @@ import { openInEditor } from '@aylith/inspekt-cli';
 import { GrabQueue } from '@aylith/inspekt-daemon/queue';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { VERSION } from './version.js';
 
 const DEFAULT_QUEUE_PATH = path.join(os.homedir(), '.inspekt', 'queue.jsonl');
+
+/**
+ * `launch-editor` shell-splits the editor string and spawns the first token, so
+ * an agent-supplied value must be a bare identifier and nothing else.
+ */
+const EDITOR_ID_RE = /^[A-Za-z0-9._-]+$/;
 
 export interface CreateMcpServerOptions {
   queuePath?: string;
@@ -24,7 +31,7 @@ export function createMcpServer(opts: CreateMcpServerOptions = {}): McpServer {
 
   const server = new McpServer({
     name: 'inspekt',
-    version: '0.1.0',
+    version: VERSION,
   });
 
   server.registerTool(
@@ -128,6 +135,7 @@ export function createMcpServer(opts: CreateMcpServerOptions = {}): McpServer {
         id: z.string().describe('The grab ID.'),
         editor: z
           .string()
+          .regex(EDITOR_ID_RE, 'Editor must be a bare identifier such as "cursor" or "code".')
           .optional()
           .describe('Editor override (e.g. "cursor", "code"). Defaults to env INSPEKT_EDITOR.'),
       },
@@ -137,12 +145,19 @@ export function createMcpServer(opts: CreateMcpServerOptions = {}): McpServer {
       if (!grab) {
         return { content: [{ type: 'text', text: `Grab ${id} not found.` }], isError: true };
       }
-      openInEditor({
-        file: grab.element.filePath,
-        line: grab.element.line,
-        column: grab.element.column,
-        editor,
-      });
+      try {
+        openInEditor({
+          file: grab.element.filePath,
+          line: grab.element.line,
+          column: grab.element.column,
+          editor,
+        });
+      } catch (error) {
+        return {
+          content: [{ type: 'text', text: `Failed to open editor: ${(error as Error).message}` }],
+          isError: true,
+        };
+      }
       return {
         content: [
           {

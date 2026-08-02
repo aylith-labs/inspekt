@@ -6,7 +6,7 @@
 
 import os from 'node:os';
 import { detectAgents } from './detect.js';
-import { loadOrCreateConfig, writeHandshake } from './token.js';
+import { configPath, handshakePath, loadOrCreateConfig, writeHandshake } from './token.js';
 import type { AgentId, SetupContext } from './types.js';
 import { writeAntigravity } from './writers/antigravity.js';
 import { writeClaudeCode } from './writers/claude-code.js';
@@ -95,9 +95,9 @@ export async function runSetup(opts: RunSetupOptions = {}): Promise<SetupResult>
   // Friendly summary.
   if (!opts.quiet) {
     console.log('');
-    console.log(`Token written to ${ctx.home}/.inspekt/config.json`);
-    console.log('Handshake file at ~/.inspekt/extension-handshake.json — the Chrome');
-    console.log('extension will pick up the token from there on next launch.');
+    console.log(`Token written to ${configPath(ctx.home)}`);
+    console.log(`Handshake file at ${handshakePath(ctx.home)}`);
+    console.log('The Chrome extension picks up the token from there on next launch.');
     console.log('');
     console.log('Next: start the daemon with `inspekt-daemon` (or let it auto-start on');
     console.log('the first grab from the extension).');
@@ -105,7 +105,7 @@ export async function runSetup(opts: RunSetupOptions = {}): Promise<SetupResult>
 
   return {
     token: config.token,
-    configPath: `${ctx.home}/.inspekt/config.json`,
+    configPath: configPath(ctx.home),
     agentsWritten: written,
     agentsSkipped: skipped,
   };

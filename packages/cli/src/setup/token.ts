@@ -31,14 +31,25 @@ export function generateToken(): string {
   return randomBytes(32).toString('hex');
 }
 
-export async function loadOrCreateConfig(home: string): Promise<InspektConfig> {
-  const p = configPath(home);
-  const dir = path.dirname(p);
-  if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+/** Both files carry the daemon token, so they are owner-read/write only. */
+const SECRET_FILE_MODE = 0o600;
 
-  if (existsSync(p)) {
+async function writeSecretFile(filePath: string, contents: string): Promise<void> {
+  await fs.writeFile(filePath, contents, { encoding: 'utf8', mode: SECRET_FILE_MODE });
+  // `mode` only applies when the file is created, so re-tighten an existing one.
+  // chmod is a no-op on Windows, where the ACL inherited from the user profile
+  // already scopes the file to its owner.
+  if (process.platform !== 'win32') await fs.chmod(filePath, SECRET_FILE_MODE);
+}
+
+export async function loadOrCreateConfig(home: string): Promise<InspektConfig> {
+  const filePath = configPath(home);
+  const dir = path.dirname(filePath);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });
+
+  if (existsSync(filePath)) {
     try {
-      const raw = await fs.readFile(p, 'utf8');
+      const raw = await fs.readFile(filePath, 'utf8');
       const parsed = JSON.parse(raw) as Partial<InspektConfig>;
       if (parsed.token) {
         return {
@@ -59,7 +70,7 @@ export async function loadOrCreateConfig(home: string): Promise<InspektConfig> {
     port: 5678,
     queuePath: defaultQueuePath(home),
   };
-  await fs.writeFile(p, JSON.stringify(config, null, 2) + '\n', 'utf8');
+  await writeSecretFile(filePath, `${JSON.stringify(config, null, 2)}\n`);
   return config;
 }
 
@@ -71,5 +82,5 @@ export async function writeHandshake(home: string, config: InspektConfig): Promi
     token: config.token,
     agentEndpoint: `http://${config.host}:${config.port}`,
   };
-  await fs.writeFile(handshakePath(home), JSON.stringify(data, null, 2) + '\n', 'utf8');
+  await writeSecretFile(handshakePath(home), `${JSON.stringify(data, null, 2)}\n`);
 }

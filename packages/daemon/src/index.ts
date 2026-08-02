@@ -31,9 +31,14 @@ export async function loadConfig(configPath = DEFAULT_CONFIG_PATH): Promise<Daem
   };
 }
 
-export async function startDaemon(
-  config?: Partial<DaemonConfig>,
-): Promise<{ stop: () => void; port: number }> {
+export interface RunningDaemon {
+  /** Port the server actually bound to — meaningful when port 0 was requested. */
+  port: number;
+  /** Closes the listener; resolves once every connection has drained. */
+  stop: () => Promise<void>;
+}
+
+export async function startDaemon(config?: Partial<DaemonConfig>): Promise<RunningDaemon> {
   const loaded = await loadConfig(DEFAULT_CONFIG_PATH).catch(() => null);
   const resolved: DaemonConfig = {
     token: config?.token ?? loaded?.token ?? '',
@@ -45,13 +50,28 @@ export async function startDaemon(
     throw new Error('Daemon requires a token. Run `npx inspekt setup` or pass { token } directly.');
   }
   const app = createServer(resolved);
-  const server = serve({
-    fetch: app.fetch,
-    hostname: resolved.host,
-    port: resolved.port,
+
+  // `serve` binds asynchronously, so a failure like EADDRINUSE arrives as an
+  // 'error' event well after this function would otherwise have resolved. Wait
+  // for one of the two outcomes so the caller sees a rejected promise instead of
+  // an unhandled error crashing the process later.
+  const server = await new Promise<ReturnType<typeof serve>>((resolve, reject) => {
+    const started = serve(
+      { fetch: app.fetch, hostname: resolved.host, port: resolved.port },
+      () => {
+        started.off('error', reject);
+        resolve(started);
+      },
+    );
+    started.once('error', reject);
   });
+
+  const address = server.address();
   return {
-    port: resolved.port,
-    stop: () => server.close(),
+    port: typeof address === 'object' && address !== null ? address.port : resolved.port,
+    stop: () =>
+      new Promise<void>((resolve, reject) => {
+        server.close((err) => (err ? reject(err) : resolve()));
+      }),
   };
 }

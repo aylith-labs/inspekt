@@ -11,12 +11,12 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./queue": {
-      "import": "./dist/queue.js",
-      "types": "./dist/queue.d.ts"
+      "types": "./dist/queue.d.ts",
+      "import": "./dist/queue.js"
     },
     "./cli": "./dist/cli.js"
   },

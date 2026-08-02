@@ -1,6 +1,7 @@
 import path from 'node:path';
 import type { Plugin } from 'vite';
 import { findComposeFile, parsePathMappings } from './docker.js';
+import { isPathSelected } from './glob.js';
 import {
   corsMiddleware,
   handleCapabilitiesRequest,
@@ -57,18 +58,20 @@ export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
 
   let resolvedRoot: string;
   let pathMapping: Record<string, string>;
-  let serverPort = 5173;
+  let isProductionBuild = false;
 
   function buildInitScript(): string {
     const runtimeOptions = {
       ...options.runtimeOptions,
-      serverUrl: `http://localhost:${serverPort}`,
       editor: options.editor,
       pathMapping: pathMapping ?? options.pathMapping,
     };
+    // The dev server serves this module, so its own origin is the snippet/open
+    // endpoint — reading it at runtime survives Vite picking a different port
+    // than the configured one when that port is already taken.
     return `
 import { createInspekt } from '@aylith/inspekt-core';
-const inspekt = createInspekt(${JSON.stringify(runtimeOptions)});
+const inspekt = createInspekt({ ...${JSON.stringify(runtimeOptions)}, serverUrl: window.location.origin });
 inspekt.enable();
 window.__INSPEKT_INSTANCE__ = inspekt;
 `;
@@ -81,7 +84,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     configResolved(config) {
       resolvedRoot = config.root;
       options.root = resolvedRoot;
-      if (config.server?.port) serverPort = config.server.port;
+      isProductionBuild = config.command === 'build' && config.isProduction;
 
       // Auto-detect Docker path mappings
       pathMapping = { ...options.pathMapping };
@@ -149,16 +152,14 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     async transform(code, id) {
-      if (process.env['NODE_ENV'] === 'production' && !options.enableInProduction) return null;
+      if (isProductionBuild && !options.enableInProduction) return null;
 
       // Check file extension
       if (!EXTENSION_RE.test(id)) return null;
 
       // Check include/exclude
       const relativePath = path.relative(resolvedRoot, id);
-      for (const pattern of options.exclude) {
-        if (minimatch(relativePath, pattern)) return null;
-      }
+      if (!isPathSelected(relativePath, options.include, options.exclude)) return null;
 
       const transformOptions: TransformOptions = {
         framework: options.framework,
@@ -181,16 +182,6 @@ window.__INSPEKT_INSTANCE__ = inspekt;
       ];
     },
   };
-}
-
-// Simple glob matching (avoids dependency)
-function minimatch(path: string, pattern: string): boolean {
-  const re = pattern
-    .replace(/\./g, '\\.')
-    .replace(/\*\*/g, '{{GLOBSTAR}}')
-    .replace(/\*/g, '[^/]*')
-    .replace(/\{\{GLOBSTAR\}\}/g, '.*');
-  return new RegExp(`^${re}$`).test(path);
 }
 
 export type { TransformOptions } from './transform-adapter.js';

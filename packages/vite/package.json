@@ -8,29 +8,29 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./webpack": {
+      "types": "./dist/unplugin.d.ts",
       "import": "./dist/unplugin.js",
-      "require": "./dist/unplugin.cjs",
-      "types": "./dist/unplugin.d.ts"
+      "require": "./dist/unplugin.cjs"
     },
     "./rspack": {
+      "types": "./dist/unplugin.d.ts",
       "import": "./dist/unplugin.js",
-      "require": "./dist/unplugin.cjs",
-      "types": "./dist/unplugin.d.ts"
+      "require": "./dist/unplugin.cjs"
     },
     "./esbuild": {
+      "types": "./dist/unplugin.d.ts",
       "import": "./dist/unplugin.js",
-      "require": "./dist/unplugin.cjs",
-      "types": "./dist/unplugin.d.ts"
+      "require": "./dist/unplugin.cjs"
     },
     "./rolldown": {
+      "types": "./dist/unplugin.d.ts",
       "import": "./dist/unplugin.js",
-      "require": "./dist/unplugin.cjs",
-      "types": "./dist/unplugin.d.ts"
+      "require": "./dist/unplugin.cjs"
     }
   },
   "files": [

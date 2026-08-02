@@ -2,8 +2,8 @@
 //
 // Each agent's config is a JSON file with a top-level `mcpServers` map (or a
 // nested path). We merge our entry in without disturbing other keys, preserve
-// the existing key order via JSON.parse roundtrip, and write back with the
-// same indentation.
+// the existing key order via JSON.parse roundtrip, and re-serialize with the
+// configured indent.
 
 import { existsSync, promises as fs, mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -63,11 +63,20 @@ export async function writeMcpEntryToJsonConfig(
   }
 
   // mcpServers map lives one level deeper than our path.
-  const servers = (cursor['mcpServers'] as Record<string, McpEntry> | undefined) ?? {};
+  const existingServers = cursor['mcpServers'];
+  if (
+    existingServers !== undefined &&
+    (typeof existingServers !== 'object' ||
+      existingServers === null ||
+      Array.isArray(existingServers))
+  ) {
+    throw new Error(`Expected an object at "mcpServers" in ${configPath}`);
+  }
+  const servers = (existingServers as Record<string, McpEntry> | undefined) ?? {};
   const previous = servers[serverName] ?? null;
   servers[serverName] = entry;
   cursor['mcpServers'] = servers;
 
-  await fs.writeFile(configPath, JSON.stringify(root, null, indent) + '\n', 'utf8');
+  await fs.writeFile(configPath, `${JSON.stringify(root, null, indent)}\n`, 'utf8');
   return { written: true, previousEntry: previous };
 }
