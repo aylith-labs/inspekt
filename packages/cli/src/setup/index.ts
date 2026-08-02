@@ -7,12 +7,12 @@
 import os from 'node:os';
 import { detectAgents } from './detect.js';
 import { loadOrCreateConfig, writeHandshake } from './token.js';
-import { writeClaudeCode } from './writers/claude-code.js';
-import { writeCursor } from './writers/cursor.js';
-import { writeCodex } from './writers/codex.js';
-import { writeGeminiCli } from './writers/gemini-cli.js';
-import { writeAntigravity } from './writers/antigravity.js';
 import type { AgentId, SetupContext } from './types.js';
+import { writeAntigravity } from './writers/antigravity.js';
+import { writeClaudeCode } from './writers/claude-code.js';
+import { writeCodex } from './writers/codex.js';
+import { writeCursor } from './writers/cursor.js';
+import { writeGeminiCli } from './writers/gemini-cli.js';
 
 export interface RunSetupOptions {
   /** Restrict registration to this subset. If omitted, register all detected agents. */

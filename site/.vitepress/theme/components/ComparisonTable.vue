@@ -2,20 +2,80 @@
 // Comparison matrix promoted from docs/comparison.md. The Inspekt column is
 // highlighted; other tools sit in neutral columns.
 
-interface Row { feature: string; inspekt: string; locator: string; codeInspector: string; reactGrab: string }
+interface Row {
+  feature: string;
+  inspekt: string;
+  locator: string;
+  codeInspector: string;
+  reactGrab: string;
+}
 
 const rows: Row[] = [
   { feature: 'Click → open IDE', inspekt: '✓', locator: '✓', codeInspector: '✓', reactGrab: '✓' },
-  { feature: 'Source snippet in overlay', inspekt: '✓', locator: '—', codeInspector: '—', reactGrab: '—' },
-  { feature: 'Source-map fallback', inspekt: '✓ opt-in', locator: '—', codeInspector: '—', reactGrab: '—' },
-  { feature: 'Capability-aware icon', inspekt: '✓', locator: '—', codeInspector: 'n/a', reactGrab: '—' },
-  { feature: 'Multi-framework AST transform', inspekt: '✓ (via code-inspector)', locator: '✓ (own)', codeInspector: '✓', reactGrab: '—' },
-  { feature: 'Zero-config React via fiber', inspekt: '✓ (via bippy)', locator: '✓', codeInspector: '—', reactGrab: '✓ (via bippy)' },
+  {
+    feature: 'Source snippet in overlay',
+    inspekt: '✓',
+    locator: '—',
+    codeInspector: '—',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Source-map fallback',
+    inspekt: '✓ opt-in',
+    locator: '—',
+    codeInspector: '—',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Capability-aware icon',
+    inspekt: '✓',
+    locator: '—',
+    codeInspector: 'n/a',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Multi-framework AST transform',
+    inspekt: '✓ (via code-inspector)',
+    locator: '✓ (own)',
+    codeInspector: '✓',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Zero-config React via fiber',
+    inspekt: '✓ (via bippy)',
+    locator: '✓',
+    codeInspector: '—',
+    reactGrab: '✓ (via bippy)',
+  },
   { feature: 'Chrome extension', inspekt: '✓', locator: '✓', codeInspector: '—', reactGrab: '✓' },
-  { feature: 'MCP server for agents', inspekt: '✓', locator: '—', codeInspector: '—', reactGrab: '—' },
-  { feature: 'Cross-app config sync', inspekt: '✓', locator: '—', codeInspector: '—', reactGrab: '—' },
-  { feature: 'Setup CLI', inspekt: '✓ npx inspekt setup', locator: '—', codeInspector: '—', reactGrab: '—' },
-  { feature: 'Maintained 2026', inspekt: '✓', locator: 'dormant', codeInspector: '✓', reactGrab: '✓' },
+  {
+    feature: 'MCP server for agents',
+    inspekt: '✓',
+    locator: '—',
+    codeInspector: '—',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Cross-app config sync',
+    inspekt: '✓',
+    locator: '—',
+    codeInspector: '—',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Setup CLI',
+    inspekt: '✓ npx inspekt setup',
+    locator: '—',
+    codeInspector: '—',
+    reactGrab: '—',
+  },
+  {
+    feature: 'Maintained 2026',
+    inspekt: '✓',
+    locator: 'dormant',
+    codeInspector: '✓',
+    reactGrab: '✓',
+  },
 ];
 </script>
 

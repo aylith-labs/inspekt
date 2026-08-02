@@ -2,25 +2,23 @@
 // resolved from ~/.inspekt/config.json. Programmatic consumers can import
 // `createServer` and `GrabQueue` directly from the subpaths.
 
-import { serve } from '@hono/node-server';
-import path from 'node:path';
+import { existsSync, promises as fs } from 'node:fs';
 import os from 'node:os';
-import { promises as fs, existsSync } from 'node:fs';
+import path from 'node:path';
+import { serve } from '@hono/node-server';
 import { createServer } from './server.js';
 import type { DaemonConfig } from './types.js';
 
-export { createServer } from './server.js';
 export { GrabQueue, ulid } from './queue.js';
-export type { Grab, SerializedElement, SerializedSnippet, DaemonConfig } from './types.js';
+export { createServer } from './server.js';
+export type { DaemonConfig, Grab, SerializedElement, SerializedSnippet } from './types.js';
 
 const DEFAULT_CONFIG_PATH = path.join(os.homedir(), '.inspekt', 'config.json');
 const DEFAULT_QUEUE_PATH = path.join(os.homedir(), '.inspekt', 'queue.jsonl');
 
 export async function loadConfig(configPath = DEFAULT_CONFIG_PATH): Promise<DaemonConfig> {
   if (!existsSync(configPath)) {
-    throw new Error(
-      `Inspekt config not found at ${configPath}. Run \`npx inspekt setup\` first.`,
-    );
+    throw new Error(`Inspekt config not found at ${configPath}. Run \`npx inspekt setup\` first.`);
   }
   const raw = await fs.readFile(configPath, 'utf8');
   const parsed = JSON.parse(raw) as Partial<DaemonConfig> & { token?: string };
@@ -33,7 +31,9 @@ export async function loadConfig(configPath = DEFAULT_CONFIG_PATH): Promise<Daem
   };
 }
 
-export async function startDaemon(config?: Partial<DaemonConfig>): Promise<{ stop: () => void; port: number }> {
+export async function startDaemon(
+  config?: Partial<DaemonConfig>,
+): Promise<{ stop: () => void; port: number }> {
   const loaded = await loadConfig(DEFAULT_CONFIG_PATH).catch(() => null);
   const resolved: DaemonConfig = {
     token: config?.token ?? loaded?.token ?? '',

@@ -6,12 +6,12 @@
 // so it doesn't need to talk HTTP to the daemon. Each agent process spawns
 // its own MCP server via `inspekt-mcp`; they all share the queue file.
 
+import os from 'node:os';
+import path from 'node:path';
+import { openInEditor } from '@aylith/inspekt-cli';
+import { GrabQueue } from '@aylith/inspekt-daemon/queue';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { GrabQueue } from '@aylith/inspekt-daemon/queue';
-import { openInEditor } from '@aylith/inspekt-cli';
-import path from 'node:path';
-import os from 'node:os';
 
 const DEFAULT_QUEUE_PATH = path.join(os.homedir(), '.inspekt', 'queue.jsonl');
 
@@ -98,7 +98,9 @@ export function createMcpServer(opts: CreateMcpServerOptions = {}): McpServer {
         content: [
           {
             type: 'text',
-            text: mutated ? `Marked grab ${id} processed.` : `Grab ${id} was already processed or not found.`,
+            text: mutated
+              ? `Marked grab ${id} processed.`
+              : `Grab ${id} was already processed or not found.`,
           },
         ],
       };

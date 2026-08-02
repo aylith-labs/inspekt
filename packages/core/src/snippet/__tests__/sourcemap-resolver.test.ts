@@ -1,11 +1,8 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { encode } from '@jridgewell/sourcemap-codec';
-import {
-  clearParsedCache,
-  setRawMapBackendForTesting,
-  getRawMapBackend,
-} from '../cache';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearParsedCache, getRawMapBackend, setRawMapBackendForTesting } from '../cache';
 import { resolveFromSourceMap } from '../sourcemap-resolver';
 
 function makeMap(sourcePath: string, sourceContent: string): string {
@@ -43,9 +40,11 @@ describe('resolveFromSourceMap', () => {
   it('fetches the .map adjacent to a loaded <script> and extracts a snippet', async () => {
     document.head.innerHTML = '<script src="https://example.com/assets/index.js"></script>';
     const mapText = makeMap('src/A.tsx', FIXTURE_SOURCE);
-    const fetcher = vi.fn().mockResolvedValue(
-      new Response(mapText, { status: 200, headers: { 'Content-Type': 'application/json' } }),
-    );
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(mapText, { status: 200, headers: { 'Content-Type': 'application/json' } }),
+      );
     const result = await resolveFromSourceMap({
       filePath: 'src/A.tsx',
       line: 5,
@@ -62,9 +61,9 @@ describe('resolveFromSourceMap', () => {
 
   it('cache-hits on second call (parsed map reused)', async () => {
     document.head.innerHTML = '<script src="https://example.com/assets/index.js"></script>';
-    const fetcher = vi.fn().mockResolvedValue(
-      new Response(makeMap('src/A.tsx', FIXTURE_SOURCE), { status: 200 }),
-    );
+    const fetcher = vi
+      .fn()
+      .mockResolvedValue(new Response(makeMap('src/A.tsx', FIXTURE_SOURCE), { status: 200 }));
     await resolveFromSourceMap({
       filePath: 'src/A.tsx',
       line: 1,
@@ -98,7 +97,9 @@ describe('resolveFromSourceMap', () => {
   it('matches by source-path tail when the map uses a different prefix', async () => {
     document.head.innerHTML = '<script src="https://example.com/assets/index.js"></script>';
     const fetcher = vi.fn().mockResolvedValue(
-      new Response(makeMap('/abs/build/src/components/Button.tsx', FIXTURE_SOURCE), { status: 200 }),
+      new Response(makeMap('/abs/build/src/components/Button.tsx', FIXTURE_SOURCE), {
+        status: 200,
+      }),
     );
     const result = await resolveFromSourceMap({
       filePath: 'src/components/Button.tsx',

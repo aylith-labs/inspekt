@@ -1,7 +1,7 @@
-import { createUnplugin } from 'unplugin';
 import path from 'node:path';
-import { transformInspekt, type TransformOptions } from './transform-adapter.js';
+import { createUnplugin } from 'unplugin';
 import { findComposeFile, parsePathMappings } from './docker.js';
+import { type TransformOptions, transformInspekt } from './transform-adapter.js';
 
 export interface InspektPluginOptions {
   framework?: 'react' | 'vue' | 'svelte' | 'solid' | 'auto';
@@ -38,7 +38,7 @@ export const unpluginInspekt = createUnplugin((userOptions: InspektPluginOptions
     ...userOptions,
   };
 
-  let resolvedRoot = options.root;
+  const resolvedRoot = options.root;
   let pathMapping = { ...options.pathMapping };
 
   if (options.dockerCompose) {

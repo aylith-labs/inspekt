@@ -10,8 +10,8 @@
  * `scripts/fetch-editor-metadata.mjs`.
  */
 import type { RichSelectItem } from '@aylith/inspekt-core';
-import type { CustomEditor } from './storage.js';
 import metadata from './editor-metadata.json' with { type: 'json' };
+import type { CustomEditor } from './storage.js';
 
 type EditorMetadata = {
   title: string | null;
@@ -45,33 +45,141 @@ interface EditorMeta {
 
 const EDITOR_META: EditorMeta[] = [
   // AI editors --------------------------------------------------------------
-  { value: 'cursor',          label: 'Cursor',           icon: 'cursor.png',           url: 'https://www.cursor.com/',                  group: 'AI editors' },
-  { value: 'windsurf',        label: 'Windsurf',         icon: 'windsurf.svg',         url: 'https://windsurf.com/',                    group: 'AI editors' },
-  { value: 'trae',            label: 'Trae',                                            url: 'https://www.trae.ai/',                      group: 'AI editors', unverified: true },
-  { value: 'kiro',            label: 'Kiro',             icon: 'kiro.ico',             url: 'https://kiro.dev/',                         group: 'AI editors' },
-  { value: 'antigravity',     label: 'Antigravity',                                     url: 'https://antigravity.google/',               group: 'AI editors', unverified: true },
-  { value: 'pearai',          label: 'PearAI',                                          url: 'https://trypear.ai/',                       group: 'AI editors' },
-  { value: 'qoder',           label: 'Qoder',                                           url: 'https://qoder.com/',                        group: 'AI editors', unverified: true },
-  { value: 'codebuddy',       label: 'CodeBuddy',                                       url: 'https://copilot.tencent.com/',              group: 'AI editors', unverified: true },
+  {
+    value: 'cursor',
+    label: 'Cursor',
+    icon: 'cursor.png',
+    url: 'https://www.cursor.com/',
+    group: 'AI editors',
+  },
+  {
+    value: 'windsurf',
+    label: 'Windsurf',
+    icon: 'windsurf.svg',
+    url: 'https://windsurf.com/',
+    group: 'AI editors',
+  },
+  {
+    value: 'trae',
+    label: 'Trae',
+    url: 'https://www.trae.ai/',
+    group: 'AI editors',
+    unverified: true,
+  },
+  { value: 'kiro', label: 'Kiro', icon: 'kiro.ico', url: 'https://kiro.dev/', group: 'AI editors' },
+  {
+    value: 'antigravity',
+    label: 'Antigravity',
+    url: 'https://antigravity.google/',
+    group: 'AI editors',
+    unverified: true,
+  },
+  { value: 'pearai', label: 'PearAI', url: 'https://trypear.ai/', group: 'AI editors' },
+  {
+    value: 'qoder',
+    label: 'Qoder',
+    url: 'https://qoder.com/',
+    group: 'AI editors',
+    unverified: true,
+  },
+  {
+    value: 'codebuddy',
+    label: 'CodeBuddy',
+    url: 'https://copilot.tencent.com/',
+    group: 'AI editors',
+    unverified: true,
+  },
 
   // VS Code family ----------------------------------------------------------
-  { value: 'vscode',          label: 'VS Code',          icon: 'vscode.png',           url: 'https://code.visualstudio.com/',           group: 'VS Code family' },
-  { value: 'vscode-insiders', label: 'VS Code Insiders', icon: 'vscode-insiders.png',  url: 'https://code.visualstudio.com/insiders/',  group: 'VS Code family' },
-  { value: 'vscodium',        label: 'VSCodium',         icon: 'vscodium.svg',         url: 'https://vscodium.com/',                    group: 'VS Code family' },
+  {
+    value: 'vscode',
+    label: 'VS Code',
+    icon: 'vscode.png',
+    url: 'https://code.visualstudio.com/',
+    group: 'VS Code family',
+  },
+  {
+    value: 'vscode-insiders',
+    label: 'VS Code Insiders',
+    icon: 'vscode-insiders.png',
+    url: 'https://code.visualstudio.com/insiders/',
+    group: 'VS Code family',
+  },
+  {
+    value: 'vscodium',
+    label: 'VSCodium',
+    icon: 'vscodium.svg',
+    url: 'https://vscodium.com/',
+    group: 'VS Code family',
+  },
 
   // JetBrains ---------------------------------------------------------------
-  { value: 'idea',            label: 'IntelliJ IDEA',    icon: 'idea.svg',             url: 'https://www.jetbrains.com/idea/',          group: 'JetBrains' },
-  { value: 'webstorm',        label: 'WebStorm',         icon: 'webstorm.svg',         url: 'https://www.jetbrains.com/webstorm/',      group: 'JetBrains' },
-  { value: 'phpstorm',        label: 'PhpStorm',         icon: 'phpstorm.svg',         url: 'https://www.jetbrains.com/phpstorm/',      group: 'JetBrains' },
-  { value: 'pycharm',         label: 'PyCharm',          icon: 'pycharm.svg',          url: 'https://www.jetbrains.com/pycharm/',       group: 'JetBrains' },
-  { value: 'rubymine',        label: 'RubyMine',         icon: 'rubymine.svg',         url: 'https://www.jetbrains.com/ruby/',          group: 'JetBrains' },
-  { value: 'goland',          label: 'GoLand',           icon: 'goland.svg',           url: 'https://www.jetbrains.com/go/',            group: 'JetBrains' },
-  { value: 'clion',           label: 'CLion',            icon: 'clion.svg',            url: 'https://www.jetbrains.com/clion/',         group: 'JetBrains' },
-  { value: 'rider',           label: 'Rider',            icon: 'rider.svg',            url: 'https://www.jetbrains.com/rider/',         group: 'JetBrains' },
+  {
+    value: 'idea',
+    label: 'IntelliJ IDEA',
+    icon: 'idea.svg',
+    url: 'https://www.jetbrains.com/idea/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'webstorm',
+    label: 'WebStorm',
+    icon: 'webstorm.svg',
+    url: 'https://www.jetbrains.com/webstorm/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'phpstorm',
+    label: 'PhpStorm',
+    icon: 'phpstorm.svg',
+    url: 'https://www.jetbrains.com/phpstorm/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'pycharm',
+    label: 'PyCharm',
+    icon: 'pycharm.svg',
+    url: 'https://www.jetbrains.com/pycharm/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'rubymine',
+    label: 'RubyMine',
+    icon: 'rubymine.svg',
+    url: 'https://www.jetbrains.com/ruby/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'goland',
+    label: 'GoLand',
+    icon: 'goland.svg',
+    url: 'https://www.jetbrains.com/go/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'clion',
+    label: 'CLion',
+    icon: 'clion.svg',
+    url: 'https://www.jetbrains.com/clion/',
+    group: 'JetBrains',
+  },
+  {
+    value: 'rider',
+    label: 'Rider',
+    icon: 'rider.svg',
+    url: 'https://www.jetbrains.com/rider/',
+    group: 'JetBrains',
+  },
 
   // Other -------------------------------------------------------------------
-  { value: 'sublime',         label: 'Sublime Text',     icon: 'sublime.svg',          url: 'https://www.sublimetext.com/',             group: 'Other' },
-  { value: 'zed',             label: 'Zed',              icon: 'zed.svg',              url: 'https://zed.dev/',                          group: 'Other' },
+  {
+    value: 'sublime',
+    label: 'Sublime Text',
+    icon: 'sublime.svg',
+    url: 'https://www.sublimetext.com/',
+    group: 'Other',
+  },
+  { value: 'zed', label: 'Zed', icon: 'zed.svg', url: 'https://zed.dev/', group: 'Other' },
 ];
 
 /** Hot-linked URLs pass through; bundled assets resolve via the extension's
@@ -332,5 +440,9 @@ export function buildEditorOptgroupHtml(customEditors: CustomEditor[] = []): str
 }
 
 function escapeAttr(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }

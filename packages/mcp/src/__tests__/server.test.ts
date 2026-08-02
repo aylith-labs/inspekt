@@ -1,11 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import type { SerializedElement } from '@aylith/inspekt-daemon';
+import { GrabQueue } from '@aylith/inspekt-daemon/queue';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { GrabQueue } from '@aylith/inspekt-daemon/queue';
-import type { SerializedElement } from '@aylith/inspekt-daemon';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createMcpServer } from '../index';
 
 function fakeElement(over: Partial<SerializedElement> = {}): SerializedElement {

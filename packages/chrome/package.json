@@ -15,8 +15,8 @@
     "@aylith/inspekt-core": "workspace:*"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.2",
-    "node-html-parser": "^9.0.0",
+    "@types/chrome": "^0.2.5",
+    "node-html-parser": "^9.0.1",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

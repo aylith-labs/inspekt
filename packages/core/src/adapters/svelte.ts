@@ -1,5 +1,5 @@
-import type { ComponentNode, FrameworkAdapter } from './types.js';
 import { findSourceAttribute, parseSourceAttribute } from '../detection/source-detector.js';
+import type { ComponentNode, FrameworkAdapter } from './types.js';
 
 // Svelte 4/5 attaches context to DOM elements
 const SVELTE_CONTEXT_KEY = '__svelte_meta';
@@ -9,7 +9,9 @@ interface SvelteContext {
 }
 
 function getSvelteContext(element: HTMLElement): SvelteContext | null {
-  return (element as unknown as Record<string, unknown>)[SVELTE_CONTEXT_KEY] as SvelteContext | null;
+  return (element as unknown as Record<string, unknown>)[
+    SVELTE_CONTEXT_KEY
+  ] as SvelteContext | null;
 }
 
 function getComponentNameFromFile(file: string): string {
@@ -23,8 +25,10 @@ export const svelteAdapter: FrameworkAdapter = {
 
   detect(): boolean {
     // Check for Svelte's internal markers
-    return document.querySelector(`[class*="svelte-"]`) !== null ||
-      document.querySelector('[data-svelte-h]') !== null;
+    return (
+      document.querySelector(`[class*="svelte-"]`) !== null ||
+      document.querySelector('[data-svelte-h]') !== null
+    );
   },
 
   getComponentTree(root: HTMLElement): ComponentNode | null {

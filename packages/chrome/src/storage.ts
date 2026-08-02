@@ -104,15 +104,16 @@ export async function getSettings(): Promise<InspektSettings> {
  * `updateSettings` (which omits `activation`).
  */
 function migrate(raw: Record<string, unknown>): InspektSettings {
-  const oldActivation = typeof raw['activation'] === 'string' ? (raw['activation'] as string) : null;
+  const oldActivation =
+    typeof raw['activation'] === 'string' ? (raw['activation'] as string) : null;
   if (oldActivation && !Array.isArray(raw['requireModifiers'])) {
     const map: Record<string, ModifierKey[]> = {
       'click-mod': ['ctrl', 'alt'],
       'hover-mod': ['ctrl', 'alt'],
-      'click':     [],
-      'hover':     [],
-      'view':      ['ctrl', 'alt'],
-      'manual':    ['ctrl', 'alt', 'shift'],
+      click: [],
+      hover: [],
+      view: ['ctrl', 'alt'],
+      manual: ['ctrl', 'alt', 'shift'],
     };
     raw['requireModifiers'] = map[oldActivation] ?? ['ctrl', 'alt'];
     if (oldActivation === 'view') raw['showBoundingBoxes'] = true;

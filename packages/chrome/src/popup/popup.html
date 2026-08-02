@@ -391,7 +391,7 @@
         <h1>Inspekt</h1>
       </div>
       <div class="header-right">
-        <button class="popup-theme" id="popup-theme" aria-label="Cycle theme">
+        <button type="button" class="popup-theme" id="popup-theme" aria-label="Cycle theme">
           <span class="icon-stack" id="popup-theme-stack" data-mode="auto">
             <svg class="icon-light" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
               <circle cx="12" cy="12" r="4" fill="currentColor" />
@@ -436,11 +436,11 @@
       </div>
       <div class="info-row">
         <span class="key">Tree panel</span>
-        <div class="toggle-mini" id="tree-toggle" role="switch" tabindex="0" aria-label="Tree panel"></div>
+        <div class="toggle-mini" id="tree-toggle" role="switch" tabindex="0" aria-checked="false" aria-label="Tree panel"></div>
       </div>
       <div class="info-row">
         <span class="key">Bounding boxes</span>
-        <div class="toggle-mini" id="bbox-toggle" role="switch" tabindex="0" aria-label="Show bounding boxes"></div>
+        <div class="toggle-mini" id="bbox-toggle" role="switch" tabindex="0" aria-checked="false" aria-label="Show bounding boxes"></div>
       </div>
       <div class="info-row">
         <span class="key">Status</span>
@@ -448,8 +448,8 @@
       </div>
     </div>
     <div class="actions">
-      <button class="btn" id="settings-btn">Settings</button>
-      <button class="btn" id="standalone-btn">Standalone</button>
+      <button type="button" class="btn" id="settings-btn">Settings</button>
+      <button type="button" class="btn" id="standalone-btn">Standalone</button>
     </div>
   </div>
 

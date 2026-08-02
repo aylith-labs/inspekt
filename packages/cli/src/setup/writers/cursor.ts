@@ -3,11 +3,11 @@
 // ~/Library/Application Support/Cursor/User/settings.json (and platform
 // equivalents). We merge alongside existing user settings.
 
-import { buildMcpEntry } from './mcp-entry.js';
-import { writeMcpEntryToJsonConfig } from './json-writer.js';
 import { descriptorFor } from '../detect.js';
 import type { InspektConfig } from '../token.js';
 import type { SetupContext } from '../types.js';
+import { writeMcpEntryToJsonConfig } from './json-writer.js';
+import { buildMcpEntry } from './mcp-entry.js';
 
 export async function writeCursor(
   ctx: SetupContext,

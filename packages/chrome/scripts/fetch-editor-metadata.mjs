@@ -35,33 +35,33 @@ const FAVICON_DIR = path.join(repoRoot, 'public', 'icons', 'editors', 'favicons'
 // Kept in sync with src/selects.ts EDITOR_META.
 const EDITORS = [
   // AI editors
-  { key: 'cursor',          url: 'https://www.cursor.com/' },
-  { key: 'windsurf',        url: 'https://windsurf.com/' },
-  { key: 'trae',            url: 'https://www.trae.ai/' },
-  { key: 'kiro',            url: 'https://kiro.dev/' },
-  { key: 'antigravity',     url: 'https://antigravity.google/' },
-  { key: 'pearai',          url: 'https://trypear.ai/' },
-  { key: 'qoder',           url: 'https://qoder.com/' },
-  { key: 'codebuddy',       url: 'https://copilot.tencent.com/' },
+  { key: 'cursor', url: 'https://www.cursor.com/' },
+  { key: 'windsurf', url: 'https://windsurf.com/' },
+  { key: 'trae', url: 'https://www.trae.ai/' },
+  { key: 'kiro', url: 'https://kiro.dev/' },
+  { key: 'antigravity', url: 'https://antigravity.google/' },
+  { key: 'pearai', url: 'https://trypear.ai/' },
+  { key: 'qoder', url: 'https://qoder.com/' },
+  { key: 'codebuddy', url: 'https://copilot.tencent.com/' },
 
   // VS Code family
-  { key: 'vscode',          url: 'https://code.visualstudio.com/' },
+  { key: 'vscode', url: 'https://code.visualstudio.com/' },
   { key: 'vscode-insiders', url: 'https://code.visualstudio.com/insiders/' },
-  { key: 'vscodium',        url: 'https://vscodium.com/' },
+  { key: 'vscodium', url: 'https://vscodium.com/' },
 
   // JetBrains
-  { key: 'idea',            url: 'https://www.jetbrains.com/idea/' },
-  { key: 'webstorm',        url: 'https://www.jetbrains.com/webstorm/' },
-  { key: 'phpstorm',        url: 'https://www.jetbrains.com/phpstorm/' },
-  { key: 'pycharm',         url: 'https://www.jetbrains.com/pycharm/' },
-  { key: 'rubymine',        url: 'https://www.jetbrains.com/ruby/' },
-  { key: 'goland',          url: 'https://www.jetbrains.com/go/' },
-  { key: 'clion',           url: 'https://www.jetbrains.com/clion/' },
-  { key: 'rider',           url: 'https://www.jetbrains.com/rider/' },
+  { key: 'idea', url: 'https://www.jetbrains.com/idea/' },
+  { key: 'webstorm', url: 'https://www.jetbrains.com/webstorm/' },
+  { key: 'phpstorm', url: 'https://www.jetbrains.com/phpstorm/' },
+  { key: 'pycharm', url: 'https://www.jetbrains.com/pycharm/' },
+  { key: 'rubymine', url: 'https://www.jetbrains.com/ruby/' },
+  { key: 'goland', url: 'https://www.jetbrains.com/go/' },
+  { key: 'clion', url: 'https://www.jetbrains.com/clion/' },
+  { key: 'rider', url: 'https://www.jetbrains.com/rider/' },
 
   // Other
-  { key: 'sublime',         url: 'https://www.sublimetext.com/' },
-  { key: 'zed',             url: 'https://zed.dev/' },
+  { key: 'sublime', url: 'https://www.sublimetext.com/' },
+  { key: 'zed', url: 'https://zed.dev/' },
 ];
 
 const UA =
@@ -76,8 +76,7 @@ async function fetchText(url) {
 
 function metaAttr(root, name) {
   const el =
-    root.querySelector(`meta[property="${name}"]`) ||
-    root.querySelector(`meta[name="${name}"]`);
+    root.querySelector(`meta[property="${name}"]`) || root.querySelector(`meta[name="${name}"]`);
   return el?.getAttribute('content')?.trim() || null;
 }
 
@@ -121,7 +120,15 @@ function extractMetadata(html, pageUrl) {
   };
 }
 
-const VALID_IMG_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'];
+const VALID_IMG_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+  'image/svg+xml',
+  'image/x-icon',
+  'image/vnd.microsoft.icon',
+];
 
 async function probe(url) {
   try {
@@ -145,14 +152,21 @@ async function probe(url) {
 
 function extForContentType(ct) {
   switch (ct) {
-    case 'image/png':       return 'png';
-    case 'image/jpeg':      return 'jpg';
-    case 'image/webp':      return 'webp';
-    case 'image/gif':       return 'gif';
-    case 'image/svg+xml':   return 'svg';
+    case 'image/png':
+      return 'png';
+    case 'image/jpeg':
+      return 'jpg';
+    case 'image/webp':
+      return 'webp';
+    case 'image/gif':
+      return 'gif';
+    case 'image/svg+xml':
+      return 'svg';
     case 'image/x-icon':
-    case 'image/vnd.microsoft.icon': return 'ico';
-    default:                return 'bin';
+    case 'image/vnd.microsoft.icon':
+      return 'ico';
+    default:
+      return 'bin';
   }
 }
 

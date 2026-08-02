@@ -4,9 +4,9 @@
 // extension reads the same value from chrome.storage.sync (set by an
 // extension-handshake file at ~/.inspekt/extension-handshake.json).
 
-import { promises as fs, existsSync, mkdirSync } from 'node:fs';
-import path from 'node:path';
 import { randomBytes } from 'node:crypto';
+import { existsSync, promises as fs, mkdirSync } from 'node:fs';
+import path from 'node:path';
 
 export interface InspektConfig {
   token: string;

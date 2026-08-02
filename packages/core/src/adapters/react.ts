@@ -1,5 +1,5 @@
+import { findSourceAttribute, parseSourceAttribute } from '../detection/source-detector.js';
 import type { ComponentNode, FrameworkAdapter } from './types.js';
-import { parseSourceAttribute, findSourceAttribute } from '../detection/source-detector.js';
 
 // React Fiber internal key prefix
 const FIBER_KEY_PREFIX = '__reactFiber$';
@@ -73,7 +73,9 @@ function getProps(fiber: Record<string, unknown>): Record<string, unknown> | nul
   return Object.keys(cleaned).length > 0 ? cleaned : null;
 }
 
-function getSourceFromFiber(fiber: Record<string, unknown>): { filePath: string; line: number; column: number } | null {
+function getSourceFromFiber(
+  fiber: Record<string, unknown>,
+): { filePath: string; line: number; column: number } | null {
   // Check _debugSource (React dev mode)
   const debugSource = fiber['_debugSource'] as Record<string, unknown> | undefined;
   if (debugSource) {
@@ -168,7 +170,9 @@ function findRootFiber(container: HTMLElement): Record<string, unknown> | null {
     }
   }
 
-  const root = (container as unknown as Record<string, unknown>)['_reactRootContainer'] as Record<string, unknown> | undefined;
+  const root = (container as unknown as Record<string, unknown>)['_reactRootContainer'] as
+    | Record<string, unknown>
+    | undefined;
   if (root) {
     const internalRoot = root['_internalRoot'] as Record<string, unknown> | undefined;
     if (internalRoot) {
@@ -184,11 +188,18 @@ export const reactAdapter: FrameworkAdapter = {
 
   detect(): boolean {
     // Check for React root containers
-    const root = document.getElementById('root') ?? document.getElementById('app') ?? document.querySelector('[data-reactroot]');
+    const root =
+      document.getElementById('root') ??
+      document.getElementById('app') ??
+      document.querySelector('[data-reactroot]');
     if (!root) return false;
 
     for (const key of Object.keys(root)) {
-      if (key.startsWith('__reactContainer$') || key.startsWith(FIBER_KEY_PREFIX) || key.startsWith(INTERNAL_KEY_PREFIX)) {
+      if (
+        key.startsWith('__reactContainer$') ||
+        key.startsWith(FIBER_KEY_PREFIX) ||
+        key.startsWith(INTERNAL_KEY_PREFIX)
+      ) {
         return true;
       }
     }

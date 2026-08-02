@@ -24,7 +24,10 @@ export interface SnippetResolverOptions {
    * the dev server / source map. Lets demo / playground surfaces deliver
    * working snippets without needing a backend.
    */
-  staticSnippets?: Record<string, Pick<SourceSnippet, 'language' | 'lines'> & { startLine?: number }>;
+  staticSnippets?: Record<
+    string,
+    Pick<SourceSnippet, 'language' | 'lines'> & { startLine?: number }
+  >;
 }
 
 const CACHE_LIMIT = 100;
@@ -64,9 +67,7 @@ async function fetchFromDevServer(opts: SnippetResolverOptions): Promise<SourceS
   }
 }
 
-export async function resolveSnippet(
-  opts: SnippetResolverOptions,
-): Promise<SourceSnippet | null> {
+export async function resolveSnippet(opts: SnippetResolverOptions): Promise<SourceSnippet | null> {
   const key = cacheKey(opts);
   if (cache.has(key)) {
     return cache.get(key) ?? null;

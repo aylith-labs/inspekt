@@ -1,23 +1,27 @@
-import { createRichSelect, tokenizeToLines, type RichSelectController } from '@aylith/inspekt-core';
+import { createRichSelect, type RichSelectController, tokenizeToLines } from '@aylith/inspekt-core';
+import { buildEditorItems } from '../selects.js';
 import {
-  getSettings,
-  updateSettings,
   exportSettings,
-  importSettings,
+  getSettings,
   type InspektSettings,
+  importSettings,
   type ModifierKey,
+  updateSettings,
 } from '../storage.js';
 import { wireThemeCycler } from '../theme.js';
-import { buildEditorItems } from '../selects.js';
 
 const MOD_ORDER: ModifierKey[] = ['ctrl', 'alt', 'shift', 'meta'];
 
 function humanizeMod(mod: ModifierKey): string {
   switch (mod) {
-    case 'ctrl':  return 'Ctrl';
-    case 'alt':   return 'Alt';
-    case 'shift': return 'Shift';
-    case 'meta':  return '⌘';
+    case 'ctrl':
+      return 'Ctrl';
+    case 'alt':
+      return 'Alt';
+    case 'shift':
+      return 'Shift';
+    case 'meta':
+      return '⌘';
   }
 }
 
@@ -102,10 +106,10 @@ function mountEditorSelect(settings: InspektSettings): void {
 // ---- Activation modifier checkboxes -------------------------------------
 
 const modCheckboxes = {
-  ctrl:  document.getElementById('mod-ctrl')  as HTMLInputElement,
-  alt:   document.getElementById('mod-alt')   as HTMLInputElement,
+  ctrl: document.getElementById('mod-ctrl') as HTMLInputElement,
+  alt: document.getElementById('mod-alt') as HTMLInputElement,
   shift: document.getElementById('mod-shift') as HTMLInputElement,
-  meta:  document.getElementById('mod-meta')  as HTMLInputElement,
+  meta: document.getElementById('mod-meta') as HTMLInputElement,
 } as const;
 const modPreview = document.getElementById('mod-preview') as HTMLElement;
 
@@ -331,10 +335,27 @@ const ceError = document.getElementById('ce-error') as HTMLDivElement;
 const ceCancel = document.getElementById('ce-cancel') as HTMLButtonElement;
 
 const BUILT_IN_EDITOR_KEYS = new Set([
-  'cursor', 'windsurf', 'trae', 'kiro', 'antigravity', 'pearai', 'qoder', 'codebuddy',
-  'vscode', 'vscode-insiders', 'vscodium',
-  'idea', 'webstorm', 'phpstorm', 'pycharm', 'rubymine', 'goland', 'clion', 'rider',
-  'sublime', 'zed',
+  'cursor',
+  'windsurf',
+  'trae',
+  'kiro',
+  'antigravity',
+  'pearai',
+  'qoder',
+  'codebuddy',
+  'vscode',
+  'vscode-insiders',
+  'vscodium',
+  'idea',
+  'webstorm',
+  'phpstorm',
+  'pycharm',
+  'rubymine',
+  'goland',
+  'clion',
+  'rider',
+  'sublime',
+  'zed',
 ]);
 
 function showCeError(msg: string): void {
@@ -385,12 +406,19 @@ async function addCustomEditor(): Promise<void> {
 
   if (!label) return showCeError('Label is required.');
   if (!/^[a-z][a-z0-9-]*$/.test(value)) {
-    return showCeError('Key must start with a letter and contain only lowercase letters, digits, and dashes.');
+    return showCeError(
+      'Key must start with a letter and contain only lowercase letters, digits, and dashes.',
+    );
   }
   if (BUILT_IN_EDITOR_KEYS.has(value)) {
     // Custom-overrides-built-in semantics — warn but allow.
     // eslint-disable-next-line no-alert
-    if (!confirm(`"${value}" matches a built-in editor key. Your custom entry will override the built-in. Continue?`)) return;
+    if (
+      !confirm(
+        `"${value}" matches a built-in editor key. Your custom entry will override the built-in. Continue?`,
+      )
+    )
+      return;
   }
   if (!urlTemplate.includes('{file}')) {
     return showCeError('URL template must include the {file} placeholder.');

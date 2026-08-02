@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync, mkdirSync, utimesSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { createServer, type Server } from 'node:http';
-import { handleSnippetRequest, handleCapabilitiesRequest, corsMiddleware } from '../server';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { corsMiddleware, handleCapabilitiesRequest, handleSnippetRequest } from '../server';
 
 let projectRoot: string;
 let server: Server;
@@ -102,7 +102,9 @@ describe('GET /__inspekt/snippet', () => {
   });
 
   it('applies path mapping (container path → host path)', async () => {
-    const res = await fetch(`${baseUrl}/__inspekt/snippet?file=/app/src/Mapped.tsx&line=2&context=1`);
+    const res = await fetch(
+      `${baseUrl}/__inspekt/snippet?file=/app/src/Mapped.tsx&line=2&context=1`,
+    );
     expect(res.status).toBe(200);
     const data = (await res.json()) as { lines: string[] };
     expect(data.lines).toEqual(['mapped 1', 'mapped 2', 'mapped 3']);

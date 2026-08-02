@@ -50,9 +50,7 @@ export class Overlay {
   private scan(): void {
     this.clear();
 
-    const elements = document.querySelectorAll<HTMLElement>(
-      '[data-insp-path], [data-insp-path]',
-    );
+    const elements = document.querySelectorAll<HTMLElement>('[data-insp-path], [data-insp-path]');
 
     // Track which elements are children of other detected elements
     // to show only outermost components

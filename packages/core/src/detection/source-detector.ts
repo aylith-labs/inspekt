@@ -32,7 +32,13 @@ export function parseSourceAttribute(value: string): SourceInfo | null {
 
   const line = parseInt(rest[0] ?? '', 10);
   const column = parseInt(rest[1] ?? '', 10);
-  const componentName = rest[2] ?? filePath.split('/').pop()?.replace(/\.\w+$/, '') ?? 'Unknown';
+  const componentName =
+    rest[2] ??
+    filePath
+      .split('/')
+      .pop()
+      ?.replace(/\.\w+$/, '') ??
+    'Unknown';
 
   if (isNaN(line)) return null;
 
@@ -49,7 +55,9 @@ export function findSourceAttribute(element: HTMLElement): string | null {
   return element.getAttribute(SOURCE_ATTRIBUTE);
 }
 
-export function findClosestSource(element: HTMLElement): { element: HTMLElement; source: SourceInfo } | null {
+export function findClosestSource(
+  element: HTMLElement,
+): { element: HTMLElement; source: SourceInfo } | null {
   let current: HTMLElement | null = element;
 
   while (current) {

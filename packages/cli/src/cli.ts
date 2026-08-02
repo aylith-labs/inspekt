@@ -25,7 +25,8 @@ if (!sub || sub === '--help' || sub === '-h' || sub === 'help') {
 
 if (sub === 'setup') {
   const agentsIdx = args.indexOf('--agents');
-  const agents = agentsIdx !== -1 && args[agentsIdx + 1] ? args[agentsIdx + 1]!.split(',') : undefined;
+  const agents =
+    agentsIdx !== -1 && args[agentsIdx + 1] ? args[agentsIdx + 1]!.split(',') : undefined;
   void runSetup({ agents }).catch((err) => {
     console.error('[inspekt setup]', err);
     process.exit(1);

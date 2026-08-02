@@ -1,7 +1,7 @@
-import type { InspektAction, InspectedElement, SourceSnippet } from '../types.js';
-import { resolveSnippet } from '../snippet/snippet-resolver.js';
-import { tokenizeToLines } from '../highlight/prism.js';
 import { attachTooltip } from '../components/tooltip.js';
+import { tokenizeToLines } from '../highlight/prism.js';
+import { resolveSnippet } from '../snippet/snippet-resolver.js';
+import type { InspectedElement, InspektAction, SourceSnippet } from '../types.js';
 
 // Inline SVGs reused by the DOM-fallback popover so it shows the same
 // icon-button toolbar as the instrumented popover (not bare text labels).
@@ -22,10 +22,7 @@ export interface PopoverSnippetConfig {
   /** When true, attempts source-map fallback if the dev server can't help. */
   sourceMapEnabled: boolean;
   /** Pre-baked snippets indexed by filePath (demos/playgrounds). */
-  staticSnippets?: Record<
-    string,
-    { language: string; lines: string[]; startLine?: number }
-  >;
+  staticSnippets?: Record<string, { language: string; lines: string[]; startLine?: number }>;
 }
 
 const DEFAULT_SNIPPET_CONFIG: PopoverSnippetConfig = {
@@ -184,7 +181,11 @@ export class Popover {
     setTimeout(() => toast.remove(), 1200);
   }
 
-  show(element: InspectedElement, actions: InspektAction[], position: { x: number; y: number }): void {
+  show(
+    element: InspectedElement,
+    actions: InspektAction[],
+    position: { x: number; y: number },
+  ): void {
     this.container.innerHTML = '';
 
     // Header: file path + line
@@ -248,8 +249,7 @@ export class Popover {
     const toggle = document.createElement('button');
     toggle.type = 'button';
     toggle.className = 'inspekt-snippet-toggle';
-    toggle.textContent =
-      initialState === 'collapsed' ? 'Show source ▾' : 'Hide source ▴';
+    toggle.textContent = initialState === 'collapsed' ? 'Show source ▾' : 'Hide source ▴';
 
     const body = document.createElement('div');
     body.className = 'inspekt-snippet-body';

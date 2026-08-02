@@ -61,8 +61,7 @@ function fromVue2(el: VueAugmentedElement): SourceInfo | null {
   while (vm) {
     const file = vm.$options?.__file;
     if (file) {
-      const name =
-        vm.$options?.name ?? vm.$options?._componentTag ?? fileNameOf(file);
+      const name = vm.$options?.name ?? vm.$options?._componentTag ?? fileNameOf(file);
       return {
         filePath: file,
         line: 1,
@@ -77,7 +76,12 @@ function fromVue2(el: VueAugmentedElement): SourceInfo | null {
 }
 
 function fileNameOf(path: string): string {
-  return path.split('/').pop()?.replace(/\.\w+$/, '') ?? 'Unknown';
+  return (
+    path
+      .split('/')
+      .pop()
+      ?.replace(/\.\w+$/, '') ?? 'Unknown'
+  );
 }
 
 /**

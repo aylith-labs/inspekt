@@ -30,15 +30,15 @@
   "dependencies": {
     "@floating-ui/dom": "^1.8.0",
     "@jridgewell/trace-mapping": "^0.3.31",
-    "bippy": "^0.6.0",
+    "bippy": "^0.6.1",
     "prismjs": "^1.30.0",
-    "react-grab": "^0.1.48"
+    "react-grab": "^0.1.50"
   },
   "devDependencies": {
     "@jridgewell/sourcemap-codec": "^1.5.5",
-    "@types/chrome": "^0.2.2",
+    "@types/chrome": "^0.2.5",
     "@types/prismjs": "^1.26.6",
-    "happy-dom": "^20.11.0",
+    "happy-dom": "^20.11.1",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"

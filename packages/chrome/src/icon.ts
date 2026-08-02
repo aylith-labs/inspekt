@@ -22,10 +22,10 @@ export interface BadgePresentation {
 
 const COLOR = {
   ACCENT: '#3b82f6', // blue — generic active
-  DEV: '#16a34a',    // green — dev-server snippets
-  MAP: '#2563eb',    // deeper blue — source-map snippets
-  AI: '#9333ea',     // purple — agent connected
-  OFF: '#6b7280',    // grey — instrumented but disabled
+  DEV: '#16a34a', // green — dev-server snippets
+  MAP: '#2563eb', // deeper blue — source-map snippets
+  AI: '#9333ea', // purple — agent connected
+  OFF: '#6b7280', // grey — instrumented but disabled
 } as const;
 
 export function getBadgeForState(state: TabState | undefined): BadgePresentation {

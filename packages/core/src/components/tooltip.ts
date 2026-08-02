@@ -14,14 +14,7 @@
  * `shift` middleware keep the bubble inside the viewport; `autoUpdate` keeps
  * it locked to the trigger as the page scrolls or resizes.
  */
-import {
-  autoUpdate,
-  computePosition,
-  flip,
-  offset,
-  shift,
-  type Placement,
-} from '@floating-ui/dom';
+import { autoUpdate, computePosition, flip, offset, type Placement, shift } from '@floating-ui/dom';
 
 export interface TooltipOptions {
   /** Render target. Defaults to `document.body`. */

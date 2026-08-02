@@ -30,14 +30,14 @@
   "dependencies": {
     "@aylith/inspekt-daemon": "workspace:*",
     "@aylith/inspekt-cli": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
-    "@types/node": "^26.1.1"
+    "@types/node": "^26.1.2"
   },
   "license": "MIT",
   "publishConfig": {

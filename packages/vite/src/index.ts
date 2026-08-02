@@ -1,13 +1,13 @@
-import type { Plugin } from 'vite';
 import path from 'node:path';
-import { transformInspekt, type TransformOptions } from './transform-adapter.js';
+import type { Plugin } from 'vite';
+import { findComposeFile, parsePathMappings } from './docker.js';
 import {
+  corsMiddleware,
+  handleCapabilitiesRequest,
   handleInspektRequest,
   handleSnippetRequest,
-  handleCapabilitiesRequest,
-  corsMiddleware,
 } from './server.js';
-import { findComposeFile, parsePathMappings } from './docker.js';
+import { type TransformOptions, transformInspekt } from './transform-adapter.js';
 
 export interface InspektViteOptions {
   framework?: 'react' | 'vue' | 'svelte' | 'solid' | 'auto';
@@ -100,17 +100,20 @@ window.__INSPEKT_INSTANCE__ = inspekt;
       server.middlewares.use((req, res, next) => {
         if (req.url === INIT_PATH) {
           // Let Vite transform the module (resolves @aylith/inspekt-core import)
-          server.transformRequest(INIT_PATH).then((result) => {
-            if (result) {
-              res.writeHead(200, {
-                'Content-Type': 'application/javascript',
-                'Cache-Control': 'no-cache',
-              });
-              res.end(result.code);
-            } else {
-              next();
-            }
-          }).catch(() => next());
+          server
+            .transformRequest(INIT_PATH)
+            .then((result) => {
+              if (result) {
+                res.writeHead(200, {
+                  'Content-Type': 'application/javascript',
+                  'Cache-Control': 'no-cache',
+                });
+                res.end(result.code);
+              } else {
+                next();
+              }
+            })
+            .catch(() => next());
           return;
         }
 
@@ -123,9 +126,11 @@ window.__INSPEKT_INSTANCE__ = inspekt;
         // Snippet endpoint (async — handle promise without blocking)
         const snippetCtx = { editor: options.editor, pathMapping, root: resolvedRoot };
         if (req.url?.startsWith('/__inspekt/snippet')) {
-          handleSnippetRequest(req, res, snippetCtx).then((handled) => {
-            if (!handled) next();
-          }).catch(() => next());
+          handleSnippetRequest(req, res, snippetCtx)
+            .then((handled) => {
+              if (!handled) next();
+            })
+            .catch(() => next());
           return;
         }
 
@@ -188,5 +193,5 @@ function minimatch(path: string, pattern: string): boolean {
   return new RegExp(`^${re}$`).test(path);
 }
 
-export { transformInspekt } from './transform-adapter.js';
 export type { TransformOptions } from './transform-adapter.js';
+export { transformInspekt } from './transform-adapter.js';

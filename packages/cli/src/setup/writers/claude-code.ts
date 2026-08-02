@@ -3,13 +3,13 @@
 // %APPDATA%/Claude/claude_desktop_config.json) and a SKILL.md into
 // ~/.claude/skills/inspekt/ describing trigger conditions.
 
-import { promises as fs, existsSync, mkdirSync } from 'node:fs';
+import { existsSync, promises as fs, mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { buildMcpEntry } from './mcp-entry.js';
-import { writeMcpEntryToJsonConfig } from './json-writer.js';
 import { descriptorFor } from '../detect.js';
 import type { InspektConfig } from '../token.js';
 import type { SetupContext } from '../types.js';
+import { writeMcpEntryToJsonConfig } from './json-writer.js';
+import { buildMcpEntry } from './mcp-entry.js';
 
 const SKILL_BODY = `---
 name: inspekt

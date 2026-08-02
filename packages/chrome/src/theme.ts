@@ -31,10 +31,7 @@ export function applyThemeToDocument(mode: ThemeMode, stackId?: string): void {
  * - Persists every cycle back to storage so other surfaces see it.
  * - Listens for storage + OS-preference changes to keep the doc in sync.
  */
-export async function wireThemeCycler(
-  buttonId: string,
-  stackId?: string,
-): Promise<() => void> {
+export async function wireThemeCycler(buttonId: string, stackId?: string): Promise<() => void> {
   const settings = await getSettings();
   let current: ThemeMode = (settings.theme ?? 'auto') as ThemeMode;
   applyThemeToDocument(current, stackId);

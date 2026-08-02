@@ -3,12 +3,42 @@
 // Reinforces the project principle of not reinventing the wheel.
 
 const credits = [
-  { name: 'launch-editor', author: 'yyx990803', role: 'opens files in the user IDE', url: 'https://github.com/yyx990803/launch-editor' },
-  { name: 'bippy', author: 'aidenybai', role: 'React fiber traversal', url: 'https://github.com/aidenybai/bippy' },
-  { name: 'react-grab', author: 'aidenybai', role: 'runtime primitives (freeze, context, open-file)', url: 'https://github.com/aidenybai/react-grab' },
-  { name: '@code-inspector/core', author: 'zh-lx', role: 'AST source-attribute injection across frameworks', url: 'https://github.com/zh-lx/code-inspector' },
-  { name: '@jridgewell/trace-mapping', author: 'jridgewell', role: 'source-map resolution at runtime', url: 'https://github.com/jridgewell/trace-mapping' },
-  { name: '@modelcontextprotocol/sdk', author: 'Anthropic', role: 'MCP server scaffolding', url: 'https://github.com/modelcontextprotocol/typescript-sdk' },
+  {
+    name: 'launch-editor',
+    author: 'yyx990803',
+    role: 'opens files in the user IDE',
+    url: 'https://github.com/yyx990803/launch-editor',
+  },
+  {
+    name: 'bippy',
+    author: 'aidenybai',
+    role: 'React fiber traversal',
+    url: 'https://github.com/aidenybai/bippy',
+  },
+  {
+    name: 'react-grab',
+    author: 'aidenybai',
+    role: 'runtime primitives (freeze, context, open-file)',
+    url: 'https://github.com/aidenybai/react-grab',
+  },
+  {
+    name: '@code-inspector/core',
+    author: 'zh-lx',
+    role: 'AST source-attribute injection across frameworks',
+    url: 'https://github.com/zh-lx/code-inspector',
+  },
+  {
+    name: '@jridgewell/trace-mapping',
+    author: 'jridgewell',
+    role: 'source-map resolution at runtime',
+    url: 'https://github.com/jridgewell/trace-mapping',
+  },
+  {
+    name: '@modelcontextprotocol/sdk',
+    author: 'Anthropic',
+    role: 'MCP server scaffolding',
+    url: 'https://github.com/modelcontextprotocol/typescript-sdk',
+  },
   { name: 'hono', author: 'honojs', role: 'daemon HTTP routing', url: 'https://hono.dev' },
   { name: 'VitePress', author: 'vuejs', role: 'this docs site', url: 'https://vitepress.dev' },
 ];

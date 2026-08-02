@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress';
 import { inspekt } from '@aylith/inspekt-vite';
+import { defineConfig } from 'vitepress';
 
 export default defineConfig({
   title: 'Inspekt',
@@ -81,8 +81,7 @@ export default defineConfig({
     // the nav-bar-content-after slot (theme/index.ts).
     search: { provider: 'local' },
     editLink: {
-      pattern:
-        'https://github.com/aylith-labs/inspekt/edit/main/site/:path',
+      pattern: 'https://github.com/aylith-labs/inspekt/edit/main/site/:path',
       text: 'Edit this page on GitHub',
     },
     footer: {

@@ -77,10 +77,7 @@ export interface InspektOptions {
    * exists. Each entry supplies `language` and `lines`; `startLine`
    * defaults to 1.
    */
-  staticSnippets?: Record<
-    string,
-    { language: string; lines: string[]; startLine?: number }
-  >;
+  staticSnippets?: Record<string, { language: string; lines: string[]; startLine?: number }>;
   /**
    * User-defined editor entries. Their `value` keys are checked before the
    * built-in URL-scheme switch in `editorProtocol`, so a user can override

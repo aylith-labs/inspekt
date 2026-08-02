@@ -1,11 +1,11 @@
 // Antigravity is Code-OSS based, so it follows the VS Code-style settings.json
 // convention for MCP servers (under a top-level `mcpServers` key).
 
-import { buildMcpEntry } from './mcp-entry.js';
-import { writeMcpEntryToJsonConfig } from './json-writer.js';
 import { descriptorFor } from '../detect.js';
 import type { InspektConfig } from '../token.js';
 import type { SetupContext } from '../types.js';
+import { writeMcpEntryToJsonConfig } from './json-writer.js';
+import { buildMcpEntry } from './mcp-entry.js';
 
 export async function writeAntigravity(
   ctx: SetupContext,

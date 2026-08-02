@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  INSPEKT_CAPABILITIES_MESSAGE,
   probeCapabilities,
   publishCapabilities,
   watchCapabilities,
-  INSPEKT_CAPABILITIES_MESSAGE,
 } from '../capability-probe';
 
 function okHead() {

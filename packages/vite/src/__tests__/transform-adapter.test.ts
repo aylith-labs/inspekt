@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { transformInspekt, type TransformOptions } from '../transform-adapter';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { type TransformOptions, transformInspekt } from '../transform-adapter';
 
 // @code-inspector/core's transformCode checks fs.existsSync(filePath) and
 // short-circuits if the file isn't on disk. Tests therefore write fixtures.

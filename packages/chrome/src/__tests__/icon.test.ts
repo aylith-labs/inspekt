@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getBadgeForState, type TabState } from '../icon';
 
 function caps(over: Partial<TabState['capabilities']> = {}): TabState['capabilities'] {

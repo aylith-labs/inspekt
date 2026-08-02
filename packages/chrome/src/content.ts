@@ -45,19 +45,22 @@ function initStandalone(settings: Record<string, unknown>): InspektInstance {
 
 // Push settings to the build plugin's runtime
 function pushSettingsToPlugin(settings: Record<string, unknown>): void {
-  document.dispatchEvent(
-    new CustomEvent('inspekt:settings-update', { detail: settings }),
-  );
+  document.dispatchEvent(new CustomEvent('inspekt:settings-update', { detail: settings }));
 }
 
 // Activity banner derived from the user's modifier choice.
 function humanizeMod(mod: unknown): string {
   switch (mod) {
-    case 'ctrl':  return 'Ctrl';
-    case 'alt':   return 'Alt';
-    case 'shift': return 'Shift';
-    case 'meta':  return '⌘';
-    default:      return '';
+    case 'ctrl':
+      return 'Ctrl';
+    case 'alt':
+      return 'Alt';
+    case 'shift':
+      return 'Shift';
+    case 'meta':
+      return '⌘';
+    default:
+      return '';
   }
 }
 
@@ -118,9 +121,7 @@ function flashActivityBanner(message: string): void {
 // it can update the toolbar icon. Filtered by the namespaced envelope so we
 // don't react to unrelated postMessages on the page.
 window.addEventListener('message', (event: MessageEvent) => {
-  const data = event.data as
-    | { source?: string; type?: string; payload?: unknown }
-    | null;
+  const data = event.data as { source?: string; type?: string; payload?: unknown } | null;
   if (!data || data.source !== 'inspekt') return;
   if (data.type !== 'inspekt:capabilities') return;
   chrome.runtime.sendMessage({
@@ -173,9 +174,11 @@ window.addEventListener('load', () => {
   hasPlugin = detectPlugin();
 
   // Report to background
-  chrome.runtime.sendMessage({
-    type: 'GET_STATUS',
-  }).catch(() => {});
+  chrome.runtime
+    .sendMessage({
+      type: 'GET_STATUS',
+    })
+    .catch(() => {});
 
   // Listen for plugin status events
   document.addEventListener('inspekt:status', ((e: CustomEvent) => {

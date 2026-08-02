@@ -1,6 +1,6 @@
 import { createInspekt, type InspektInstance } from '@aylith/inspekt-core';
-import { getSettings, updateSettings } from '../storage.js';
 import { buildEditorOptgroupHtml } from '../selects.js';
+import { getSettings, updateSettings } from '../storage.js';
 import { wireThemeCycler } from '../theme.js';
 
 const steps = Array.from(document.querySelectorAll<HTMLElement>('section.step'));
@@ -109,9 +109,11 @@ function startDemo(): void {
   });
   demoInstance.on('action', (actionId) => {
     if (actionId === 'open-editor' || actionId === 'open-github') {
-      showToast(actionId === 'open-editor'
-        ? 'On a real project, this opens the file in your editor'
-        : 'On a real project, this opens the file on GitHub');
+      showToast(
+        actionId === 'open-editor'
+          ? 'On a real project, this opens the file in your editor'
+          : 'On a real project, this opens the file on GitHub',
+      );
     }
   });
   demoInstance.enable();

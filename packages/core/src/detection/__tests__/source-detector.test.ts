@@ -1,9 +1,9 @@
 // @vitest-environment happy-dom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  parseSourceAttribute,
-  findSourceAttribute,
   findClosestSource,
+  findSourceAttribute,
+  parseSourceAttribute,
   resolveElementSource,
 } from '../source-detector';
 
@@ -59,7 +59,9 @@ describe('parseSourceAttribute', () => {
   });
 
   it('handles deeply nested paths', () => {
-    const result = parseSourceAttribute('packages/ui/src/forms/fields/TextField.tsx:156:5:TextField');
+    const result = parseSourceAttribute(
+      'packages/ui/src/forms/fields/TextField.tsx:156:5:TextField',
+    );
     expect(result).toEqual({
       filePath: 'packages/ui/src/forms/fields/TextField.tsx',
       line: 156,

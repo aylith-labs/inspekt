@@ -116,7 +116,7 @@
   margin-bottom: 16px;
 }
 .inspekt-eyebrow::before {
-  content: '';
+  content: "";
   width: 24px;
   height: 1px;
   background: var(--inspekt-violet);
@@ -186,7 +186,7 @@
   margin: 0;
 }
 .inspekt-rule-label::after {
-  content: '';
+  content: "";
   flex: 1;
   height: 1px;
   background: var(--inspekt-rule);

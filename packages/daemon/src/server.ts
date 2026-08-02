@@ -3,9 +3,9 @@
 // Token-gated — every mutating request must carry X-Inspekt-Token matching
 // the daemon's configured token.
 
-import { Hono, type Context } from 'hono';
-import { cors } from 'hono/cors';
 import { openInEditor } from '@aylith/inspekt-cli';
+import { type Context, Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { GrabQueue } from './queue.js';
 import type { DaemonConfig, Grab } from './types.js';
 
@@ -79,7 +79,13 @@ export function createServer(config: DaemonConfig): Hono {
   app.post('/__inspekt/open', async (c) => {
     if (!authOk(c)) return c.json({ error: 'unauthorized' }, 401);
     try {
-      const body = (await c.req.json()) as { id?: string; file?: string; line?: number; column?: number; editor?: string };
+      const body = (await c.req.json()) as {
+        id?: string;
+        file?: string;
+        line?: number;
+        column?: number;
+        editor?: string;
+      };
       let file: string;
       let line: number | undefined;
       let column: number | undefined;

@@ -1,42 +1,39 @@
+import {
+  createConsoleLogAction,
+  createCopyPathAction,
+  createOpenEditorAction,
+  createOpenGithubAction,
+} from './actions/built-in.js';
+import { type ComponentNode, detectAdapter } from './adapters/index.js';
+import { elementToInspected, findClosestSource } from './detection/source-detector.js';
+import { BoundingBoxOverlay } from './highlight/bounding-boxes.js';
+import { Highlighter } from './highlight/highlighter.js';
+import { Overlay } from './overlay/overlay.js';
+import { Popover } from './popover/popover.js';
+import { STYLES } from './styles.js';
+import { TreePanel } from './tree-panel/tree-panel.js';
 import type {
-  InspektOptions,
-  InspektInstance,
+  InspectedElement,
   InspektAction,
   InspektEventMap,
-  InspectedElement,
+  InspektInstance,
+  InspektOptions,
 } from './types.js';
-import { findClosestSource, elementToInspected } from './detection/source-detector.js';
-import { Highlighter } from './highlight/highlighter.js';
-import { BoundingBoxOverlay } from './highlight/bounding-boxes.js';
-import { Popover } from './popover/popover.js';
-import { Overlay } from './overlay/overlay.js';
-import {
-  createOpenEditorAction,
-  createCopyPathAction,
-  createOpenGithubAction,
-  createConsoleLogAction,
-} from './actions/built-in.js';
-import { TreePanel } from './tree-panel/tree-panel.js';
-import { detectAdapter, type ComponentNode } from './adapters/index.js';
-import { STYLES } from './styles.js';
 
 export type { ComponentNode } from './adapters/index.js';
 export type {
-  InspektOptions,
-  InspektInstance,
-  InspektAction,
-  InspektEventMap,
-  InspectedElement,
-};
-export type { ShortcutConfig, HighlightConfig, BadgeConfig, TreePanelConfig } from './types.js';
-
+  RichSelectController,
+  RichSelectItem,
+  RichSelectOptions,
+} from './components/rich-select.js';
+export { createRichSelect } from './components/rich-select.js';
+export type { TooltipOptions } from './components/tooltip.js';
 // Component primitives shared with the Chrome extension.
 export { attachTooltip } from './components/tooltip.js';
-export type { TooltipOptions } from './components/tooltip.js';
-export { createRichSelect } from './components/rich-select.js';
-export type { RichSelectItem, RichSelectController, RichSelectOptions } from './components/rich-select.js';
+export type { CodeLine, CodeToken } from './highlight/prism.js';
 export { tokenizeToLines } from './highlight/prism.js';
-export type { CodeToken, CodeLine } from './highlight/prism.js';
+export type { BadgeConfig, HighlightConfig, ShortcutConfig, TreePanelConfig } from './types.js';
+export type { InspectedElement, InspektAction, InspektEventMap, InspektInstance, InspektOptions };
 
 const DEFAULT_OPTIONS: InspektOptions = {
   // Default preserves the legacy click-mod behavior: page interactions never
@@ -82,11 +79,15 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   let capabilityTeardown: (() => void) | null = null;
 
   // Merge nested objects
-  if (userOptions.highlight) options.highlight = { ...DEFAULT_OPTIONS.highlight, ...userOptions.highlight };
+  if (userOptions.highlight)
+    options.highlight = { ...DEFAULT_OPTIONS.highlight, ...userOptions.highlight };
   if (userOptions.badge) options.badge = { ...DEFAULT_OPTIONS.badge, ...userOptions.badge };
-  if (userOptions.treePanel) options.treePanel = { ...DEFAULT_OPTIONS.treePanel, ...userOptions.treePanel };
-  if (userOptions.shortcut) options.shortcut = { ...DEFAULT_OPTIONS.shortcut, ...userOptions.shortcut };
-  if (userOptions.toggleShortcut) options.toggleShortcut = { ...DEFAULT_OPTIONS.toggleShortcut, ...userOptions.toggleShortcut };
+  if (userOptions.treePanel)
+    options.treePanel = { ...DEFAULT_OPTIONS.treePanel, ...userOptions.treePanel };
+  if (userOptions.shortcut)
+    options.shortcut = { ...DEFAULT_OPTIONS.shortcut, ...userOptions.shortcut };
+  if (userOptions.toggleShortcut)
+    options.toggleShortcut = { ...DEFAULT_OPTIONS.toggleShortcut, ...userOptions.toggleShortcut };
 
   let enabled = false;
   const listeners = new Map<string, Set<Function>>();
@@ -151,7 +152,8 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   // Build actions list
   function getActions(): InspektAction[] {
     const builtInMap: Record<string, () => InspektAction> = {
-      'open-editor': () => createOpenEditorAction(options.serverUrl, options.editor, options.customEditors),
+      'open-editor': () =>
+        createOpenEditorAction(options.serverUrl, options.editor, options.customEditors),
       'copy-path': () => createCopyPathAction(),
       'open-github': () => createOpenGithubAction(options.githubRepo, options.githubBranch),
       'console-log': () => createConsoleLogAction(),
@@ -173,13 +175,21 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
   // Engagement gate. The inspector engages only when the user holds every
   // modifier listed in `options.requireModifiers`. Empty array = always-on.
   // Cmd (meta) on macOS is treated as Ctrl for ergonomic parity.
-  function modifiersOk(e: MouseEvent | KeyboardEvent): boolean {
-    return options.requireModifiers.every((mod) => {
-      switch (mod) {
-        case 'ctrl':  return e.ctrlKey || e.metaKey;
-        case 'alt':   return e.altKey;
-        case 'shift': return e.shiftKey;
-        case 'meta':  return e.metaKey;
+  // Unrecognized entries are ignored rather than treated as unsatisfiable, so a
+  // stray value pushed in via `inspekt:settings-update` cannot wedge the gate shut.
+  function modifiersOk(event: MouseEvent | KeyboardEvent): boolean {
+    return options.requireModifiers.every((modifier) => {
+      switch (modifier) {
+        case 'ctrl':
+          return event.ctrlKey || event.metaKey;
+        case 'alt':
+          return event.altKey;
+        case 'shift':
+          return event.shiftKey;
+        case 'meta':
+          return event.metaKey;
+        default:
+          return true;
       }
     });
   }
@@ -284,8 +294,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     try {
       const ta = document.createElement('textarea');
       ta.value = text;
-      ta.style.cssText =
-        'position:fixed;top:-1000px;left:-1000px;opacity:0;pointer-events:none;';
+      ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;opacity:0;pointer-events:none;';
       document.body.appendChild(ta);
       ta.focus();
       ta.select();
@@ -328,7 +337,10 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
     }
   }
 
-  function matchesShortcut(e: KeyboardEvent, shortcut: { key: string; modifiers: Array<'ctrl' | 'alt' | 'shift' | 'meta'> }): boolean {
+  function matchesShortcut(
+    e: KeyboardEvent,
+    shortcut: { key: string; modifiers: Array<'ctrl' | 'alt' | 'shift' | 'meta'> },
+  ): boolean {
     if (e.key.toLowerCase() !== shortcut.key.toLowerCase()) return false;
     const needCtrl = shortcut.modifiers.includes('ctrl');
     const needAlt = shortcut.modifiers.includes('alt');

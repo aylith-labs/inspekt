@@ -2,4 +2,4 @@
 // upstream lib already handles React update suspension, animation pausing, and
 // pseudo-state preservation across many edge cases.
 
-export { freeze, unfreeze, isFreezeActive } from 'react-grab/primitives';
+export { freeze, isFreezeActive, unfreeze } from 'react-grab/primitives';

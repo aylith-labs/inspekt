@@ -1,9 +1,8 @@
-export {
-  webpackPlugin as webpack,
-  rspackPlugin as rspack,
-  esbuildPlugin as esbuild,
-  rollupPlugin as rollup,
-  rolldownPlugin as rolldown,
-} from '@aylith/inspekt-vite/webpack';
-
 export type { InspektPluginOptions } from '@aylith/inspekt-vite/webpack';
+export {
+  esbuildPlugin as esbuild,
+  rolldownPlugin as rolldown,
+  rollupPlugin as rollup,
+  rspackPlugin as rspack,
+  webpackPlugin as webpack,
+} from '@aylith/inspekt-vite/webpack';

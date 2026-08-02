@@ -20,6 +20,7 @@ export function SearchBar() {
         }}
       />
       <button
+        type="button"
         style={{
           padding: '8px 16px',
           background: '#3b82f6',

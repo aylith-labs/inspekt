@@ -3,19 +3,19 @@
 // System is the default — first visit follows `prefers-color-scheme` until
 // the user explicitly picks a theme.
 
-import { h } from 'vue';
 import type { Theme } from 'vitepress';
 import DefaultTheme from 'vitepress/theme';
-import ThemeSwitcher from './ThemeSwitcher.vue';
-import GitHubLink from './GitHubLink.vue';
-import HeroFlow from './components/HeroFlow.vue';
-import WhatItDoes from './components/WhatItDoes.vue';
-import GrabPayload from './components/GrabPayload.vue';
+import { h } from 'vue';
 import Architecture from './components/Architecture.vue';
-import IconStates from './components/IconStates.vue';
 import ComparisonTable from './components/ComparisonTable.vue';
-import InstallSteps from './components/InstallSteps.vue';
 import CreditsFooter from './components/CreditsFooter.vue';
+import GrabPayload from './components/GrabPayload.vue';
+import HeroFlow from './components/HeroFlow.vue';
+import IconStates from './components/IconStates.vue';
+import InstallSteps from './components/InstallSteps.vue';
+import WhatItDoes from './components/WhatItDoes.vue';
+import GitHubLink from './GitHubLink.vue';
+import ThemeSwitcher from './ThemeSwitcher.vue';
 import './custom.css';
 
 const theme: Theme = {

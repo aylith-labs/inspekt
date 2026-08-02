@@ -1,6 +1,6 @@
-import { getSettings, updateSettings, getSiteSettings } from './storage.js';
-import type { MessageType } from './messaging.js';
 import { applyTabState, type TabState } from './icon.js';
+import type { MessageType } from './messaging.js';
+import { getSettings, getSiteSettings, updateSettings } from './storage.js';
 
 // ---- Per-tab state, persisted in chrome.storage.session ------------------
 // MV3 service workers unload after ~30s idle, which would otherwise erase an

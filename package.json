@@ -13,16 +13,17 @@
     "dev": "turbo run dev",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "clean": "turbo run clean",
     "site:dev": "cd site && bun run docs:dev",
     "site:build": "cd site && bun run docs:build"
   },
   "devDependencies": {
-    "turbo": "^2.10.5",
+    "@biomejs/biome": "^2.5.6",
+    "turbo": "^2.10.8",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.10",
-    "prettier": "^3.9.6"
+    "vitest": "^4.1.10"
   },
   "overrides": {
     "zod": "^4.4.3"

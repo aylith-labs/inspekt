@@ -1,7 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { resolveSnippet, clearSnippetCache } from '../snippet-resolver';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { clearSnippetCache, resolveSnippet } from '../snippet-resolver';
 
-function fakeOk(snippet: { lines: string[]; targetLine: number; startLine: number; endLine: number; language: string }) {
+function fakeOk(snippet: {
+  lines: string[];
+  targetLine: number;
+  startLine: number;
+  endLine: number;
+  language: string;
+}) {
   return new Response(JSON.stringify(snippet), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
@@ -71,7 +77,13 @@ describe('resolveSnippet', () => {
 
   it('cache-hits on repeat calls with the same key', async () => {
     const fetcher = vi.fn().mockResolvedValue(
-      fakeOk({ startLine: 1, endLine: 3, targetLine: 2, lines: ['a', 'b', 'c'], language: 'tsx' }),
+      fakeOk({
+        startLine: 1,
+        endLine: 3,
+        targetLine: 2,
+        lines: ['a', 'b', 'c'],
+        language: 'tsx',
+      }),
     );
     await resolveSnippet({
       filePath: 'src/A.tsx',

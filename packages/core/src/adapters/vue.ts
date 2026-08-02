@@ -1,8 +1,8 @@
-import type { ComponentNode, FrameworkAdapter } from './types.js';
 import { findSourceAttribute, parseSourceAttribute } from '../detection/source-detector.js';
+import type { ComponentNode, FrameworkAdapter } from './types.js';
 
-const VUE_KEY = '__vue__';           // Vue 2
-const VUE3_KEY = '__vue_app__';      // Vue 3 app root
+const VUE_KEY = '__vue__'; // Vue 2
+const VUE3_KEY = '__vue_app__'; // Vue 3 app root
 const VUE_PARENT_KEY = '__vueParentComponent'; // Vue 3 component
 
 interface VueInstance {
@@ -19,7 +19,9 @@ interface VueInstance {
 
 function getVueInstance(element: HTMLElement): VueInstance | null {
   // Vue 3
-  const vue3 = (element as unknown as Record<string, unknown>)[VUE_PARENT_KEY] as VueInstance | undefined;
+  const vue3 = (element as unknown as Record<string, unknown>)[VUE_PARENT_KEY] as
+    | VueInstance
+    | undefined;
   if (vue3) return vue3;
 
   // Vue 2

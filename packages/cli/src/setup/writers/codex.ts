@@ -12,12 +12,12 @@
 // with a simple string-level edit. Other agents' configs (JSON) get proper
 // parsing.
 
-import { promises as fs, existsSync, mkdirSync } from 'node:fs';
+import { existsSync, promises as fs, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { descriptorFor } from '../detect.js';
-import { buildMcpEntry } from './mcp-entry.js';
 import type { InspektConfig } from '../token.js';
 import type { SetupContext } from '../types.js';
+import { buildMcpEntry } from './mcp-entry.js';
 
 const BLOCK_START = '# >>> inspekt managed mcp entry — do not edit between markers >>>';
 const BLOCK_END = '# <<< inspekt managed mcp entry <<<';

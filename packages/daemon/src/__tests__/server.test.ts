@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createServer } from '../server';
 import type { Grab, SerializedElement } from '../types';
 
@@ -129,7 +129,10 @@ describe('DELETE /__inspekt/queue', () => {
       headers: authedHeaders(),
       body: JSON.stringify({ url: 'x', element: fakeElement(), source: 'extension' }),
     });
-    const del = await app.request('/__inspekt/queue', { method: 'DELETE', headers: authedHeaders() });
+    const del = await app.request('/__inspekt/queue', {
+      method: 'DELETE',
+      headers: authedHeaders(),
+    });
     expect(del.status).toBe(200);
     const list = await app.request('/__inspekt/queue', { headers: authedHeaders() });
     const body = (await list.json()) as { grabs: Grab[] };

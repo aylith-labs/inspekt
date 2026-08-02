@@ -1,5 +1,5 @@
-import type { ComponentNode, FrameworkAdapter } from './types.js';
 import { findSourceAttribute, parseSourceAttribute } from '../detection/source-detector.js';
+import type { ComponentNode, FrameworkAdapter } from './types.js';
 
 function buildTreeFromDOM(element: HTMLElement, depth: number): ComponentNode[] {
   const nodes: ComponentNode[] = [];

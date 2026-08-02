@@ -1,6 +1,6 @@
 import { attachTooltip } from '@aylith/inspekt-core';
-import { getSettings, updateSettings, type InspektSettings, type ModifierKey } from '../storage.js';
 import { buildEditorOptgroupHtml } from '../selects.js';
+import { getSettings, type InspektSettings, type ModifierKey, updateSettings } from '../storage.js';
 import { wireThemeCycler } from '../theme.js';
 
 const mainView = document.getElementById('main-view') as HTMLDivElement;
@@ -19,16 +19,23 @@ const standaloneBtn = document.getElementById('standalone-btn') as HTMLButtonEle
 const MOD_ORDER: ModifierKey[] = ['ctrl', 'alt', 'shift', 'meta'];
 function humanizeMod(mod: ModifierKey): string {
   switch (mod) {
-    case 'ctrl':  return 'Ctrl';
-    case 'alt':   return 'Alt';
-    case 'shift': return 'Shift';
-    case 'meta':  return '⌘';
+    case 'ctrl':
+      return 'Ctrl';
+    case 'alt':
+      return 'Alt';
+    case 'shift':
+      return 'Shift';
+    case 'meta':
+      return '⌘';
   }
 }
 function renderModifiersPill(mods: ModifierKey[]): void {
-  modifiersPillText.textContent = mods.length === 0
-    ? '(none)'
-    : MOD_ORDER.filter((m) => mods.includes(m)).map(humanizeMod).join('+');
+  modifiersPillText.textContent =
+    mods.length === 0
+      ? '(none)'
+      : MOD_ORDER.filter((m) => mods.includes(m))
+          .map(humanizeMod)
+          .join('+');
 }
 
 // Intro controls
@@ -67,10 +74,12 @@ function showIntro(): void {
 
 function renderSlide(): void {
   for (const slide of slides) {
-    const idx = Number(slide.dataset['slide']);
-    slide.classList.toggle('active', idx === currentSlide);
+    const slideIndex = Number(slide.dataset['slide']);
+    slide.classList.toggle('active', slideIndex === currentSlide);
   }
-  dots.forEach((dot, i) => dot.classList.toggle('active', i + 1 === currentSlide));
+  dots.forEach((dot, index) => {
+    dot.classList.toggle('active', index + 1 === currentSlide);
+  });
 
   introBack.style.visibility = currentSlide === 1 ? 'hidden' : 'visible';
   introNext.textContent = currentSlide === TOTAL_SLIDES ? 'Get started' : 'Next';
@@ -95,9 +104,7 @@ async function showMain(settings: Awaited<ReturnType<typeof getSettings>>): Prom
 
   // Background is the source of truth for tab state (chrome.storage.session).
   // Content scripts don't track enabled/standalone, so we must ask the SW.
-  const response = (await chrome.runtime
-    .sendMessage({ type: 'GET_STATUS' })
-    .catch(() => null)) as {
+  const response = (await chrome.runtime.sendMessage({ type: 'GET_STATUS' }).catch(() => null)) as {
     enabled?: boolean;
     standalone?: boolean;
     hasPlugin?: boolean;
@@ -182,9 +189,9 @@ toggle.addEventListener('click', async () => {
   // background's authoritative response right after.
   enabled = !enabled;
   updateToggle();
-  const response = (await chrome.runtime.sendMessage({ type: 'TOGGLE_INSPEKT' }).catch(
-    () => null,
-  )) as { enabled?: boolean; standalone?: boolean } | null;
+  const response = (await chrome.runtime
+    .sendMessage({ type: 'TOGGLE_INSPEKT' })
+    .catch(() => null)) as { enabled?: boolean; standalone?: boolean } | null;
   if (response) {
     enabled = response.enabled ?? enabled;
     updateToggle();

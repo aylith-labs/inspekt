@@ -3,8 +3,8 @@
 // which ones to register Inspekt with.
 
 import { existsSync } from 'node:fs';
-import path from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 import type { AgentId, DetectedAgent } from './types.js';
 
 export interface AgentDescriptor {
@@ -20,7 +20,11 @@ export const AGENTS: AgentDescriptor[] = [
     label: 'Claude Code',
     configPath: (home) =>
       process.platform === 'win32'
-        ? path.join(process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'), 'Claude', 'claude_desktop_config.json')
+        ? path.join(
+            process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'),
+            'Claude',
+            'claude_desktop_config.json',
+          )
         : path.join(home, '.config', 'claude', 'mcp.json'),
   },
   {
@@ -30,7 +34,12 @@ export const AGENTS: AgentDescriptor[] = [
       process.platform === 'darwin'
         ? path.join(home, 'Library', 'Application Support', 'Cursor', 'User', 'settings.json')
         : process.platform === 'win32'
-          ? path.join(process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'), 'Cursor', 'User', 'settings.json')
+          ? path.join(
+              process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'),
+              'Cursor',
+              'User',
+              'settings.json',
+            )
           : path.join(home, '.config', 'Cursor', 'User', 'settings.json'),
   },
   {
@@ -50,7 +59,12 @@ export const AGENTS: AgentDescriptor[] = [
       process.platform === 'darwin'
         ? path.join(home, 'Library', 'Application Support', 'Antigravity', 'User', 'settings.json')
         : process.platform === 'win32'
-          ? path.join(process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'), 'Antigravity', 'User', 'settings.json')
+          ? path.join(
+              process.env['APPDATA'] ?? path.join(home, 'AppData', 'Roaming'),
+              'Antigravity',
+              'User',
+              'settings.json',
+            )
           : path.join(home, '.config', 'Antigravity', 'User', 'settings.json'),
   },
 ];

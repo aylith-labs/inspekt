@@ -49,16 +49,15 @@
   "dependencies": {
     "@aylith/inspekt-core": "workspace:*",
     "@aylith/inspekt-cli": "workspace:*",
-    "@code-inspector/core": "^2.0.4",
+    "@code-inspector/core": "^2.0.7",
     "unplugin": "^3.3.0"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^7.0.2",
     "vitest": "^4.1.10",
-    "vite": "^8.1.5",
-    "@swc/core": "^1.15.46",
-    "@types/node": "^26.1.1"
+    "vite": "^8.2.0",
+    "@types/node": "^26.1.2"
   },
   "peerDependencies": {
     "vite": ">=4.0.0"

@@ -128,7 +128,11 @@ export class TreePanel {
     this.treeContainer.appendChild(fragment);
   }
 
-  private renderNode(node: ComponentNode, parent: DocumentFragment | HTMLElement, depth: number): void {
+  private renderNode(
+    node: ComponentNode,
+    parent: DocumentFragment | HTMLElement,
+    depth: number,
+  ): void {
     // Filter check
     if (this.filter && !this.matchesFilter(node)) return;
 
@@ -186,8 +190,9 @@ export class TreePanel {
       }
 
       // Update selected state
-      this.treeContainer!.querySelectorAll('.inspekt-tree-node-selected')
-        .forEach((n) => n.classList.remove('inspekt-tree-node-selected'));
+      for (const selected of this.treeContainer!.querySelectorAll('.inspekt-tree-node-selected')) {
+        selected.classList.remove('inspekt-tree-node-selected');
+      }
       row.classList.add('inspekt-tree-node-selected');
     });
 

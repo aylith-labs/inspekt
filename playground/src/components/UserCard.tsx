@@ -1,10 +1,10 @@
 interface UserCardProps {
   name: string;
   email: string;
-  role: string;
+  jobTitle: string;
 }
 
-export function UserCard({ name, email, role }: UserCardProps) {
+export function UserCard({ name, email, jobTitle }: UserCardProps) {
   return (
     <div
       style={{
@@ -18,7 +18,7 @@ export function UserCard({ name, email, role }: UserCardProps) {
       <div style={{ marginTop: 8 }}>
         <div style={{ fontWeight: 600, color: '#1e293b' }}>{name}</div>
         <div style={{ fontSize: 13, color: '#64748b' }}>{email}</div>
-        <Badge label={role} />
+        <Badge label={jobTitle} />
       </div>
     </div>
   );
@@ -27,7 +27,7 @@ export function UserCard({ name, email, role }: UserCardProps) {
 function Avatar({ name }: { name: string }) {
   const initials = name
     .split(' ')
-    .map((n) => n[0])
+    .map((word) => word[0])
     .join('');
   return (
     <div

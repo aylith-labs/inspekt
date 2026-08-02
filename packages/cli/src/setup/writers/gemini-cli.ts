@@ -1,11 +1,11 @@
 // Gemini CLI MCP entry writer. Gemini's settings.json lives at
 // ~/.gemini/settings.json with a top-level `mcpServers` key.
 
-import { buildMcpEntry } from './mcp-entry.js';
-import { writeMcpEntryToJsonConfig } from './json-writer.js';
 import { descriptorFor } from '../detect.js';
 import type { InspektConfig } from '../token.js';
 import type { SetupContext } from '../types.js';
+import { writeMcpEntryToJsonConfig } from './json-writer.js';
+import { buildMcpEntry } from './mcp-entry.js';
 
 export async function writeGeminiCli(
   ctx: SetupContext,

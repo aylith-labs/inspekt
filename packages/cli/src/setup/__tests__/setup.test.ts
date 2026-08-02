@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync, readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { runSetup } from '../index';
-import { loadOrCreateConfig, generateToken } from '../token';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { detectAgents } from '../detect';
+import { runSetup } from '../index';
+import { generateToken, loadOrCreateConfig } from '../token';
 
 let home: string;
 

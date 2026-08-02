@@ -8,7 +8,7 @@
 // safe under POSIX append guarantees, but we still take a brief lock for
 // writes to serialize against compaction/clear operations.
 
-import { promises as fs, existsSync, mkdirSync } from 'node:fs';
+import { existsSync, promises as fs, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { lock as plLock } from 'proper-lockfile';
 import type { Grab } from './types.js';
@@ -44,7 +44,9 @@ export class GrabQueue {
     }
   }
 
-  async append(grab: Omit<Grab, 'id' | 'timestamp'> & { id?: string; timestamp?: number }): Promise<Grab> {
+  async append(
+    grab: Omit<Grab, 'id' | 'timestamp'> & { id?: string; timestamp?: number },
+  ): Promise<Grab> {
     const full: Grab = {
       id: grab.id ?? ulid(),
       timestamp: grab.timestamp ?? Date.now(),
@@ -81,10 +83,7 @@ export class GrabQueue {
       })
       .filter((g): g is Grab => g !== null);
 
-    const filtered =
-      opts.since !== undefined
-        ? all.filter((g) => g.timestamp > opts.since!)
-        : all;
+    const filtered = opts.since !== undefined ? all.filter((g) => g.timestamp > opts.since!) : all;
     if (opts.limit !== undefined && filtered.length > opts.limit) {
       return filtered.slice(-opts.limit);
     }
@@ -93,7 +92,7 @@ export class GrabQueue {
 
   async latest(): Promise<Grab | null> {
     const all = await this.list();
-    return all.length > 0 ? all[all.length - 1] ?? null : null;
+    return all.length > 0 ? (all[all.length - 1] ?? null) : null;
   }
 
   async getById(id: string): Promise<Grab | null> {

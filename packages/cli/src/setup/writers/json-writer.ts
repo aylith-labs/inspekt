@@ -5,7 +5,7 @@
 // the existing key order via JSON.parse roundtrip, and write back with the
 // same indentation.
 
-import { promises as fs, existsSync, mkdirSync } from 'node:fs';
+import { existsSync, promises as fs, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import type { McpEntry } from './mcp-entry.js';
 

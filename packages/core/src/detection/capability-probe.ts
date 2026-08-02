@@ -107,10 +107,7 @@ export function publishCapabilities(caps: PageCapabilities, ctx: ProbeContext = 
     ctx.onResult(caps);
     return;
   }
-  window.postMessage(
-    { source: 'inspekt', type: INSPEKT_CAPABILITIES_MESSAGE, payload: caps },
-    '*',
-  );
+  window.postMessage({ source: 'inspekt', type: INSPEKT_CAPABILITIES_MESSAGE, payload: caps }, '*');
 }
 
 /**

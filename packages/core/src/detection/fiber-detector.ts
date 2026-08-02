@@ -83,7 +83,10 @@ export async function fiberSourceFor(element: Element): Promise<SourceInfo | nul
 
   const componentName =
     getDisplayName(fiber.type) ??
-    debug.fileName.split('/').pop()?.replace(/\.\w+$/, '') ??
+    debug.fileName
+      .split('/')
+      .pop()
+      ?.replace(/\.\w+$/, '') ??
     'Unknown';
 
   return {

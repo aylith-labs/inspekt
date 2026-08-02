@@ -1,5 +1,5 @@
-import type { ComponentNode, FrameworkAdapter } from './types.js';
 import { findSourceAttribute, parseSourceAttribute } from '../detection/source-detector.js';
+import type { ComponentNode, FrameworkAdapter } from './types.js';
 
 // Solid attaches owner information to DOM elements in dev mode
 const SOLID_DEV_KEY = '_$owner';
@@ -20,8 +20,10 @@ export const solidAdapter: FrameworkAdapter = {
 
   detect(): boolean {
     // Solid uses _$HY for hydration and data-hk for hydration keys
-    return document.querySelector('[data-hk]') !== null ||
-      !!(document as unknown as Record<string, unknown>)['_$HY'];
+    return (
+      document.querySelector('[data-hk]') !== null ||
+      !!(document as unknown as Record<string, unknown>)['_$HY']
+    );
   },
 
   getComponentTree(root: HTMLElement): ComponentNode | null {

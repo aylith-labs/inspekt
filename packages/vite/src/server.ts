@@ -1,5 +1,5 @@
-import type { IncomingMessage, ServerResponse } from 'node:http';
 import { promises as fs } from 'node:fs';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { URL } from 'node:url';
 import { openInEditor } from '@aylith/inspekt-cli';
@@ -35,7 +35,11 @@ function lruTouch(key: string, entry: CacheEntry): void {
   }
 }
 
-function applyPathMapping(filePath: string, pathMapping: Record<string, string>, root: string): string {
+function applyPathMapping(
+  filePath: string,
+  pathMapping: Record<string, string>,
+  root: string,
+): string {
   let resolved = filePath;
   for (const [containerPath, hostPath] of Object.entries(pathMapping)) {
     if (resolved.startsWith(containerPath)) {
@@ -127,10 +131,7 @@ export async function handleSnippetRequest(
   return true;
 }
 
-export function handleCapabilitiesRequest(
-  req: IncomingMessage,
-  res: ServerResponse,
-): boolean {
+export function handleCapabilitiesRequest(req: IncomingMessage, res: ServerResponse): boolean {
   if (req.url !== '/__inspekt/capabilities') return false;
   if (req.method !== 'GET' && req.method !== 'HEAD') return false;
   res.writeHead(200, { 'Content-Type': 'application/json', ...CORS_HEADERS });
@@ -189,10 +190,7 @@ export function handleInspektRequest(
   return true;
 }
 
-export function corsMiddleware(
-  req: IncomingMessage,
-  res: ServerResponse,
-): boolean {
+export function corsMiddleware(req: IncomingMessage, res: ServerResponse): boolean {
   if (req.method === 'OPTIONS' && req.url?.startsWith('/__inspekt/')) {
     res.writeHead(204, CORS_HEADERS);
     res.end();

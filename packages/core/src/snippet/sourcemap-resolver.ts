@@ -14,11 +14,7 @@
 
 import { TraceMap } from '@jridgewell/trace-mapping';
 import type { SourceSnippet } from '../types.js';
-import {
-  getParsedMap,
-  setParsedMap,
-  getRawMapBackend,
-} from './cache.js';
+import { getParsedMap, getRawMapBackend, setParsedMap } from './cache.js';
 
 export interface SourceMapResolverOptions {
   filePath: string;
@@ -45,10 +41,7 @@ function candidateMapUrls(): string[] {
   return urls;
 }
 
-async function fetchRawMap(
-  mapUrl: string,
-  fetcher: typeof fetch,
-): Promise<string | null> {
+async function fetchRawMap(mapUrl: string, fetcher: typeof fetch): Promise<string | null> {
   const cache = getRawMapBackend();
   const cached = await cache.get(mapUrl);
   if (cached === 'not-found') return null;
