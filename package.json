@@ -15,6 +15,7 @@
     "typecheck": "turbo run typecheck",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
+    "verify:exports": "bun scripts/verify-exports.ts",
     "clean": "turbo run clean",
     "site:dev": "cd site && bun run docs:dev",
     "site:build": "cd site && bun run docs:build"
