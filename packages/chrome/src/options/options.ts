@@ -412,7 +412,6 @@ async function addCustomEditor(): Promise<void> {
   }
   if (BUILT_IN_EDITOR_KEYS.has(value)) {
     // Custom-overrides-built-in semantics — warn but allow.
-    // eslint-disable-next-line no-alert
     if (
       !confirm(
         `"${value}" matches a built-in editor key. Your custom entry will override the built-in. Continue?`,

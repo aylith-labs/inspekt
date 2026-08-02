@@ -90,25 +90,31 @@ const DEFAULTS: InspektSettings = {
 };
 
 export async function getSettings(): Promise<InspektSettings> {
-  // Read as an untyped record: stored settings can still carry legacy keys that
-  // `migrate` is responsible for folding into the current shape.
-  const result = await chrome.storage.sync.get(DEFAULTS);
-  return migrate(result);
+  // `get(null)` returns exactly what is stored, with no defaults filled in.
+  // Passing DEFAULTS here instead would mask which keys the user has actually
+  // written, and `migrate` needs that distinction to detect a legacy install.
+  const stored = await chrome.storage.sync.get(null);
+  return migrate(stored);
 }
 
 /**
- * Read-side schema migration. Old installs may have `activation: 'click-mod'`
- * etc. in `chrome.storage.sync`; map those to the new `requireModifiers`
- * model (and turn on `showBoundingBoxes` for users who chose `'view'`).
+ * Read-side schema migration, applied to the raw stored object before defaults
+ * are layered under it. Old installs may have `activation: 'click-mod'` etc. in
+ * `chrome.storage.sync`; map those to the `requireModifiers` model (and turn on
+ * `showBoundingBoxes` for users who chose `'view'`).
  *
- * Applied on every read — cheap, no I/O. We never write back to storage from
- * here; users implicitly migrate the first time the options page calls
- * `updateSettings` (which omits `activation`).
+ * The legacy branch keys off `stored`, not the merged result: a default value
+ * for `requireModifiers` is indistinguishable from a user-written one once the
+ * two are merged, which would skip the migration for every legacy install.
+ *
+ * Nothing is written back here; users implicitly migrate the first time the
+ * options page calls `updateSettings` (which omits `activation`).
  */
-function migrate(raw: Record<string, unknown>): InspektSettings {
-  const oldActivation =
-    typeof raw['activation'] === 'string' ? (raw['activation'] as string) : null;
-  if (oldActivation && !Array.isArray(raw['requireModifiers'])) {
+function migrate(stored: Record<string, unknown>): InspektSettings {
+  const settings: Record<string, unknown> = { ...DEFAULTS, ...stored };
+
+  const oldActivation = typeof stored['activation'] === 'string' ? stored['activation'] : null;
+  if (oldActivation && !Array.isArray(stored['requireModifiers'])) {
     const map: Record<string, ModifierKey[]> = {
       'click-mod': ['ctrl', 'alt'],
       'hover-mod': ['ctrl', 'alt'],
@@ -117,11 +123,12 @@ function migrate(raw: Record<string, unknown>): InspektSettings {
       view: ['ctrl', 'alt'],
       manual: ['ctrl', 'alt', 'shift'],
     };
-    raw['requireModifiers'] = map[oldActivation] ?? ['ctrl', 'alt'];
-    if (oldActivation === 'view') raw['showBoundingBoxes'] = true;
+    settings['requireModifiers'] = map[oldActivation] ?? ['ctrl', 'alt'];
+    if (oldActivation === 'view') settings['showBoundingBoxes'] = true;
   }
-  delete raw['activation'];
-  return raw as unknown as InspektSettings;
+
+  delete settings['activation'];
+  return settings as unknown as InspektSettings;
 }
 
 export async function updateSettings(updates: Partial<InspektSettings>): Promise<void> {

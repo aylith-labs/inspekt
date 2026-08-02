@@ -267,7 +267,6 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       async (selector) => copyToClipboard(selector),
       async (html) => copyToClipboard(html),
       () => {
-        // eslint-disable-next-line no-console
         console.log('[Inspekt]', el);
       },
     );

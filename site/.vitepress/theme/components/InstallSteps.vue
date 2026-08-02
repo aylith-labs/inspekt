@@ -21,8 +21,8 @@ function copy(text: string) {
         <span class="inspekt-step-num">1</span>
         <div class="body">
           <h3>Install the Chrome extension.</h3>
-          <p>From the Chrome Web Store (pending review), or load unpacked from <code>packages/chrome/dist</code>.</p>
-          <a class="link" href="https://chromewebstore.google.com/detail/inspekt/TODO">Open Chrome Web Store →</a>
+          <p>Not on the Chrome Web Store yet. Build it with <code>bun run build</code>, then load unpacked from <code>packages/chrome/dist</code> at <code>chrome://extensions</code> with Developer mode on.</p>
+          <a class="link" href="https://github.com/aylith-labs/inspekt/tree/main/packages/chrome">Extension source →</a>
         </div>
       </li>
       <li>
