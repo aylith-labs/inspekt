@@ -8,6 +8,7 @@
     "build": "tsup && cp -r public/* ../../dist/ && cp src/popup/popup.html ../../dist/popup/ && cp src/options/options.html ../../dist/options/ && cp src/welcome/welcome.html ../../dist/welcome/",
     "dev": "tsup --watch",
     "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
     "fetch-metadata": "node scripts/fetch-editor-metadata.mjs",
     "clean": "rm -rf ../../dist"
   },

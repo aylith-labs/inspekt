@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -86,6 +86,45 @@ describe('GrabQueue', () => {
     const list = await q.list({ limit: 2 });
     expect(list).toHaveLength(2);
     expect(list.map((g) => g.url)).toEqual(['3', '4']);
+  });
+
+  it('clamps a negative limit to empty instead of slicing from the wrong end', async () => {
+    const queue = new GrabQueue(queuePath);
+    for (const url of ['a', 'b', 'c']) {
+      await queue.append({ url, element: fakeElement(), source: 'extension' });
+    }
+    expect(await queue.list({ limit: -2 })).toEqual([]);
+    expect(await queue.list({ limit: 0 })).toEqual([]);
+  });
+
+  it('floors a fractional limit', async () => {
+    const queue = new GrabQueue(queuePath);
+    for (const url of ['a', 'b', 'c']) {
+      await queue.append({ url, element: fakeElement(), source: 'extension' });
+    }
+    const list = await queue.list({ limit: 2.7 });
+    expect(list.map((grab) => grab.url)).toEqual(['b', 'c']);
+  });
+
+  it('skips corrupt lines rather than failing the whole read', async () => {
+    const queue = new GrabQueue(queuePath);
+    await queue.append({ url: 'good', element: fakeElement(), source: 'extension' });
+    appendFileSync(queuePath, 'this line is not json\n', 'utf8');
+    await queue.append({ url: 'also-good', element: fakeElement(), source: 'extension' });
+    const list = await queue.list();
+    expect(list.map((grab) => grab.url)).toEqual(['good', 'also-good']);
+  });
+
+  it('creates the queue file and its parent directory on construction', () => {
+    const nested = path.join(dir, 'a', 'b', 'queue.jsonl');
+    new GrabQueue(nested);
+    expect(existsSync(nested)).toBe(true);
+  });
+
+  it('markProcessed reports false for an unknown id', async () => {
+    const queue = new GrabQueue(queuePath);
+    await queue.append({ url: 'x', element: fakeElement(), source: 'extension' });
+    expect(await queue.markProcessed('NOT-A-REAL-ID')).toBe(false);
   });
 
   it('returns the latest grab', async () => {

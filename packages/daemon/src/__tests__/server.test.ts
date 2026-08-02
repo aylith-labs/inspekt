@@ -23,6 +23,16 @@ function authedHeaders(extra: Record<string, string> = {}): Record<string, strin
   return { 'X-Inspekt-Token': TOKEN, 'Content-Type': 'application/json', ...extra };
 }
 
+async function seedGrabs(urls: string[]): Promise<void> {
+  for (const url of urls) {
+    await app.request('/__inspekt/grab', {
+      method: 'POST',
+      headers: authedHeaders(),
+      body: JSON.stringify({ url, element: fakeElement(), source: 'extension' }),
+    });
+  }
+}
+
 let dir: string;
 let queuePath: string;
 let app: ReturnType<typeof createServer>;
@@ -119,6 +129,118 @@ describe('GET /__inspekt/queue', () => {
     const res = await app.request('/__inspekt/queue?limit=2', { headers: authedHeaders() });
     const body = (await res.json()) as { grabs: Grab[] };
     expect(body.grabs.map((g) => g.url)).toEqual(['3', '4']);
+  });
+
+  it('filters by since', async () => {
+    await seedGrabs(['old']);
+    const cutoff = Date.now();
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await seedGrabs(['new']);
+    const res = await app.request(`/__inspekt/queue?since=${cutoff}`, { headers: authedHeaders() });
+    const body = (await res.json()) as { grabs: Grab[] };
+    expect(body.grabs.map((grab) => grab.url)).toEqual(['new']);
+  });
+
+  it('rejects a negative limit rather than returning the oldest grabs', async () => {
+    await seedGrabs(['a', 'b', 'c']);
+    const res = await app.request('/__inspekt/queue?limit=-2', { headers: authedHeaders() });
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a non-numeric since or limit', async () => {
+    for (const query of ['since=yesterday', 'limit=all']) {
+      const res = await app.request(`/__inspekt/queue?${query}`, { headers: authedHeaders() });
+      expect(res.status).toBe(400);
+    }
+  });
+
+  it('treats limit=0 as an explicit empty page', async () => {
+    await seedGrabs(['a', 'b']);
+    const res = await app.request('/__inspekt/queue?limit=0', { headers: authedHeaders() });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { grabs: Grab[] };
+    expect(body.grabs).toEqual([]);
+  });
+});
+
+describe('token gate', () => {
+  it('accepts the configured token on every mutating route', async () => {
+    const grab = await app.request('/__inspekt/grab', {
+      method: 'POST',
+      headers: authedHeaders(),
+      body: JSON.stringify({ url: 'http://x', element: fakeElement(), source: 'extension' }),
+    });
+    expect(grab.status).toBe(201);
+    expect((await app.request('/__inspekt/queue', { headers: authedHeaders() })).status).toBe(200);
+    expect(
+      (await app.request('/__inspekt/queue', { method: 'DELETE', headers: authedHeaders() }))
+        .status,
+    ).toBe(200);
+  });
+
+  it('rejects a wrong token on every mutating route', async () => {
+    const wrong = { 'X-Inspekt-Token': 'not-the-token', 'Content-Type': 'application/json' };
+    expect(
+      (
+        await app.request('/__inspekt/grab', {
+          method: 'POST',
+          headers: wrong,
+          body: JSON.stringify({ url: 'http://x', element: fakeElement(), source: 'extension' }),
+        })
+      ).status,
+    ).toBe(401);
+    expect((await app.request('/__inspekt/queue', { headers: wrong })).status).toBe(401);
+    expect(
+      (await app.request('/__inspekt/queue', { method: 'DELETE', headers: wrong })).status,
+    ).toBe(401);
+    expect(
+      (await app.request('/__inspekt/open', { method: 'POST', headers: wrong, body: '{}' })).status,
+    ).toBe(401);
+  });
+
+  it('refuses everything when the server has no token, even a matching empty header', async () => {
+    const tokenless = createServer({
+      token: '',
+      host: '127.0.0.1',
+      port: 0,
+      queuePath: path.join(dir, 'tokenless.jsonl'),
+    });
+    const noHeader = await tokenless.request('/__inspekt/queue');
+    expect(noHeader.status).toBe(401);
+    const emptyHeader = await tokenless.request('/__inspekt/queue', {
+      headers: { 'X-Inspekt-Token': '' },
+    });
+    expect(emptyHeader.status).toBe(401);
+  });
+});
+
+describe('POST /__inspekt/open', () => {
+  it('rejects a request with neither id nor file', async () => {
+    const res = await app.request('/__inspekt/open', {
+      method: 'POST',
+      headers: authedHeaders(),
+      body: JSON.stringify({}),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('reports an unknown grab id', async () => {
+    const res = await app.request('/__inspekt/open', {
+      method: 'POST',
+      headers: authedHeaders(),
+      body: JSON.stringify({ id: 'nope' }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects an editor string that would inject a command', async () => {
+    const res = await app.request('/__inspekt/open', {
+      method: 'POST',
+      headers: authedHeaders(),
+      body: JSON.stringify({ file: 'src/App.tsx', editor: 'sh -c "id"' }),
+    });
+    expect(res.status).toBe(400);
+    expect((await res.json()) as { error: string }).toEqual({ error: 'invalid editor identifier' });
   });
 });
 

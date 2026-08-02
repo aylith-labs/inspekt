@@ -20,6 +20,7 @@
       "devDependencies": {
         "tsup": "^8.5.1",
         "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
       },
       "peerDependencies": {
         "@rspack/core": ">=0.5.0",
@@ -75,6 +76,7 @@
       "devDependencies": {
         "@jridgewell/sourcemap-codec": "^1.5.5",
         "@types/chrome": "^0.2.5",
+        "@types/node": "^26.1.2",
         "@types/prismjs": "^1.26.6",
         "happy-dom": "^20.11.1",
         "tsup": "^8.5.1",
@@ -122,6 +124,7 @@
       "devDependencies": {
         "tsup": "^8.5.1",
         "typescript": "^7.0.2",
+        "vitest": "^4.1.10",
       },
     },
     "packages/mcp": {

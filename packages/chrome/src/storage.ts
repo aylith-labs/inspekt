@@ -21,7 +21,7 @@ export interface CustomEditor {
   homepage?: string;
 }
 
-export interface InspektSettings {
+export type InspektSettings = {
   enabled: boolean;
   editor: string;
   /**
@@ -57,7 +57,7 @@ export interface InspektSettings {
   sourceMapEnabled: boolean;
   /** User-defined editors (Custom group at the bottom of the picker). */
   customEditors: CustomEditor[];
-}
+};
 
 const DEFAULTS: InspektSettings = {
   enabled: true,
@@ -90,8 +90,10 @@ const DEFAULTS: InspektSettings = {
 };
 
 export async function getSettings(): Promise<InspektSettings> {
+  // Read as an untyped record: stored settings can still carry legacy keys that
+  // `migrate` is responsible for folding into the current shape.
   const result = await chrome.storage.sync.get(DEFAULTS);
-  return migrate(result as Record<string, unknown>);
+  return migrate(result);
 }
 
 /**
