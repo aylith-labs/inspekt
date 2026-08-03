@@ -9,3 +9,6 @@ coverage/
 
 site/.vitepress/dist
 site/.vitepress/cache
+
+landing/.svelte-kit
+landing/build

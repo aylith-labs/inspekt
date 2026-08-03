@@ -12,8 +12,16 @@
       "!**/dist",
       "!**/.vitepress/cache",
       "!**/*.svg",
-      "!packages/chrome/src/editor-metadata.json"
+      "!packages/chrome/src/editor-metadata.json",
+      "!landing/.svelte-kit",
+      "!landing/build",
+      "!**/*.svelte"
     ]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
   },
   "formatter": {
     "enabled": true,

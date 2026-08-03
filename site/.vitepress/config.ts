@@ -5,7 +5,10 @@ export default defineConfig({
   title: 'Inspekt',
   description:
     'Click any element in your browser → send context to your agent. The click-to-agent devtool for the agentic-CLI era.',
-  base: '/inspekt/',
+  // The landing owns the Pages root, so the docs are served one level down.
+  // `srcDir` keeps every published page URL as `/inspekt/docs/<page>`.
+  base: '/inspekt/docs/',
+  srcDir: 'docs',
   cleanUrls: true,
   lastUpdated: true,
   // `true` = system preference is the default on first visit; the user's
@@ -14,7 +17,7 @@ export default defineConfig({
   appearance: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/inspekt/favicon.svg', type: 'image/svg+xml' }],
+    ['link', { rel: 'icon', href: '/inspekt/docs/favicon.svg', type: 'image/svg+xml' }],
     ['meta', { name: 'theme-color', content: '#3b82f6' }],
     ['meta', { property: 'og:title', content: 'Inspekt' }],
     [
@@ -47,32 +50,37 @@ export default defineConfig({
     // `nav-bar-content-after` slot replaces both the nav text and the
     // default `socialLinks` icon, so we have exactly one anchor.
     nav: [
-      { text: 'Docs', link: '/docs/install' },
-      { text: 'Agents', link: '/docs/agent-integration' },
+      // Relative so it resolves to the landing at the Pages root without
+      // hard-coding the host; `base` is only prepended to links starting `/`.
+      // `target` keeps the SPA router out of it — the landing is a separate
+      // app, and routing to it in-place lands back on the docs home instead.
+      { text: 'Home', link: '../', target: '_self' },
+      { text: 'Docs', link: '/install' },
+      { text: 'Agents', link: '/agent-integration' },
     ],
     sidebar: {
-      '/docs/': [
+      '/': [
         {
           text: 'Getting started',
           items: [
-            { text: 'Install', link: '/docs/install' },
-            { text: 'Quick start', link: '/docs/quick-start' },
+            { text: 'Install', link: '/install' },
+            { text: 'Quick start', link: '/quick-start' },
           ],
         },
         {
           text: 'Features',
           items: [
-            { text: 'Source snippets', link: '/docs/snippets' },
-            { text: 'Chrome extension', link: '/docs/chrome-extension' },
-            { text: 'Agent integration', link: '/docs/agent-integration' },
-            { text: 'Source-map fallback', link: '/docs/source-maps' },
+            { text: 'Source snippets', link: '/snippets' },
+            { text: 'Chrome extension', link: '/chrome-extension' },
+            { text: 'Agent integration', link: '/agent-integration' },
+            { text: 'Source-map fallback', link: '/source-maps' },
           ],
         },
         {
           text: 'Reference',
           items: [
-            { text: 'API', link: '/docs/api' },
-            { text: 'Comparison', link: '/docs/comparison' },
+            { text: 'API', link: '/api' },
+            { text: 'Comparison', link: '/comparison' },
           ],
         },
       ],
@@ -81,7 +89,7 @@ export default defineConfig({
     // the nav-bar-content-after slot (theme/index.ts).
     search: { provider: 'local' },
     editLink: {
-      pattern: 'https://github.com/aylith-labs/inspekt/edit/main/site/:path',
+      pattern: 'https://github.com/aylith-labs/inspekt/edit/main/site/docs/:path',
       text: 'Edit this page on GitHub',
     },
     footer: {

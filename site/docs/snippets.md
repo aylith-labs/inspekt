@@ -40,7 +40,7 @@ When the dev server isn't reachable but the page has source maps deployed,
 Inspekt can fetch `.map` files and extract `sourcesContent`. **Off by default**
 — enable it in the Chrome extension options.
 
-See [Source-map fallback](/docs/source-maps) for the privacy implications.
+See [Source-map fallback](/source-maps) for the privacy implications.
 
 ## Configuration
 

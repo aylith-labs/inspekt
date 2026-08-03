@@ -75,7 +75,7 @@ To target specific agents:
 npx @aylith/inspekt setup --agents claude-code,cursor
 ```
 
-See [Agent integration](/docs/agent-integration) for the per-agent details.
+See [Agent integration](/agent-integration) for the per-agent details.
 
 ## 4. (Optional) Long-running daemon
 
@@ -101,5 +101,5 @@ loaded. The Inspekt toolbar icon should:
 - Show a **DEV** badge when the local dev server is up.
 
 Click an element → the popover shows the file path. Expand the snippet section
-to see surrounding source. See [Quick start](/docs/quick-start) for a
+to see surrounding source. See [Quick start](/quick-start) for a
 guided walkthrough.

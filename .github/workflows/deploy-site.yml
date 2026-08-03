@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'site/**'
+      - 'landing/**'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
 
@@ -32,12 +33,23 @@ jobs:
       - run: bun install --frozen-lockfile
       # The site's Vite config imports @aylith/inspekt-vite, which resolves to
       # dist — so the workspace packages have to be built before the docs are.
+      # This also builds the landing, which is a workspace member.
       - run: bun run build
       - run: bun run site:build
+
+      # The landing owns the Pages root and the docs sit under /docs, which is
+      # the split both sites are built against (SvelteKit `paths.base`,
+      # VitePress `base`).
+      - name: Assemble the Pages artifact
+        run: |
+          mkdir -p pages-artifact/docs
+          cp -R landing/build/. pages-artifact/
+          cp -R site/.vitepress/dist/. pages-artifact/docs/
+
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: site/.vitepress/dist
+          path: pages-artifact
 
   deploy:
     needs: build

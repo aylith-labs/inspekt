@@ -6,7 +6,8 @@
   "workspaces": [
     "packages/*",
     "playground",
-    "site"
+    "site",
+    "landing"
   ],
   "scripts": {
     "build": "turbo run build",
@@ -18,7 +19,9 @@
     "verify:exports": "bun scripts/verify-exports.ts",
     "clean": "turbo run clean",
     "site:dev": "cd site && bun run docs:dev",
-    "site:build": "cd site && bun run docs:build"
+    "site:build": "cd site && bun run docs:build",
+    "landing:dev": "cd landing && bun run dev",
+    "landing:build": "cd landing && bun run build"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.6",

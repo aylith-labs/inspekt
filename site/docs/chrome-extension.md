@@ -38,7 +38,7 @@ Inspekt → Details → Extension options.
 
 Disabled by default. When on, Inspekt fetches `.map` files from your app's
 bundle URLs when the dev server is unreachable. See
-[Source-map fallback](/docs/source-maps) for the privacy considerations.
+[Source-map fallback](/source-maps) for the privacy considerations.
 
 ### Editor
 

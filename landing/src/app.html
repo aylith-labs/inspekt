@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="%sveltekit.assets%/favicon.svg" />
+    <script>
+      // Theme + capture bootstrap, applied before first paint so there is no
+      // flash of the wrong theme. Accepts ?theme=dark|light|system and
+      // ?no-anim=1 (used when capturing screenshots). localStorage throws in
+      // some privacy modes, so a failure here must not block rendering.
+      (() => {
+        try {
+          const params = new URLSearchParams(location.search);
+          const override = params.get('theme');
+          if (override === 'dark' || override === 'light' || override === 'system') {
+            localStorage.setItem('theme', override);
+          }
+          const stored = localStorage.getItem('theme') || 'system';
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const isDark = stored === 'dark' || (stored === 'system' && prefersDark);
+          document.documentElement.classList.toggle('dark', isDark);
+          if (params.get('no-anim') === '1') {
+            const style = document.createElement('style');
+            style.textContent =
+              '*,*::before,*::after{animation:none!important;transition:none!important;}';
+            document.documentElement.appendChild(style);
+          }
+        } catch {}
+      })();
+    </script>
+
+    %sveltekit.head%
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
+</html>
