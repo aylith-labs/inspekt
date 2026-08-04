@@ -1,5 +1,13 @@
 # CLAUDE.md
 
+<!-- aylith-handbook:start -->
+> **📖 Aylith handbook (authoritative).** This repo is part of the `aylith-labs` lab. Before any
+> cross-repo, catalog, design-system, CI/runner, or data-flow work you **must** consult the org
+> handbook — the single source of truth for these conventions:
+> https://github.com/aylith-labs/aylith-handbook (locally `../aylith-handbook/`, skill `aylith-labs`).
+<!-- aylith-handbook:end -->
+
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What is Inspekt
