@@ -94,7 +94,7 @@ export default defineConfig({
     },
     footer: {
       message: 'MIT licensed',
-      copyright: '© 2026 Steven Prybylynskyi',
+      copyright: '© 2026 The Aylith Authors',
     },
   },
 });
