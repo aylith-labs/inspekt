@@ -8,6 +8,21 @@ description: >-
   agent over MCP.
 category: developer-tools
 status: beta
+onboarding:
+  access: public-source
+  url: https://github.com/aylith-labs/inspekt#quick-start
+  releasesUrl: https://registry.npmjs.org/@aylith/inspekt-vite
+  prerequisites:
+    - A local frontend project and development server
+    - Node.js and npm or a compatible package manager; the Vite plugin declares Vite 4 or later
+    - A supported installed editor for opening files
+  limitations:
+    - Development tooling, not a production-site feature; source locations depend on available instrumentation
+    - Optional agent handoff requires a local daemon and configured MCP client
+    - The Vite route needs no Chrome extension; the extension is a separate source build with no verified Store installer
+    - Clean Windows React/Vite inspection failed with published core 0.4.0 and Vite plugin 0.2.1 because normalized drive paths were not parsed
+    - Published plugin 0.2.1 can probe the wrong origin and leaves a dev-module reference in production HTML; local fixes are not a public package update
+    - Local packed-source Windows inspection is verified separately; other operating systems, frameworks and optional integrations remain unverified
 features:
   - 'Ctrl+Alt+Click any element to reveal its source file, line, and column'
   - >-
@@ -25,8 +40,7 @@ features:
   - >-
     Opens files in your IDE — VS Code, Cursor, the JetBrains family, Zed,
     Sublime and more — and every popover action is extensible with your own
-  - >-
-    All UI renders in Shadow DOM, so it never collides with your app's styles
+  - 'Inspector UI uses Shadow DOM to reduce style interference'
 targetUser: >-
   Frontend developers who lose time mapping what they see in the browser back to
   the file that renders it — and who want that context handed to a coding agent
@@ -81,5 +95,4 @@ the build output — it just has no path from the browser to the agent.
   settings across projects and can inject the inspector into a page that has no
   plugin installed at all.
 
-MIT licensed and published to npm as `@aylith/inspekt-*` — install
-`@aylith/inspekt` for everything at once, or just the plugin for your bundler.
+MIT licensed. The [public Vite quick start](https://github.com/aylith-labs/inspekt#quick-start) uses `@aylith/inspekt-vite`. The published `@aylith/inspekt` package includes the runtime, plugins, CLI, daemon and MCP packages, not an installed Chrome extension. Check setup requirements above before using optional integrations.

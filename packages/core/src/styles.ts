@@ -51,9 +51,10 @@ export const STYLES = /* css */ `
     border-radius: var(--dl-radius);
     box-shadow: var(--dl-shadow);
     color: var(--dl-text);
-    min-width: 200px;
-    max-width: 400px;
-    overflow: hidden;
+    min-width: min(200px, calc(100vw - 16px));
+    max-width: min(400px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    overflow: auto;
     pointer-events: auto;
     z-index: 2147483647;
     animation: inspekt-fade-in 0.15s ease;

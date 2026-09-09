@@ -58,7 +58,7 @@ export function inspekt(userOptions: InspektViteOptions = {}): Plugin {
 
   let resolvedRoot: string;
   let pathMapping: Record<string, string>;
-  let isProductionBuild = false;
+  let isBuild = false;
 
   function buildInitScript(): string {
     const runtimeOptions = {
@@ -84,7 +84,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     configResolved(config) {
       resolvedRoot = config.root;
       options.root = resolvedRoot;
-      isProductionBuild = config.command === 'build' && config.isProduction;
+      isBuild = config.command === 'build';
 
       // Auto-detect Docker path mappings
       pathMapping = { ...options.pathMapping };
@@ -152,7 +152,7 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     async transform(code, id) {
-      if (isProductionBuild && !options.enableInProduction) return null;
+      if (isBuild && !options.enableInProduction) return null;
 
       // Check file extension
       if (!EXTENSION_RE.test(id)) return null;
@@ -172,7 +172,9 @@ window.__INSPEKT_INSTANCE__ = inspekt;
     },
 
     transformIndexHtml() {
-      if (!options.runtimeInjection) return [];
+      // Static builds have no dev middleware to serve this virtual module.
+      // enableInProduction opts into source attributes only, not a runtime.
+      if (isBuild || !options.runtimeInjection) return [];
       return [
         {
           tag: 'script',

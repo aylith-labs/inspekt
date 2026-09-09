@@ -1,30 +1,42 @@
 # Quick start
 
-A complete tour, ~3 minutes:
+A local Vite walkthrough. [Install the plugin](/install) first and retain your
+framework's existing Vite configuration. No extension or agent setup is required
+to inspect a source location.
 
-## 1. Open any React or Inspekt-configured project
+## 1. Open your Inspekt-configured development project
 
-Start your dev server as usual. Inspekt activates automatically.
+Start the project's dev script, then open the exact URL the server reports.
+Inspekt's Vite plugin injects and enables the inspector. React alone does not
+install the runtime. See the current Windows package limitations in [Install](/install).
 
 ## 2. Grab an element
 
-Hover over a UI element and click. The Inspekt popover shows:
+Hold `Ctrl+Alt` and click an element (`Cmd+Alt` on Mac). A normal click remains
+the app's own action. For an instrumented element, the popover shows:
 
 - **Path** — `src/components/Button.tsx:42`
 - **Snippet** (click "Show source ▾") — the lines around the click target,
   with the target line highlighted.
-- **Actions** — Open in editor, Copy path, Open on GitHub, Send to agent,
-  Console log.
+- **Actions** — Copy path, open in a configured editor, log the element, and
+  configured repository actions. **Show source** appears when a snippet resolves.
 
-The toolbar icon's badge tells you the snippet source:
+Use **Copy path**, then Escape to return to the app. If only DOM information is
+available, do not treat it as a verified source location.
+
+The optional extension's toolbar badge describes its snippet source; the
+Vite-only route has no browser-extension toolbar:
 
 - **DEV** — fetched from your local dev server (fastest path)
 - **MAP** — fetched from source maps (if you opted in)
 - **ON** — path only (no snippet source available on this page)
 
-## 3. Send to your agent
+## 3. Optional: send to your configured agent
 
-Click **Send to Agent** in the popover. Inspekt queues the grab on the local
+This is a separate configured extension/agent workflow, not an action provided
+by the basic Vite runtime alone. Follow [Agent integration](/agent-integration)
+and review its local configuration changes before opting in. With that workflow
+available, **Send to Agent** queues the grab on the local
 daemon (`127.0.0.1:5678`) with the snippet + URL + component name.
 
 Switch to your agent (Claude Code / Cursor / Codex / Gemini CLI). Type a
@@ -38,7 +50,7 @@ In the popover, type a note into the comment field before sending. The
 comment travels alongside the grab. Useful when the request is non-obvious:
 "this scrolls past the viewport on mobile", "wrong copy", etc.
 
-## What just happened (architecturally)
+## Optional agent workflow (separate from Vite inspection)
 
 ```
 ┌──────────────────────────────────────────────────────────┐

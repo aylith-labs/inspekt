@@ -13,16 +13,24 @@ A framework-agnostic element inspector for developers. Click any UI element to s
 
 ## Quick Start
 
+For published versions and exact publication dates, see the public
+[Vite package registry metadata](https://registry.npmjs.org/@aylith/inspekt-vite).
+Its `versions` and `time` fields are package history, separate from studio notes
+and the unreleased changes in this checkout. A publication date is not proof of
+successful operation on every platform.
+
 ```bash
 npm install -D @aylith/inspekt-vite
 ```
 
 ```ts
 // vite.config.ts
+import { defineConfig } from 'vite';
 import { inspekt } from '@aylith/inspekt-vite';
 
 export default defineConfig({
   plugins: [
+    // Keep your existing framework plugins here (for example react()).
     inspekt({
       editor: 'cursor',     // or 'vscode', 'webstorm', 'zed', ...
     }),
@@ -30,7 +38,21 @@ export default defineConfig({
 });
 ```
 
-That's it. Start your dev server and use `Ctrl+Alt+Click` on any element.
+Start your existing dev script (usually `npm run dev`), open its reported URL,
+and use `Ctrl+Alt+Click` on an element. Ordinary clicks keep working. The popover
+should show the actual file and line; expand **Show source** for a snippet and
+use **Copy path** to take the reference back to your editor. Escape closes it.
+
+The Vite route needs no Chrome extension, daemon or coding-agent setup. Keep the
+server local; editor launching requires your chosen editor to be installed.
+
+**Current Windows release limitation:** a clean Windows test of published
+`@aylith/inspekt-vite@0.2.1` / `@aylith/inspekt-core@0.4.0` found that normalized
+`C:/...` paths fall back to DOM-only inspection. The published plugin also uses
+the configured rather than actual server origin and leaves a dev-module link in
+production HTML. Corrections in this checkout are not a published package update.
+See the [first-use verification procedure](scripts/vite-first-use-proof.mjs);
+other platforms and framework versions need their own acceptance checks.
 
 ## Keyboard Shortcuts
 
@@ -49,7 +71,7 @@ On Mac, `Cmd` replaces `Ctrl`.
 
 | Package | Description |
 |---------|-------------|
-| [`@aylith/inspekt`](packages/inspekt) | **Everything in one** — installs every package below and provides the `inspekt`, `inspekt-daemon`, and `inspekt-mcp` commands |
+| [`@aylith/inspekt`](packages/inspekt) | Published runtime, plugins and agent tools, with `inspekt`, `inspekt-daemon`, and `inspekt-mcp` commands; the source-built Chrome extension is separate |
 | [`@aylith/inspekt-core`](packages/core) | Runtime UI — overlay, popover, tree panel, highlighting. Pure vanilla JS/CSS in Shadow DOM |
 | [`@aylith/inspekt-vite`](packages/vite) | Vite plugin — injects source location attributes at build time |
 | [`@aylith/inspekt-bundlers`](packages/bundlers) | Webpack, Rspack, esbuild, and Rollup plugins (via unplugin) |
@@ -181,11 +203,11 @@ The Chrome extension provides:
 - **Per-site overrides** — different settings for different projects
 - **Settings sync** — chrome.storage.sync across devices
 
-Load the extension from `packages/chrome/dist/` after building.
+The Vite quick-start does not require this extension. There is no verified Chrome Store installer yet. For the optional source-built extension, use the repository-root `dist/` directory after building, then load it unpacked in Chrome's developer mode.
 
 ## Agent Integration
 
-`npx inspekt setup` generates a token, writes it to `~/.inspekt/config.json`, and
+`npx @aylith/inspekt setup` generates a token, writes it to `~/.inspekt/config.json`, and
 registers the Inspekt MCP server with every agent it finds installed (Claude Code,
 Cursor, Codex, Gemini CLI, Antigravity).
 

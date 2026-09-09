@@ -58,6 +58,24 @@ describe('parseSourceAttribute', () => {
     expect(parseSourceAttribute('file:notanumber')).toBeNull();
   });
 
+  it.each(['C:/Users/dev/src/App.tsx', 'c:/Project with spaces/src/App.tsx'])(
+    'handles Vite-normalized Windows path %s',
+    (filePath) => {
+      const rawPath = `${filePath}:8:5:button`;
+      expect(parseSourceAttribute(rawPath)).toEqual({
+        filePath,
+        line: 8,
+        column: 5,
+        componentName: 'button',
+        rawPath,
+      });
+    },
+  );
+
+  it('derives the component name for a native Windows path without a label', () => {
+    expect(parseSourceAttribute('C:\\dev\\App.tsx:8:5')?.componentName).toBe('App');
+  });
+
   it('handles deeply nested paths', () => {
     const result = parseSourceAttribute(
       'packages/ui/src/forms/fields/TextField.tsx:156:5:TextField',

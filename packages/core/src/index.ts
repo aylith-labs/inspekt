@@ -314,6 +314,8 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       return;
     }
 
+    if (!enabled) return;
+
     // Escape to close popover
     if (e.key === 'Escape' && popover.isVisible()) {
       popover.unpin();
@@ -481,7 +483,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
       capabilityTeardown?.();
       capabilityTeardown = null;
       document.removeEventListener('click', handleClick, true);
-      document.removeEventListener('keydown', handleKeydown, true);
+      // Keep the toggle shortcut reachable while disabled. destroy() detaches it.
       document.removeEventListener('mousemove', handleMouseMove);
       host.remove();
 
@@ -496,6 +498,7 @@ export function createInspekt(userOptions: Partial<InspektOptions> = {}): Inspek
 
     destroy() {
       instance.disable();
+      document.removeEventListener('keydown', handleKeydown, true);
       popover.destroy();
       overlay.destroy();
       treePanel?.destroy();

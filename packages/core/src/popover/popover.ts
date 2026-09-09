@@ -36,12 +36,24 @@ export class Popover {
   private visible = false;
   private pinned = false;
   private snippetConfig: PopoverSnippetConfig = { ...DEFAULT_SNIPPET_CONFIG };
+  private anchor = { x: 0, y: 0 };
+  private resizeObserver: ResizeObserver | null = null;
+  private reposition = (): void => {
+    if (this.visible) this.positionAt(this.anchor.x, this.anchor.y);
+  };
 
   constructor(private shadowRoot: ShadowRoot) {
     this.container = document.createElement('div');
     this.container.className = 'inspekt-popover';
     this.container.style.display = 'none';
     this.shadowRoot.appendChild(this.container);
+    // A resolved/expanded snippet changes dimensions after the initial show.
+    // Re-clamp the whole panel, not only its initial collapsed shape.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(this.reposition);
+      this.resizeObserver.observe(this.container);
+    }
+    window.addEventListener('resize', this.reposition);
   }
 
   /** Lock the popover in place — hover/move handlers will not reposition or
@@ -382,6 +394,7 @@ export class Popover {
   }
 
   private positionAt(x: number, y: number): void {
+    this.anchor = { x, y };
     const padding = 8;
     const vpWidth = window.innerWidth;
     const vpHeight = window.innerHeight;
@@ -412,6 +425,8 @@ export class Popover {
   }
 
   destroy(): void {
+    this.resizeObserver?.disconnect();
+    window.removeEventListener('resize', this.reposition);
     this.container.remove();
   }
 }

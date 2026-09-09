@@ -19,10 +19,11 @@ export function parseSourceAttribute(value: string): SourceInfo | null {
   const parts = value.split(':');
   if (parts.length < 2) return null;
 
-  // Handle Windows paths (C:\...) — the colon after drive letter
+  // Vite normalizes Windows paths to C:/...; native paths can still use C:\....
+  // Both separators mean the first colon belongs to the drive, not the line.
   let filePath: string;
   let rest: string[];
-  if (/^[A-Z]$/i.test(parts[0] ?? '') && parts[1]?.startsWith('\\')) {
+  if (/^[A-Z]$/i.test(parts[0] ?? '') && /^[\\/]/.test(parts[1] ?? '')) {
     filePath = `${parts[0]}:${parts[1]}`;
     rest = parts.slice(2);
   } else {
@@ -35,7 +36,7 @@ export function parseSourceAttribute(value: string): SourceInfo | null {
   const componentName =
     rest[2] ??
     filePath
-      .split('/')
+      .split(/[\\/]/)
       .pop()
       ?.replace(/\.\w+$/, '') ??
     'Unknown';

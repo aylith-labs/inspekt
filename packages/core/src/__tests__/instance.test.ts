@@ -75,6 +75,22 @@ describe('createInspekt lifecycle', () => {
     expect(document.querySelector('inspekt-root')).toBeNull();
   });
 
+  it('the keyboard shortcut can re-enable a disabled instance and is removed on destroy', () => {
+    const inspekt = makeInspekt();
+    const toggle = () =>
+      document.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'i', ctrlKey: true, altKey: true, bubbles: true }),
+      );
+    inspekt.enable();
+    toggle();
+    expect(document.querySelector('inspekt-root')).toBeNull();
+    toggle();
+    expect(document.querySelector('inspekt-root')).not.toBeNull();
+    inspekt.destroy();
+    toggle();
+    expect(document.querySelector('inspekt-root')).toBeNull();
+  });
+
   it('emits enable and disable events to registered handlers', () => {
     const inspekt = makeInspekt();
     const seen: string[] = [];
