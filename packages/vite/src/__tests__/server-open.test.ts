@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -33,6 +33,7 @@ beforeAll(async () => {
   writeFileSync(path.join(projectRoot, 'src/Button.tsx'), 'export const Button = () => null;\n');
   writeFileSync(path.join(mappedDir, 'Mapped.tsx'), 'export const Mapped = () => null;\n');
   writeFileSync(path.join(outsideDir, 'secret.txt'), 'do not read me\n');
+  symlinkSync(path.join(outsideDir, 'secret.txt'), path.join(projectRoot, 'linked-secret.txt'));
 
   await new Promise<void>((resolve) => {
     server = createServer((req, res) => {
@@ -109,6 +110,11 @@ describe('POST /__inspekt/open — allow path', () => {
 });
 
 describe('POST /__inspekt/open — deny path', () => {
+  it('refuses a symlink inside the root that resolves outside every exposed directory', async () => {
+    const res = await postOpen({ file: 'linked-secret.txt' });
+    expect(res.status).toBe(403);
+    expect(openInEditor).not.toHaveBeenCalled();
+  });
   it('refuses an absolute path outside the project root', async () => {
     const res = await postOpen({ file: path.join(outsideDir, 'secret.txt') });
     expect(res.status).toBe(403);

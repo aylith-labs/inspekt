@@ -1,4 +1,4 @@
-import { promises as fs } from 'node:fs';
+import { promises as fs, realpathSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { URL } from 'node:url';
@@ -75,11 +75,9 @@ function isWithin(directory: string, candidate: string): boolean {
  * directory the project actually exposes: the Vite root, or a host directory
  * named by `pathMapping`. Returns null otherwise.
  *
- * These endpoints answer unauthenticated cross-origin requests, so without this
- * any page open in the developer's browser could read arbitrary files off the
- * machine through the dev server. Containment is lexical — a symlink inside the
- * root that points elsewhere is still followed, which keeps linked workspace
- * packages resolvable.
+ * These endpoints answer unauthenticated cross-origin requests. Check both the
+ * requested path and its resolved target so a link inside the project cannot
+ * expose a file outside the configured directories.
  */
 function resolveExposedFile(
   filePath: string,
@@ -90,6 +88,24 @@ function resolveExposedFile(
     path.resolve(dir),
   );
   if (!exposed.some((dir) => isWithin(dir, absPath))) return { error: 'outside-root' };
+  let realPath: string;
+  try {
+    realPath = realpathSync(absPath);
+  } catch {
+    // Preserve the existing 404 for missing snippet files and editor behavior
+    // for paths that do not exist yet.
+    return { absPath };
+  }
+  const realExposed = exposed.flatMap((dir) => {
+    try {
+      return [realpathSync(dir)];
+    } catch {
+      return [];
+    }
+  });
+  if (!realExposed.some((dir) => isWithin(dir, realPath))) {
+    return { error: 'outside-root' };
+  }
   return { absPath };
 }
 

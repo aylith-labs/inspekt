@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, utimesSync, writeFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -19,10 +19,15 @@ beforeAll(async () => {
   outsideDir = mkdtempSync(path.join(tmpdir(), 'inspekt-server-outside-'));
   externalHostDir = mkdtempSync(path.join(tmpdir(), 'inspekt-server-external-'));
   writeFileSync(path.join(outsideDir, 'secret.txt'), 'do not read me\n', 'utf8');
+  symlinkSync(path.join(outsideDir, 'secret.txt'), path.join(projectRoot, 'linked-secret.txt'));
   writeFileSync(
     path.join(externalHostDir, 'External.tsx'),
     Array.from({ length: 3 }, (_, index) => `external ${index + 1}`).join('\n'),
     'utf8',
+  );
+  symlinkSync(
+    path.join(externalHostDir, 'External.tsx'),
+    path.join(projectRoot, 'linked-mapped.tsx'),
   );
   mkdirSync(path.join(projectRoot, 'src'), { recursive: true });
 
@@ -147,6 +152,11 @@ describe('GET /__inspekt/snippet', () => {
 });
 
 describe('GET /__inspekt/snippet — path containment', () => {
+  it('refuses a symlink inside the root that resolves outside every exposed directory', async () => {
+    const res = await fetch(`${baseUrl}/__inspekt/snippet?file=linked-secret.txt&line=1`);
+    expect(res.status).toBe(403);
+    expect(await res.text()).not.toContain('do not read me');
+  });
   it('refuses an absolute path outside the project root', async () => {
     const outside = path.join(outsideDir, 'secret.txt');
     const res = await fetch(
@@ -169,6 +179,13 @@ describe('GET /__inspekt/snippet — path containment', () => {
     const res = await fetch(
       `${baseUrl}/__inspekt/snippet?file=${encodeURIComponent(`${MAPPED_CONTAINER_DIR}/External.tsx`)}&line=1`,
     );
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as { lines: string[] };
+    expect(data.lines[0]).toBe('external 1');
+  });
+
+  it('serves a symlink when its target is in a configured host directory', async () => {
+    const res = await fetch(`${baseUrl}/__inspekt/snippet?file=linked-mapped.tsx&line=1`);
     expect(res.status).toBe(200);
     const data = (await res.json()) as { lines: string[] };
     expect(data.lines[0]).toBe('external 1');
