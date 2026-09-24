@@ -1,4 +1,4 @@
-import { promises as fs, realpathSync } from 'node:fs';
+import { promises as fs, lstatSync, realpathSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import path from 'node:path';
 import { URL } from 'node:url';
@@ -70,6 +70,28 @@ function isWithin(directory: string, candidate: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
+function resolveExistingPathOrParent(absPath: string): string | null {
+  let current = absPath;
+  const missing: string[] = [];
+  while (true) {
+    try {
+      return path.join(realpathSync(current), ...missing);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') return null;
+      try {
+        // A dangling link can still redirect an editor after its target appears.
+        if (lstatSync(current).isSymbolicLink()) return null;
+      } catch {
+        // The component is absent; check its parent instead.
+      }
+      const parent = path.dirname(current);
+      if (parent === current) return null;
+      missing.unshift(path.basename(current));
+      current = parent;
+    }
+  }
+}
+
 /**
  * Maps a client-supplied path to an absolute one and confirms it lands inside a
  * directory the project actually exposes: the Vite root, or a host directory
@@ -88,14 +110,8 @@ function resolveExposedFile(
     path.resolve(dir),
   );
   if (!exposed.some((dir) => isWithin(dir, absPath))) return { error: 'outside-root' };
-  let realPath: string;
-  try {
-    realPath = realpathSync(absPath);
-  } catch {
-    // Preserve the existing 404 for missing snippet files and editor behavior
-    // for paths that do not exist yet.
-    return { absPath };
-  }
+  const realPath = resolveExistingPathOrParent(absPath);
+  if (realPath === null) return { error: 'outside-root' };
   const realExposed = exposed.flatMap((dir) => {
     try {
       return [realpathSync(dir)];
@@ -106,7 +122,7 @@ function resolveExposedFile(
   if (!realExposed.some((dir) => isWithin(dir, realPath))) {
     return { error: 'outside-root' };
   }
-  return { absPath };
+  return { absPath: realPath };
 }
 
 function languageFromExt(ext: string): string {

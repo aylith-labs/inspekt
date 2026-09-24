@@ -34,6 +34,7 @@ beforeAll(async () => {
   writeFileSync(path.join(mappedDir, 'Mapped.tsx'), 'export const Mapped = () => null;\n');
   writeFileSync(path.join(outsideDir, 'secret.txt'), 'do not read me\n');
   symlinkSync(path.join(outsideDir, 'secret.txt'), path.join(projectRoot, 'linked-secret.txt'));
+  symlinkSync(outsideDir, path.join(projectRoot, 'linked-outside'));
 
   await new Promise<void>((resolve) => {
     server = createServer((req, res) => {
@@ -84,6 +85,14 @@ describe('POST /__inspekt/open — allow path', () => {
     expect(openInEditor).toHaveBeenCalledTimes(1);
   });
 
+  it('opens a new file beneath an existing directory inside the root', async () => {
+    const res = await postOpen({ file: 'src/New.tsx' });
+    expect(res.status).toBe(200);
+    expect(openInEditor).toHaveBeenCalledWith(
+      expect.objectContaining({ file: path.join(projectRoot, 'src/New.tsx') }),
+    );
+  });
+
   it('opens a container path that maps onto an exposed host directory', async () => {
     const res = await postOpen({ file: '/app/src/Mapped.tsx', line: 1 });
     expect(res.status).toBe(200);
@@ -112,6 +121,12 @@ describe('POST /__inspekt/open — allow path', () => {
 describe('POST /__inspekt/open — deny path', () => {
   it('refuses a symlink inside the root that resolves outside every exposed directory', async () => {
     const res = await postOpen({ file: 'linked-secret.txt' });
+    expect(res.status).toBe(403);
+    expect(openInEditor).not.toHaveBeenCalled();
+  });
+
+  it('refuses a new file beneath a directory symlink that resolves outside the root', async () => {
+    const res = await postOpen({ file: 'linked-outside/New.tsx' });
     expect(res.status).toBe(403);
     expect(openInEditor).not.toHaveBeenCalled();
   });

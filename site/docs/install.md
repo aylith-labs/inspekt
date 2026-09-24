@@ -55,8 +55,9 @@ export default defineConfig({
 ```
 
 Inspekt's transform wraps [`@code-inspector/core`](https://github.com/zh-lx/code-inspector)'s
-AST-based source-attribute injection, so it handles every framework code-inspector supports:
-React, Preact, Vue 2/3, Solid, Svelte, Astro, Qwik, Nuxt, Next.js, Umi.
+AST-based source-attribute injection for JSX/TSX, Vue SFC, and Svelte files.
+The Vite route has been exercised with a React consumer; the other framework
+and bundler combinations listed here need separate first-use verification.
 
 By default, source attributes and the inspector runtime are development-only.
 `enableInProduction` is an explicit opt-in for source attributes, not a hosted

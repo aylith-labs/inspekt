@@ -1,6 +1,6 @@
 ---
 name: Inspekt
-tagline: Click any element, get its source — or hand it to your agent
+tagline: Inspect instrumented elements and find their source
 description: >-
   An element inspector for instrumented development projects: Ctrl+Alt+Click an
   element to see its source location and surrounding lines. Copy the path, open
@@ -20,7 +20,7 @@ onboarding:
     - The Vite route needs no Chrome extension; the extension is a separate source build with no verified Store installer
     - Clean Windows React/Vite inspection failed with published core 0.4.0 and Vite plugin 0.2.1 because normalized drive paths were not parsed
     - Published plugin 0.2.1 can probe the wrong origin and leaves a dev-module reference in production HTML; local fixes are not a public package update
-    - Local packed-source Windows inspection is verified separately; other operating systems, frameworks and optional integrations remain unverified
+    - Local packed-source React/Vite inspection is verified on Windows and Linux; macOS, other frameworks and optional integrations remain unverified
     - Dev-server source and editor endpoints are unauthenticated cross-origin routes; keep the server local and review configured path mappings
 features:
   - 'Ctrl+Alt+Click an instrumented element to reveal its source file, line, and column'

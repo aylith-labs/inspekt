@@ -1,9 +1,9 @@
 # Inspekt
 
-A framework-agnostic element inspector for developers. Click any UI element to see its source, navigate the component tree, and take action.
+A multi-framework element inspector for developers. Inspect an instrumented UI element to see its source, navigate the component tree, and take action.
 
-- **Any framework** — React, Vue, Svelte, Solid, Preact, Astro
-- **Any bundler** — Vite, Webpack, Rspack, esbuild
+- **Framework adapters** — React, Vue, Svelte, Solid, and a generic DOM fallback
+- **Bundler plugins** — Vite, Webpack, Rspack, esbuild, and Rollup
 - **Docker-aware** — auto-detects path mappings from docker-compose.yaml
 - **Component tree** — full hierarchy with props, search, and highlighting
 - **Custom actions** — open in IDE, copy path, open on GitHub, or add your own
