@@ -6,17 +6,24 @@ import { once } from 'node:events';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const args = process.argv.slice(2);
 const value = (key) => (args.includes(key) ? args[args.indexOf(key) + 1] : undefined);
-const fixture = value('--fixture') ?? (await mkdtemp(path.join(tmpdir(), 'inspekt-first-use-')));
+const fixture =
+  value('--fixture') ??
+  (await mkdtemp(path.join(value('--temp-base') ?? tmpdir(), 'inspekt-first-use-')));
 const run = path.join(fixture, 'runs', new Date().toISOString().replace(/[:.]/g, '-'));
 await mkdir(run, { recursive: true });
-const npm = value('--npm') ?? 'C:/Users/steve/AppData/Local/mise/shims/npm.exe';
+const npm =
+  value('--npm') ??
+  (process.platform === 'win32' ? 'C:/Users/steve/AppData/Local/mise/shims/npm.exe' : 'npm');
 const playwright =
   value('--playwright') ??
-  'C:/Users/steve/projects/aylith-labs/dashcam/node_modules/playwright/index.mjs';
+  (process.platform === 'win32'
+    ? 'C:/Users/steve/projects/aylith-labs/dashcam/node_modules/playwright/index.mjs'
+    : undefined);
+const repository = fileURLToPath(new URL('../', import.meta.url));
 const receipt = {
   startedAt: new Date().toISOString(),
   fixture,
@@ -29,7 +36,7 @@ const receipt = {
 receipt.mode = value('--local-tarballs') ? 'unreleased-local-package' : 'published-package';
 const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const save = () =>
-  writeFile(path.join(run, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n');
+  writeFile(path.join(run, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`);
 const check = (name, condition, detail) => {
   receipt.checks.push({ name, passed: !!condition, detail });
   assert.ok(condition, name);
@@ -76,14 +83,28 @@ try {
       'react-dom': '19.2.8',
     };
     if (value('--local-tarballs')) {
-      dependencies['@aylith/inspekt-core'] =
-        `file:${path.resolve(value('--local-tarballs'), 'aylith-inspekt-core-0.4.0.tgz').replaceAll('\\', '/')}`;
-      dependencies['@aylith/inspekt-vite'] =
-        `file:${path.resolve(value('--local-tarballs'), 'aylith-inspekt-vite-0.2.1.tgz').replaceAll('\\', '/')}`;
+      receipt.localArchives = [];
+      for (const name of ['core', 'cli', 'vite']) {
+        const manifest = JSON.parse(
+          await readFile(path.join(repository, 'packages', name, 'package.json'), 'utf8'),
+        );
+        const archive = path.resolve(
+          value('--local-tarballs'),
+          `aylith-inspekt-${name}-${manifest.version}.tgz`,
+        );
+        const sha256 = hash(await readFile(archive));
+        receipt.localArchives.push({
+          name: manifest.name,
+          version: manifest.version,
+          archive,
+          sha256,
+        });
+        dependencies[manifest.name] = `file:${archive.replaceAll('\\', '/')}`;
+      }
     }
     await writeFile(
       path.join(fixture, 'package.json'),
-      JSON.stringify(
+      `${JSON.stringify(
         {
           name: 'inspekt-first-use-fixture',
           private: true,
@@ -92,7 +113,7 @@ try {
         },
         null,
         2,
-      ) + '\n',
+      )}\n`,
     );
     await writeFile(
       path.join(fixture, 'index.html'),
@@ -146,6 +167,7 @@ export default defineConfig({ plugins: [react(), inspekt()], server: { host: '12
     const { createServer, build, preview } = await import(
       pathToFileURL(path.join(fixture, 'node_modules/vite/dist/node/index.js'))
     );
+    assert(playwright, 'Provide --playwright <absolute module path> on this operating system');
     const { chromium } = await import(pathToFileURL(playwright));
     server = await createServer({
       root: fixture,
@@ -154,11 +176,16 @@ export default defineConfig({ plugins: [react(), inspekt()], server: { host: '12
     await server.listen();
     const origin = `http://127.0.0.1:${server.httpServer.address().port}`;
     receipt.origin = origin;
-    browser = await chromium.launch({ headless: true });
+    browser = await chromium.launch({
+      headless: true,
+      ...(value('--chromium') ? { executablePath: value('--chromium') } : {}),
+    });
     context = await browser.newContext({
       viewport: { width: 1280, height: 900 },
       permissions: ['clipboard-read', 'clipboard-write'],
-      recordVideo: { dir: path.join(run, 'capture') },
+      ...(args.includes('--record-video')
+        ? { recordVideo: { dir: path.join(run, 'capture') } }
+        : {}),
     });
     // Do not let a published default probe an unrelated service on this computer.
     const allowedOrigins = new Set([origin]);
@@ -186,10 +213,13 @@ export default defineConfig({ plugins: [react(), inspekt()], server: { host: '12
       (await page.getByRole('button', { name: 'Capture count: 1', exact: true }).count()) === 1,
     );
     const clicked = page.getByRole('button', { name: 'Capture count: 1', exact: true });
+    const sourceFile = path.join(fixture, 'src/main.jsx');
+    const sourceLine = (await readFile(sourceFile, 'utf8')).split('\n')[7].trim();
+    const sourceRef = `${sourceFile.replaceAll('\\', '/')}:8`;
     receipt.sourceAttribute = await clicked.getAttribute('data-insp-path');
     check(
       'plugin injects actual source location',
-      !!receipt.sourceAttribute && receipt.sourceAttribute.includes('main.jsx'),
+      receipt.sourceAttribute?.replaceAll('\\', '/') === `${sourceRef}:5:button`,
       receipt.sourceAttribute,
     );
     await clicked.click({ modifiers: ['Control', 'Alt'] });
@@ -204,17 +234,22 @@ export default defineConfig({ plugins: [react(), inspekt()], server: { host: '12
       receipt.popover,
     );
     await page.getByRole('button', { name: 'Show source ▾', exact: true }).click();
-    check(
-      'snippet comes from actual source',
-      (await page.locator('.inspekt-snippet-body').innerText()).includes('setCount'),
-    );
+    receipt.snippet = await page.locator('.inspekt-snippet-body').innerText();
+    check('snippet comes from actual source', receipt.snippet.includes(sourceLine), {
+      sourceLine,
+      snippet: receipt.snippet,
+    });
     await page.screenshot({ path: path.join(run, 'source-open.png') });
     await page.keyboard.press('Escape');
     check('Escape closes inspector', await popover.isHidden());
     await clicked.click({ modifiers: ['Control', 'Alt'] });
     await page.getByRole('button', { name: 'Copy Path', exact: true }).click();
     receipt.clipboard = await page.evaluate(() => navigator.clipboard.readText());
-    check('copy path gives source reference', receipt.clipboard.includes('main.jsx'));
+    check(
+      'copy path gives source reference',
+      receipt.clipboard.replaceAll('\\', '/') === sourceRef,
+      receipt.clipboard,
+    );
     await page.reload();
     await page.waitForFunction(() => !!window.__INSPEKT__);
     await page

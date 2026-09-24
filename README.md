@@ -54,6 +54,25 @@ production HTML. Corrections in this checkout are not a published package update
 See the [first-use verification procedure](scripts/vite-first-use-proof.mjs);
 other platforms and framework versions need their own acceptance checks.
 
+**Linux local-package proof (24 September 2026):** from source revision
+`52623f4f4ebe66d6b63000ebb75cfab306da0fb3`, locally packed core0.4.0,
+CLI0.1.0 and Vite0.2.1 archives installed into a fresh isolated React19/Vite8
+consumer. In system Chromium, an ordinary click still worked; Ctrl+Alt+Click
+identified the actual `src/main.jsx:8:5:button`, **Show source** returned that
+file's exact button line, and **Copy Path** returned its exact `file:line`.
+Reload, Escape, keyboard toggle, narrow dark/reduced-motion placement, a denied
+outside-root snippet request and a production build without the inspector also
+passed. The repeatable proof is `scripts/vite-first-use-proof.mjs`; its `--local-tarballs`
+mode now consumes core, CLI and Vite archives and accepts `--temp-base`,
+`--playwright` and `--chromium` for Linux. The core/CLI/Vite archive SHA-256
+values were `4a03329ba5a8290276c17d1d462c1110cd55817cdccaaee052ef695f06dd9ff8`,
+`d7d14bfa9e9d4e91de22aacb796bdae5b057ce6b991aeef0a57fe45c5c3d39d0`
+and `5526dbd5fa739ce7471ee3c4353dc2dc7a0e4ae946e10e53649a6f7acd50cd4d`.
+The full local test graph passed 21/21 tasks with a task-owned `TMPDIR` passed
+through Turbo's environment. This does **not** verify current npm registry
+bytes, Windows or macOS, other frameworks, editor/daemon/agent enrollment or
+an unaided first-time user; it is not a package publication or public release.
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |

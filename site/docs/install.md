@@ -103,8 +103,13 @@ click. Neither extension badges nor agent access are required for this check.
 
 Published core0.4.0 currently fails to parse Vite-normalized Windows drive paths,
 and Vite0.2.1 can probe the wrong origin if the actual server port differs.
-Local source repairs are not evidence that npm has been updated. Other platforms
-and frameworks remain separately testable, not assumed from this Windows result.
+Local source repairs are not evidence that npm has been updated. A separate
+24 September 2026 Linux check installed **locally packed** core, CLI and Vite
+artifacts into a fresh isolated React/Vite consumer and verified the exact
+source line, snippet and copied path in Chromium; see the repository's
+[Linux local-package proof](https://github.com/aylith-labs/inspekt/blob/main/README.md#quick-start).
+It does not close the published Windows defect, macOS, other frameworks or
+registry-install acceptance.
 
 For the optional extension route, the toolbar icon should:
 
