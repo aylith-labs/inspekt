@@ -5,37 +5,37 @@
     {
       number: '01',
       title: 'Click an element, get its file and line',
-      lede: 'Ctrl+Alt+Click anything in your running app. The popover names the source file, the line, the column, and the component — because the bundler plugin wrote that location onto the element at build time. Clicking is the lookup, not a search.',
+      lede: 'Ctrl+Alt+Click an instrumented element in your local development app. The popover can name its source file, line, column, and component because the plugin annotated that element.',
       emphasis: 'lead',
     },
     {
       number: '02',
-      title: 'Hand it to your coding agent',
-      lede: '"Send to Agent" pushes the element — file, line, component, surrounding source, page URL — onto a local queue an MCP server exposes to Claude Code, Cursor, Codex, Gemini CLI, and Antigravity. "Fix this button" resolves to a real file.',
+      title: 'Optional agent handoff',
+      lede: 'With the extension, daemon, and an MCP client configured separately, Send to Agent can queue a grab for your coding agent. The basic Vite inspector does not require this setup.',
       emphasis: 'pull',
     },
     {
       number: '03',
-      title: 'Walk the component tree',
-      lede: 'A tree panel with props, search, and highlighting. React, Vue, Svelte, and Solid each get a real adapter; anything else falls back to a generic DOM walk over the injected attributes.',
+      title: 'Explore the element in context',
+      lede: 'The inspector includes a component-tree panel and a source excerpt when the development server can resolve one. A DOM fallback may identify an element without a verified source location.',
       emphasis: 'normal',
     },
     {
       number: '04',
-      title: 'Whatever bundler you already use',
-      lede: 'Vite gets a first-class plugin with dev-server integration. Webpack, Rspack, esbuild, and Rollup get the same transform through unplugin.',
+      title: 'Start with Vite',
+      lede: 'The Vite plugin injects source locations and the inspector into your local development app. Other bundler integrations exist in the repository but still need separate first-use checks.',
       emphasis: 'normal',
     },
     {
       number: '05',
-      title: 'Docker paths resolve to your checkout',
-      lede: 'When the app runs in a container, source paths point at /app/…. Inspekt reads the volume mounts out of docker-compose.yaml and maps them back to the files on your machine.',
+      title: 'Map container paths when needed',
+      lede: 'The Vite plugin can read Docker Compose volume mounts or use an explicit path mapping to connect a container path to a host checkout.',
       emphasis: 'normal',
     },
     {
       number: '06',
-      title: 'It cannot collide with your styles',
-      lede: 'Every piece of Inspekt UI renders inside a Shadow DOM root. Highlights are inline styles on the real elements, and nothing runs at all while the inspector is disabled.',
+      title: 'Inspector UI stays scoped',
+      lede: 'The popover and tree render inside a Shadow DOM root. Highlights are applied to the selected element in your running development page.',
       emphasis: 'normal',
     },
   ] as const;
@@ -45,7 +45,7 @@
       step: '01',
       title: 'Build time',
       description:
-        'The bundler plugin injects a data-insp-path attribute — file, line, column, component name — onto each element it transforms. Development only; production builds are untouched.',
+        'The Vite plugin injects a data-insp-path attribute — file, line, column, component name — onto supported elements. This is development-only by default; production attributes require explicit opt-in.',
     },
     {
       step: '02',
@@ -57,13 +57,13 @@
       step: '03',
       title: 'Component tree',
       description:
-        'Framework adapters read React fiber, Vue instances, Svelte context, or Solid owner to build the full hierarchy behind the element you clicked.',
+        'The tree panel can show framework context where its adapter finds it; otherwise the inspector falls back to the annotated DOM.',
     },
     {
       step: '04',
       title: 'Handoff',
       description:
-        'Open the file in your IDE, copy the path, or send the grab to the daemon queue that your agent reads over MCP.',
+        'Copy the path or open it in your configured editor. Agent handoff needs the optional extension, daemon, and MCP setup.',
     },
   ] as const;
 
@@ -95,51 +95,36 @@ export default defineConfig({
   plugins: [inspekt({ editor: 'cursor' })],
 });`;
 
-  const grabPayload = `{
-  "id": "01JC…",
-  "timestamp": "2026-08-03T09:12:44.201Z",
-  "url": "http://localhost:5173/settings",
-  "element": {
-    "filePath": "src/components/SaveButton.tsx",
-    "line": 42,
-    "column": 6,
-    "componentName": "SaveButton",
-    "snippet": "…surrounding source lines…"
-  },
-  "comment": "this one is misaligned",
-  "source": "extension"
-}`;
 </script>
 
 <svelte:head>
-  <title>Inspekt — click any element, get its source, or hand it to your agent</title>
+  <title>Inspekt — inspect an element in your local dev app</title>
   <meta
     name="description"
-    content="A framework-agnostic element inspector for dev servers. Ctrl+Alt+Click anything in your running app to see the file, line, and component behind it — then open it in your IDE or send it to a coding agent over MCP."
+    content="A source inspector for local development. Configure the Vite plugin, then Ctrl+Alt+Click an instrumented element to see its file and line. Optional agent handoff is a separate setup."
   />
 </svelte:head>
 
 <!-- ============================ HERO ============================ -->
 <section class="border-b border-surface-200 dark:border-surface-800">
   <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-12 py-16 lg:grid-cols-[1.55fr_1fr] lg:gap-16 lg:py-24">
+    <div class="grid items-center gap-9 py-8 lg:grid-cols-[1fr_1.12fr] lg:gap-12 lg:py-20">
       <div>
         <p class="text-[10px] font-semibold tracking-[0.22em] text-accent-700 uppercase dark:text-accent-400">
-          Developer tools &middot; Beta
+          Local development &middot; Beta
         </p>
         <h1
           class="mt-4 font-display font-bold tracking-tight text-surface-900 dark:text-surface-50"
           style="font-size: clamp(2.5rem, 5.5vw + 0.5rem, 4.5rem); line-height: 1.02"
         >
-          Click any element,<br />get its source.
+          From the page<br />to the source.
         </h1>
         <p class="mt-6 max-w-2xl text-lg leading-[1.7] text-surface-700 dark:text-surface-300">
-          The gap between seeing a bug and editing the code that causes it is pure overhead. Inspekt
-          closes it to one click — <kbd
+          Add the Vite plugin to your development app. Then <kbd
             class="rounded border border-surface-300 bg-surface-100 px-1.5 py-0.5 font-mono text-sm text-surface-800 dark:border-surface-700 dark:bg-surface-800 dark:text-surface-200"
             >Ctrl+Alt+Click</kbd
-          > anything in your running app to see the file, line, and component tree behind it. Then open
-          it in your IDE, or hand it to a coding agent with its surrounding source already attached.
+          > an instrumented element to see its source file and line. Expand the snippet, copy the path,
+          or open the file in your configured editor.
         </p>
 
         <div class="mt-9 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
@@ -160,24 +145,25 @@ export default defineConfig({
           </a>
         </div>
 
-        <p class="mt-7 text-sm text-surface-500 dark:text-surface-400">
-          MIT licensed. React, Vue, Svelte, Solid, Preact, Astro — and a generic DOM fallback for
-          everything else.
-        </p>
       </div>
 
-      <!-- What the agent actually receives -->
-      <aside class="selection-frame min-w-0 rounded-lg p-5">
-        <p class="text-[10px] font-semibold tracking-[0.22em] text-surface-500 uppercase dark:text-surface-400">
-          What the agent receives
-        </p>
-        <pre class="mt-4 overflow-x-auto font-mono text-[11.5px] leading-relaxed text-surface-700 dark:text-surface-300">{grabPayload}</pre>
-        <p class="mt-4 text-xs leading-relaxed text-surface-600 dark:text-surface-400">
-          The snippet travels with the grab, so most of the time the agent does not need to open the
-          file separately.
-        </p>
-      </aside>
+      <figure class="min-w-0 overflow-hidden rounded-xl border border-surface-200 bg-white shadow-[0_20px_60px_-30px_rgba(35,25,72,0.5)] dark:border-surface-700 dark:bg-surface-900">
+        <div class="flex items-center justify-between border-b border-surface-200 bg-surface-100 px-4 py-3 dark:border-surface-700 dark:bg-surface-800">
+          <span class="font-mono text-xs text-surface-600 dark:text-surface-300">A real React/Vite dev-page capture</span>
+          <span class="rounded-full bg-accent-100 px-2 py-1 font-mono text-[10px] font-semibold text-accent-800 dark:bg-accent-900 dark:text-accent-200">Ctrl + Alt + Click</span>
+        </div>
+        <img src="{base}/inspekt-playground-light.png" alt="Inspekt highlights the playground heading and shows playground/src/components/Header.tsx:8 in its source popover" width="720" height="520" class="block h-auto w-full dark:hidden" />
+        <img src="{base}/inspekt-playground-dark.png" alt="The same source popover in Inspekt's dark theme on the light playground page" width="720" height="520" class="hidden h-auto w-full dark:block" />
+        <figcaption class="border-t border-surface-200 px-4 py-3 text-xs leading-relaxed text-surface-600 dark:border-surface-700 dark:text-surface-300">
+          Captured from the repository playground with its Vite plugin. The popover follows the system theme; the demo page remains light.
+        </figcaption>
+      </figure>
     </div>
+    <p class="border-t border-surface-200 py-5 text-sm leading-relaxed text-surface-600 dark:border-surface-800 dark:text-surface-400">
+      MIT licensed. The React/Vite route has a local first-use proof; other integrations need their own checks.
+      Published npm packages have not yet been retested against the local source fixes.
+      <a href="{base}/docs/install" class="underline underline-offset-2 hover:text-accent-700 dark:hover:text-accent-400">Read current install limitations</a>.
+    </p>
   </div>
 </section>
 
@@ -237,7 +223,7 @@ export default defineConfig({
         What it does
       </p>
       <h2 class="font-display text-3xl leading-tight font-bold text-surface-900 sm:text-4xl dark:text-surface-50">
-        One inspector, every stack.
+        Start with a source-backed click.
       </h2>
     </header>
 
@@ -333,11 +319,11 @@ export default defineConfig({
           Opens in the editor you already use
         </h3>
         <p class="mt-4 text-[15px] leading-[1.7] text-surface-700 dark:text-surface-300">
-          VS Code, VS Code Insiders, Cursor, Windsurf, WebStorm, PhpStorm, PyCharm, IntelliJ IDEA,
-          Sublime Text, Zed, Vim/Neovim, and Emacs.
+          The popover can ask your configured editor to open the selected file. The editor action
+          depends on a working local editor command; use Copy path when it is unavailable.
         </p>
         <p class="mt-4 text-[15px] leading-[1.7] text-surface-700 dark:text-surface-300">
-          Every action in the popover is extensible — register your own with
+          The action registry also accepts custom actions through
           <code class="font-mono text-sm text-accent-700 dark:text-accent-400">registerAction()</code
           > to jump to a ticket, a dashboard, or anywhere else that element should lead.
         </p>
@@ -370,9 +356,8 @@ export default defineConfig({
     </div>
 
     <p class="mt-6 max-w-3xl text-sm leading-relaxed text-surface-600 dark:text-surface-400">
-      The Chrome extension ships from the repo rather than npm — build it and load
-      <code class="font-mono">packages/chrome/dist</code> as an unpacked extension. The Web Store listing
-      is still pending review.
+      The optional Chrome extension currently requires a source build and unpacked installation.
+      There is no verified Web Store installer.
     </p>
   </div>
 </section>
@@ -400,27 +385,27 @@ export default defineConfig({
         <pre
           class="mt-3 overflow-x-auto rounded-lg border border-surface-200 bg-surface-100 p-4 font-mono text-[12.5px] leading-relaxed text-surface-800 dark:border-surface-800 dark:bg-surface-900 dark:text-surface-200">{viteSetup}</pre>
         <p class="mt-4 text-[15px] leading-[1.7] text-surface-700 dark:text-surface-300">
-          Webpack, Rspack, esbuild, and Rollup take the equivalent plugin from
-          <code class="font-mono text-sm text-accent-700 dark:text-accent-400">@aylith/inspekt-bundlers</code
-          >. React and Preact projects can skip the plugin entirely — the source location is read from
-          the fiber tree.
+          Keep your existing framework plugin. The basic Vite route needs Inspekt's plugin to inject
+          the runtime, including in React projects. Other bundler integrations need separate first-use
+          verification.
         </p>
       </div>
 
       <div class="min-w-0">
         <h3 class="font-display text-lg font-bold text-surface-900 dark:text-surface-50">
-          2. Wire up your agent
+          Optional: wire up your agent
         </h3>
         <pre
           class="mt-4 overflow-x-auto rounded-lg border border-surface-200 bg-surface-100 p-4 font-mono text-[12.5px] leading-relaxed text-surface-800 dark:border-surface-800 dark:bg-surface-900 dark:text-surface-200">npx @aylith/inspekt setup</pre>
         <p class="mt-4 text-[15px] leading-[1.7] text-surface-700 dark:text-surface-300">
-          Generates a token, writes it to <code class="font-mono text-sm">~/.inspekt/config.json</code
-          >, and registers the Inspekt MCP server with every agent it finds installed. Re-running is
-          idempotent.
+          This changes local agent configuration and requires a supported installed client. It
+          generates a token, writes it to <code class="font-mono text-sm">~/.inspekt/config.json</code
+          >, and registers the MCP server for detected clients. The Vite click-to-source route works
+          without it.
         </p>
         <p class="mt-4 text-[15px] leading-[1.7] text-surface-700 dark:text-surface-300">
-          Every mutating daemon route requires an auth token, and the files holding it are written
-          owner-only.
+          The daemon uses a separate auth token. Its source-to-agent workflow has not had the same
+          fresh-consumer proof as the React/Vite inspector.
         </p>
 
         <div class="mt-8 flex flex-col gap-3 sm:flex-row">
