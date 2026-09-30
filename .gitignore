@@ -12,6 +12,3 @@ site/.vitepress/cache
 
 landing/.svelte-kit
 landing/build
-
-# graft's local graph cache — regenerable, not committed (run `graft build`).
-/graft/
