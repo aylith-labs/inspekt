@@ -1,7 +1,7 @@
 {
   "name": "@aylith/inspekt-daemon",
-  "version": "0.1.1",
-  "description": "Inspekt daemon — localhost HTTP server with grab queue for agent integration",
+  "version": "0.1.2",
+  "description": "Inspekt daemon \u2014 localhost HTTP server with grab queue for agent integration",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

@@ -2,18 +2,11 @@
 
 For the public Vite quick-start, install the plugin in your local development project. It injects the inspector UI; the Chrome extension and agent integration are optional.
 
-Published versions and exact publication dates are available in the public
-[Vite package registry metadata](https://registry.npmjs.org/@aylith/inspekt-vite)
-(`versions` and `time`). Package history is separate from studio notes and local
-unreleased fixes; publication does not verify every setup or feature.
-
-1. The **Vite plugin** for your local frontend project and development server.
-2. The optional **Chrome extension** for standalone inspection and shared settings.
-3. Optional **agent integration** via `npx @aylith/inspekt setup`, which changes local agent configuration and requires an installed supported client.
+Download the <a href="../downloads/inspekt-vite-0.2.3.zip">Vite package bundle</a> and <a href="../downloads/SHA256SUMS">checksums</a>. It contains core0.4.1, CLI0.1.2 and Vite0.2.3, plus the original MIT notices. Extract it into your existing Vite project and install all three archives together. These files install directly; the command does not request these versions from the npm registry. An internet connection is required for npm to install their external dependencies.
 
 ## 1. Chrome extension
 
-There is no verified Chrome Web Store installer. For this optional source-build route, clone the repository, install its build dependencies and build the extension. Load repository-root `dist/` as an unpacked extension in Chrome's developer mode. The Vite route below does not need it.
+The Vite package bundle includes the inspector runtime and does not require an extension. A separately built Chrome extension uses Chrome's unpacked-extension installation in developer mode.
 
 ## 2. Vite plugin
 
@@ -22,21 +15,12 @@ projects. React by itself does not install an inspector. The separate extension
 can try framework metadata, but that metadata depends on the framework/build and
 does not replace the Vite setup described here.
 
-::: code-group
-
-```bash [bun]
-bun add -D @aylith/inspekt-vite
+```sh
+sha256sum -c SHA256SUMS
+npm install -D ./aylith-inspekt-core-0.4.1.tgz ./aylith-inspekt-cli-0.1.2.tgz ./aylith-inspekt-vite-0.2.3.tgz
 ```
 
-```bash [pnpm]
-pnpm add -D @aylith/inspekt-vite
-```
-
-```bash [npm]
-npm install -D @aylith/inspekt-vite
-```
-
-:::
+Use the Node.js version supported by your existing Vite project. Keep its framework plugin.
 
 ```ts
 // vite.config.ts
@@ -56,44 +40,26 @@ export default defineConfig({
 
 Inspekt's transform wraps [`@code-inspector/core`](https://github.com/zh-lx/code-inspector)'s
 AST-based source-attribute injection for JSX/TSX, Vue SFC, and Svelte files.
-The Vite route has been exercised with a React consumer; the other framework
-and bundler combinations listed here need separate first-use verification.
+Keep the plugin alongside your existing React/Vite setup.
 
 By default, source attributes and the inspector runtime are development-only.
 `enableInProduction` is an explicit opt-in for source attributes, not a hosted
-inspector or editor/snippet server. Published0.2.1 has a known dev-script link
-left in production HTML; the local correction still needs release approval.
+inspector or editor/snippet server.
 
-## 3. Agent integration
+## Agent integration
 
-```bash
-npx @aylith/inspekt setup
+Download the <a href="../downloads/inspekt-agent-0.1.3.zip">five-package agent bundle</a> to add daemon0.1.2 and MCP0.1.3 alongside the Vite chain. Check its SHA256SUMS and install all five files into your project:
+
+```sh
+npm install -D ./aylith-inspekt-core-0.4.1.tgz ./aylith-inspekt-cli-0.1.2.tgz ./aylith-inspekt-vite-0.2.3.tgz ./aylith-inspekt-daemon-0.1.2.tgz ./aylith-inspekt-mcp-0.1.3.tgz
+./node_modules/.bin/inspekt setup --agents claude-code,cursor
 ```
 
-This generates an auth token, writes it to `~/.inspekt/config.json`, and adds
-an MCP server entry for every detected agent. Re-running is idempotent — it
-preserves the token and refreshes config entries.
+Setup registers the locally installed MCP executable, stores a private token and queue path, and preserves other agent configuration. Restart your agent to load its MCP server. Use `--config-home /absolute/profile` to select another configuration profile. Installing only the Vite bundle still supports the inspect, source excerpt, copy-path and editor workflow; setup additionally requires the agent bundle.
 
-To target specific agents:
+Start `./node_modules/.bin/inspekt-daemon` for your default home profile. With another profile, pass its private `INSPEKT_TOKEN` and `INSPEKT_QUEUE_PATH` through the environment; do not share the token. The daemon and MCP server use the same locked queue. Agent tools include `grab_latest`, `list_grabs`, `get_grab` and `mark_grab_processed`.
 
-```bash
-npx @aylith/inspekt setup --agents claude-code,cursor
-```
-
-See [Agent integration](/agent-integration) for the per-agent details.
-
-## 4. (Optional) Long-running daemon
-
-Inspekt's daemon auto-starts on the first grab. If you prefer to run it
-manually:
-
-```bash
-npx @aylith/inspekt-daemon
-```
-
-Useful when you want grabs to be queued even before any agent has spawned its
-MCP server. The daemon is bound to `127.0.0.1:5678` by default and gated by
-the auth token in `~/.inspekt/config.json`.
+Browser capture uses a separate extension installation. The agent package bundle installs the receiving daemon and MCP tools; it does not add an extension or capture UI to Chrome.
 
 ## Verify
 
@@ -101,16 +67,6 @@ For Vite, start your existing dev script and open its reported URL. Use
 `Ctrl+Alt+Click` (`Cmd+Alt+Click` on Mac): the popover should identify the file and
 line. Expand **Show source**, try **Copy path**, then Escape and an ordinary page
 click. Neither extension badges nor agent access are required for this check.
-
-Published core0.4.0 currently fails to parse Vite-normalized Windows drive paths,
-and Vite0.2.1 can probe the wrong origin if the actual server port differs.
-Local source repairs are not evidence that npm has been updated. A separate
-24 September 2026 Linux check installed **locally packed** core, CLI and Vite
-artifacts into a fresh isolated React/Vite consumer and verified the exact
-source line, snippet and copied path in Chromium; see the repository's
-[Linux local-package proof](https://github.com/aylith-labs/inspekt/blob/main/README.md#quick-start).
-It does not close the published Windows defect, macOS, other frameworks or
-registry-install acceptance.
 
 For the optional extension route, the toolbar icon should:
 

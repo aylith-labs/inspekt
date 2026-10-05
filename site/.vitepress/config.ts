@@ -7,7 +7,7 @@ export default defineConfig({
     'Click any element in your browser → send context to your agent. The click-to-agent devtool for the agentic-CLI era.',
   // The landing owns the Pages root, so the docs are served one level down.
   // `srcDir` keeps every published page URL as `/inspekt/docs/<page>`.
-  base: '/inspekt/docs/',
+  base: `${process.env.BASE_PATH ?? '/inspekt'}/docs/`,
   srcDir: 'docs',
   cleanUrls: true,
   lastUpdated: true,
@@ -17,7 +17,14 @@ export default defineConfig({
   appearance: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/inspekt/docs/favicon.svg', type: 'image/svg+xml' }],
+    [
+      'link',
+      {
+        rel: 'icon',
+        href: `${process.env.BASE_PATH ?? '/inspekt'}/docs/favicon.svg`,
+        type: 'image/svg+xml',
+      },
+    ],
     ['meta', { name: 'theme-color', content: '#3b82f6' }],
     ['meta', { property: 'og:title', content: 'Inspekt' }],
     [

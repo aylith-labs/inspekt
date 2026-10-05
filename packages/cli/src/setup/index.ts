@@ -13,11 +13,12 @@ import { writeClaudeCode } from './writers/claude-code.js';
 import { writeCodex } from './writers/codex.js';
 import { writeCursor } from './writers/cursor.js';
 import { writeGeminiCli } from './writers/gemini-cli.js';
+import { resolveMcpExecutable } from './writers/mcp-entry.js';
 
 export interface RunSetupOptions {
   /** Restrict registration to this subset. If omitted, register all detected agents. */
   agents?: string[];
-  /** Override home (for tests). */
+  /** Select another configuration profile directory. */
   home?: string;
   /** When true, suppresses interactive output and only logs paths written. */
   quiet?: boolean;
@@ -31,6 +32,8 @@ export interface SetupResult {
 }
 
 export async function runSetup(opts: RunSetupOptions = {}): Promise<SetupResult> {
+  // Verify local acquisition before creating tokens or modifying agent files.
+  resolveMcpExecutable();
   const home = opts.home ?? os.homedir();
   const config = await loadOrCreateConfig(home);
   await writeHandshake(home, config);

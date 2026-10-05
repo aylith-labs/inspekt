@@ -9,7 +9,7 @@ export interface DetectedAgent {
 }
 
 export interface SetupContext {
-  /** Home directory override (used by tests). */
+  /** Configuration profile directory. */
   home: string;
   /** Token used for X-Inspekt-Token (generated if absent). */
   token: string;

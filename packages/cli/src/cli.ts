@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import path from 'node:path';
 import { openInEditor, parseFileTarget } from './index.js';
 import { runSetup } from './setup/index.js';
 
@@ -7,7 +8,11 @@ const sub = args[0];
 
 function printHelp(): void {
   console.log(`Usage:`);
-  console.log(`  inspekt setup [--agents <list>]      Register Inspekt with your installed agents`);
+  console.log(`  inspekt setup [--agents <list>] [--config-home <directory>]`);
+  console.log(`    Register the locally installed MCP server with your agents.`);
+  console.log(
+    `    Configuration defaults to your home; --config-home selects another profile directory.`,
+  );
   console.log(`  inspekt open <file>[:<line>[:<col>]] [--editor <editor>]`);
   console.log(`  inspekt <file>[:<line>[:<col>]] [--editor <editor>]  (shorthand for 'open')`);
   console.log(``);
@@ -18,7 +23,7 @@ function printHelp(): void {
   console.log(`  inspekt src/App.tsx:42:3 --editor cursor`);
 }
 
-if (!sub || sub === '--help' || sub === '-h' || sub === 'help') {
+if (!sub || args.includes('--help') || args.includes('-h') || sub === 'help') {
   printHelp();
   process.exit(0);
 }
@@ -27,7 +32,13 @@ if (sub === 'setup') {
   const agentsIdx = args.indexOf('--agents');
   const agents =
     agentsIdx !== -1 && args[agentsIdx + 1] ? args[agentsIdx + 1]!.split(',') : undefined;
-  void runSetup({ agents }).catch((err) => {
+  const homeIdx = args.indexOf('--config-home');
+  if (homeIdx !== -1 && (!args[homeIdx + 1] || args[homeIdx + 1]!.startsWith('--'))) {
+    console.error('[inspekt] --config-home requires a directory');
+    process.exit(1);
+  }
+  const home = homeIdx === -1 ? undefined : path.resolve(args[homeIdx + 1]!);
+  void runSetup({ agents, home }).catch((err) => {
     console.error('[inspekt setup]', err);
     process.exit(1);
   });

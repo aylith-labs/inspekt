@@ -1,7 +1,7 @@
 {
   "name": "@aylith/inspekt-core",
-  "version": "0.4.0",
-  "description": "Inspekt runtime — overlay, popover, tree panel, highlighting",
+  "version": "0.4.1",
+  "description": "Inspekt runtime \u2014 overlay, popover, tree panel, highlighting",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

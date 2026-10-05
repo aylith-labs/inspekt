@@ -4,41 +4,16 @@ tagline: Inspect instrumented elements and find their source
 description: >-
   An element inspector for instrumented development projects: Ctrl+Alt+Click an
   element to see its source location and surrounding lines. Copy the path, open
-  it in an editor, or configure the separate extension and MCP workflow for agent handoff.
+  it in an editor, or hand captured source context to a configured coding agent through a local
+  CLI, daemon, and MCP workflow.
 category: developer-tools
-onboarding:
-  access: public-source
-  url: https://github.com/aylith-labs/inspekt#quick-start
-  releasesUrl: https://registry.npmjs.org/@aylith/inspekt-vite
-  prerequisites:
-    - A local frontend project and development server
-    - Node.js and npm or a compatible package manager; the Vite plugin declares Vite 4 or later
-    - A supported installed editor for opening files
-  limitations:
-    - Development tooling, not a production-site feature; source locations depend on available instrumentation
-    - Optional agent handoff requires a local daemon and configured MCP client
-    - The Vite route needs no Chrome extension; the extension is a separate source build with no verified Store installer
-    - Clean Windows React/Vite inspection failed with published core 0.4.0 and Vite plugin 0.2.1 because normalized drive paths were not parsed
-    - Published plugin 0.2.1 can probe the wrong origin and leaves a dev-module reference in production HTML; local fixes are not a public package update
-    - Local packed-source React/Vite inspection is verified on Windows and Linux; macOS, other frameworks and optional integrations remain unverified
-    - Dev-server source and editor endpoints are unauthenticated cross-origin routes; keep the server local and review configured path mappings
 features:
-  - 'Ctrl+Alt+Click an instrumented element to reveal its source file, line, and column'
-  - >-
-    Component tree with props, search, and highlighting — React, Vue, Svelte, and
-    Solid adapters plus a generic DOM fallback
-  - >-
-    Plugins for Vite, Webpack, Rspack, esbuild, and Rollup
-  - >-
-    Send a grabbed element to Claude Code, Cursor, Codex, Gemini CLI, or
-    Antigravity over MCP
-  - >-
-    Docker-aware — reads container-to-host path mappings straight from
-    docker-compose.yaml
-  - >-
-    Opens files in your IDE — VS Code, Cursor, the JetBrains family, Zed,
-    Sublime and more — and every popover action is extensible with your own
-  - 'Inspector UI uses Shadow DOM to reduce style interference'
+  - Reveal an instrumented element's source file, line, and column
+  - Read surrounding source and copy its location
+  - Open the source location in a configured editor
+  - Instrument Vite development output without shipping the inspector in production
+  - Hand captured source context to a configured coding agent through a local daemon and MCP
+  - Keep inspector styling isolated with Shadow DOM
 targetUser: >-
   Frontend developers who lose time mapping what they see in the browser back to
   the file that renders it — and who want that context handed to a coding agent
@@ -52,44 +27,14 @@ gradientFrom: '#3b82f6'
 gradientTo: '#ec4899'
 ---
 
-## Vision
+## From an element to its source
 
-The gap between seeing a bug and editing the code that causes it is pure overhead:
-you spot the misaligned button, then go hunting through a component tree in your
-editor to find which file renders it. Inspekt closes that gap to one click. The
-inspector can read the source location of instrumented elements because the
-bundler plugin writes it into the development output.
+Use Ctrl+Alt+Click on an instrumented element to reveal the file, line, and column behind it. Read the surrounding source, copy its location, or open it in your configured editor.
 
-That same context is exactly what a coding agent needs and almost never gets.
-"Fix this button" is useless without a file and a line; Inspekt turns the element
-you clicked into a grab the agent can read over MCP, carrying the file, line,
-component name, surrounding source, and page URL.
+## Keep inspection in development
 
-## The problem
+The Vite plugin adds source locations to your development output. The inspector lives in an isolated Shadow DOM surface and stays out of the production build.
 
-Browser devtools show you the DOM, not your source. Framework devtools show you
-the component tree, but stop at the boundary of your editor and know nothing
-about your agent. And each of them is a separate extension per framework, so the
-workflow resets every time you switch stacks.
+## Give your coding agent the same context
 
-Meanwhile, describing a UI element to an AI agent in prose is the slowest part of
-using one. The information the agent needs is already on screen and already in
-the build output — it just has no path from the browser to the agent.
-
-## How it's different
-
-- **Framework adapters.** The runtime has React, Vue, Svelte and Solid adapters;
-  a generic DOM adapter reads injected source attributes where available.
-- **Several bundlers.** Vite gets a plugin with a dev-server integration;
-  Webpack, Rspack, esbuild, and Rollup get the same transform through unplugin.
-- **Built for the handoff.** The daemon holds a grab queue and the MCP server
-  exposes it to agents over stdio, so an element you clicked in Chrome becomes a
-  file and line in Claude Code, Cursor, Codex, Gemini CLI, or Antigravity.
-- **Docker is a first-class case.** When the app runs in a container, paths point
-  at `/app/...`; Inspekt reads the volume mounts out of `docker-compose.yaml` and
-  maps them back to your real checkout.
-- **Extension fallback.** The Chrome extension carries settings across projects
-  and can inject the inspector without a plugin, but a page without source
-  instrumentation may provide only DOM information.
-
-MIT licensed. The [public Vite quick start](https://github.com/aylith-labs/inspekt#quick-start) uses `@aylith/inspekt-vite`. The published `@aylith/inspekt` package includes the runtime, plugins, CLI, daemon and MCP packages, not an installed Chrome extension. Check setup requirements above before using optional integrations.
+Capture the element's source context into the local handoff queue. A configured MCP client can retrieve the captured record through the local daemon, so you can work from a concrete source location instead of retyping what you saw.

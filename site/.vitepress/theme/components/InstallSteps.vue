@@ -1,13 +1,24 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import cli from '../../../../packages/cli/package.json';
+import core from '../../../../packages/core/package.json';
+import vite from '../../../../packages/vite/package.json';
+
+const bundleHref = `../downloads/inspekt-vite-${vite.version}.zip`;
+const installCommand = `npm install -D ./aylith-inspekt-core-${core.version}.tgz ./aylith-inspekt-cli-${cli.version}.tgz ./aylith-inspekt-vite-${vite.version}.tgz`;
 
 const copied = ref(false);
 
 function copy(text: string) {
-  navigator.clipboard?.writeText(text).then(() => {
-    copied.value = true;
-    setTimeout(() => (copied.value = false), 1400);
-  });
+  navigator.clipboard
+    ?.writeText(text)
+    .then(() => {
+      copied.value = true;
+      setTimeout(() => (copied.value = false), 1400);
+    })
+    .catch(() => {
+      copied.value = false;
+    });
 }
 </script>
 
@@ -20,31 +31,28 @@ function copy(text: string) {
       <li>
         <span class="inspekt-step-num">1</span>
         <div class="body">
-          <h3>Install the Chrome extension.</h3>
-          <p>Not on the Chrome Web Store yet. Build it with <code>bun run build</code>, then load unpacked from <code>packages/chrome/dist</code> at <code>chrome://extensions</code> with Developer mode on.</p>
-          <a class="link" href="https://github.com/aylith-labs/inspekt/tree/main/packages/chrome">Extension source →</a>
+          <h3>Download the Vite package bundle.</h3>
+          <p>Extract the three package archives into your existing Vite project and verify SHA256SUMS. npm installs their external dependencies; you do not need the extension or an agent for the basic inspector.</p>
+          <a class="link" :href="bundleHref">Download the package bundle →</a>
         </div>
       </li>
       <li>
         <span class="inspekt-step-num">2</span>
         <div class="body">
-          <h3>Add the Vite plugin <span class="aside">(skip for React)</span>.</h3>
-          <p>React and Preact read source location from fiber data. For Vue, Svelte, Solid, Astro:</p>
+          <h3>Add the Vite plugin.</h3>
+          <p>Install all three archives, keep your framework plugin, then add inspekt() to your Vite plugins.</p>
           <div class="code-wrap">
-            <code>bun add -D @aylith/inspekt-vite</code>
-            <button class="copy" @click="copy('bun add -D @aylith/inspekt-vite')">{{ copied ? 'copied' : 'copy' }}</button>
+            <code>{{ installCommand }}</code>
+            <button class="copy" @click="copy(installCommand)">{{ copied ? 'copied' : 'copy' }}</button>
           </div>
         </div>
       </li>
       <li>
         <span class="inspekt-step-num">3</span>
         <div class="body">
-          <h3>Register Inspekt with your agents.</h3>
-          <p>One command detects every agent on the machine and writes the MCP entry. Idempotent.</p>
-          <div class="code-wrap">
-            <code>npx inspekt setup</code>
-            <button class="copy" @click="copy('npx inspekt setup')">{{ copied ? 'copied' : 'copy' }}</button>
-          </div>
+          <h3>Inspect your running development page.</h3>
+          <p>Start your existing development script and open its URL. Ctrl+Alt+Click an instrumented element, expand Show source, then Copy path. Press Escape to return to ordinary clicks. Your configured editor must be installed to open a file.</p>
+          <a class="link" href="./install">Full install guide →</a>
         </div>
       </li>
     </ol>
@@ -116,6 +124,7 @@ function copy(text: string) {
 
 .code-wrap {
   display: inline-flex;
+  max-width: 100%;
   align-items: center;
   gap: 0;
   background: var(--inspekt-pill-bg);
@@ -124,6 +133,8 @@ function copy(text: string) {
   align-self: flex-start;
 }
 .code-wrap code {
+  min-width: 0;
+  overflow-wrap: anywhere;
   padding: 10px 16px;
   font-family: var(--vp-font-family-mono);
   font-size: 13.5px;
@@ -131,6 +142,7 @@ function copy(text: string) {
   background: transparent;
 }
 .copy {
+  flex-shrink: 0;
   padding: 10px 14px;
   background: var(--inspekt-violet);
   color: #fff;

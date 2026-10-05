@@ -1,3 +1,4 @@
+import { writePrivateConfig } from './private-config.js';
 // Idempotent JSON writer for agent config files.
 //
 // Each agent's config is a JSON file with a top-level `mcpServers` map (or a
@@ -77,6 +78,6 @@ export async function writeMcpEntryToJsonConfig(
   servers[serverName] = entry;
   cursor['mcpServers'] = servers;
 
-  await fs.writeFile(configPath, `${JSON.stringify(root, null, indent)}\n`, 'utf8');
+  await writePrivateConfig(configPath, `${JSON.stringify(root, null, indent)}\n`);
   return { written: true, previousEntry: previous };
 }

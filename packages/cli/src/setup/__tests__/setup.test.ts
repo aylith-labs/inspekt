@@ -71,8 +71,9 @@ describe('runSetup', () => {
     // Claude config has the mcpServers.inspekt entry.
     const claudePath = path.join(home, '.config', 'claude', 'mcp.json');
     const claude = JSON.parse(readFileSync(claudePath, 'utf8'));
-    expect(claude.mcpServers.inspekt.command).toBe('npx');
-    expect(claude.mcpServers.inspekt.args).toEqual(['-y', '@aylith/inspekt-mcp']);
+    expect(claude.mcpServers.inspekt.command).toBe(process.execPath);
+    expect(claude.mcpServers.inspekt.args).toHaveLength(1);
+    expect(path.isAbsolute(claude.mcpServers.inspekt.args[0])).toBe(true);
     expect(claude.mcpServers.inspekt.env.INSPEKT_TOKEN).toBe(result.token);
 
     // Skill file is present.
@@ -109,7 +110,7 @@ describe('runSetup', () => {
     await runSetup({ home, agents: ['claude-code'], quiet: true });
     const after = JSON.parse(readFileSync(claudePath, 'utf8'));
     expect(after.mcpServers.other.command).toBe('node');
-    expect(after.mcpServers.inspekt.command).toBe('npx');
+    expect(after.mcpServers.inspekt.command).toBe(process.execPath);
     expect(after.unrelatedKey).toBe('preserve me');
   });
 

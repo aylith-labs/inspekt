@@ -7,7 +7,8 @@ import { openInEditor } from '@aylith/inspekt-cli';
 import { type Context, Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { GrabQueue } from './queue.js';
-import type { DaemonConfig, Grab } from './types.js';
+import type { DaemonConfig } from './types.js';
+import { isIncomingGrab } from './validate-grab.js';
 import { VERSION } from './version.js';
 
 /**
@@ -59,8 +60,8 @@ export function createServer(config: DaemonConfig): Hono {
   app.post('/__inspekt/grab', async (c) => {
     if (!authOk(c)) return c.json({ error: 'unauthorized' }, 401);
     try {
-      const body = (await c.req.json()) as Partial<Grab>;
-      if (!body.url || !body.element || !body.element.filePath || !body.source) {
+      const body: unknown = await c.req.json();
+      if (!isIncomingGrab(body)) {
         return c.json({ error: 'invalid grab payload' }, 400);
       }
       const saved = await queue.append({

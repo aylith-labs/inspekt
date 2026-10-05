@@ -4,6 +4,7 @@
 // config differs; the per-agent writer is responsible for placing this block
 // in the right place.
 
+import { createRequire } from 'node:module';
 import type { InspektConfig } from '../token.js';
 
 export interface McpEntry {
@@ -12,10 +13,21 @@ export interface McpEntry {
   env: Record<string, string>;
 }
 
+export function resolveMcpExecutable(): string {
+  const require = createRequire(typeof __filename === 'string' ? __filename : import.meta.url);
+  try {
+    return require.resolve('@aylith/inspekt-mcp/cli');
+  } catch {
+    throw new Error(
+      'Install the Inspekt agent package bundle before running setup. The local MCP executable is required.',
+    );
+  }
+}
+
 export function buildMcpEntry(config: InspektConfig): McpEntry {
   return {
-    command: 'npx',
-    args: ['-y', '@aylith/inspekt-mcp'],
+    command: process.execPath,
+    args: [resolveMcpExecutable()],
     env: {
       INSPEKT_TOKEN: config.token,
       INSPEKT_QUEUE_PATH: config.queuePath,

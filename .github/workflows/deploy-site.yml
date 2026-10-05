@@ -6,8 +6,21 @@ on:
     paths:
       - 'site/**'
       - 'landing/**'
+      - 'packages/**'
+      - 'scripts/package-vite-release.py'
+      - 'scripts/check-pages.py'
+      - 'bun.lock'
       - '.github/workflows/deploy-site.yml'
   workflow_dispatch:
+    inputs:
+      preflight:
+        description: Build and verify without publishing
+        type: boolean
+        default: true
+      custom_domain:
+        description: inspekt.aylith.com root-mode preflight (empty preserves configured base)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -25,7 +38,32 @@ jobs:
   build:
     needs: verify
     runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
+    outputs:
+      configured_host: ${{ steps.pages.outputs.host }}
     steps:
+      - uses: actions/configure-pages@v6
+        id: pages
+      - name: Select checked hosting base
+        env:
+          CONFIGURED_HOST: ${{ steps.pages.outputs.host }}
+          REQUESTED_HOST: ${{ inputs.custom_domain }}
+          PREFLIGHT: ${{ github.event_name != 'workflow_dispatch' || inputs.preflight }}
+        run: |
+          case "$CONFIGURED_HOST" in
+            aylith-labs.github.io|inspekt.aylith.com) ;;
+            *) echo "Unexpected Pages host" >&2; exit 1 ;;
+          esac
+          if [ -n "$REQUESTED_HOST" ] && [ "$REQUESTED_HOST" != inspekt.aylith.com ]; then
+            echo "Unexpected candidate host" >&2; exit 1
+          fi
+          if [ "$PREFLIGHT" = false ] && [ -n "$REQUESTED_HOST" ] && [ "$CONFIGURED_HOST" != "$REQUESTED_HOST" ]; then
+            echo "Bind verified Pages domain before root publication" >&2; exit 1
+          fi
+          if [ "$CONFIGURED_HOST" = inspekt.aylith.com ] || [ -n "$REQUESTED_HOST" ]; then
+            echo "BASE_PATH=" >> "$GITHUB_ENV"
+          else
+            echo "BASE_PATH=/inspekt" >> "$GITHUB_ENV"
+          fi
       - uses: actions/checkout@v7
       - uses: oven-sh/setup-bun@v2
         with:
@@ -35,6 +73,8 @@ jobs:
       # dist — so the workspace packages have to be built before the docs are.
       # This also builds the landing, which is a workspace member.
       - run: bun run build
+      - run: python3 scripts/package-vite-release.py
+      - run: bun run landing:build
       - run: bun run site:build
 
       # The landing owns the Pages root and the docs sit under /docs, which is
@@ -46,17 +86,25 @@ jobs:
           cp -R landing/build/. pages-artifact/
           cp -R site/.vitepress/dist/. pages-artifact/docs/
 
-      - uses: actions/configure-pages@v6
+      - run: python3 scripts/check-pages.py
       - uses: actions/upload-pages-artifact@v5
         with:
           path: pages-artifact
 
   deploy:
     needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.preflight }}
     runs-on: ${{ vars.CI_RUNNER || 'ubuntu-latest' }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/configure-pages@v6
+        id: binding
+      - name: Recheck binding before publication
+        env:
+          BUILT_HOST: ${{ needs.build.outputs.configured_host }}
+          CURRENT_HOST: ${{ steps.binding.outputs.host }}
+        run: test "$BUILT_HOST" = "$CURRENT_HOST"
       - id: deployment
         uses: actions/deploy-pages@v5

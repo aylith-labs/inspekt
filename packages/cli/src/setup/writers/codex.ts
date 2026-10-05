@@ -1,9 +1,10 @@
+import { writePrivateConfig } from './private-config.js';
 // OpenAI Codex CLI uses ~/.codex/config.toml. The MCP-server block has a
 // fixed TOML shape:
 //
 //   [mcp_servers.inspekt]
-//   command = "npx"
-//   args = ["-y", "@aylith/inspekt-mcp"]
+//   command = "/absolute/path/to/node"
+//   args = ["/project/node_modules/@aylith/inspekt-mcp/dist/cli.js"]
 //   [mcp_servers.inspekt.env]
 //   INSPEKT_TOKEN = "..."
 //
@@ -80,6 +81,6 @@ export async function writeCodex(
     next = existing.trim().length > 0 ? `${existing.trimEnd()}\n\n${block}\n` : `${block}\n`;
   }
 
-  await fs.writeFile(configPath, next, 'utf8');
+  await writePrivateConfig(configPath, next);
   return { configPath };
 }
