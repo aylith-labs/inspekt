@@ -55,8 +55,8 @@ See the [first-use verification procedure](scripts/vite-first-use-proof.mjs);
 other platforms and framework versions need their own acceptance checks.
 
 **Linux local-package proof (24 September 2026):** from source revision
-`52623f4f4ebe66d6b63000ebb75cfab306da0fb3`, locally packed core0.4.0,
-CLI0.1.0 and Vite0.2.1 archives installed into a fresh isolated React19/Vite8
+`52623f4f4ebe66d6b63000ebb75cfab306da0fb3`, locally packed core 0.4.0,
+CLI 0.1.0 and Vite 0.2.1 archives installed into a fresh isolated React 19/Vite 8
 consumer. In system Chromium, an ordinary click still worked; Ctrl+Alt+Click
 identified the actual `src/main.jsx:8:5:button`, **Show source** returned that
 file's exact button line, and **Copy Path** returned its exact `file:line`.

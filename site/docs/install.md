@@ -2,7 +2,7 @@
 
 For the public Vite quick-start, install the plugin in your local development project. It injects the inspector UI; the Chrome extension and agent integration are optional.
 
-Download the <a href="../downloads/inspekt-vite-0.2.3.zip">Vite package bundle</a> and <a href="../downloads/SHA256SUMS">checksums</a>. It contains core0.4.1, CLI0.1.2 and Vite0.2.3, plus the original MIT notices. Extract it into your existing Vite project and install all three archives together. These files install directly; the command does not request these versions from the npm registry. An internet connection is required for npm to install their external dependencies.
+Download the <a href="../downloads/inspekt-vite-0.2.3.zip" target="_self" download>Vite package bundle</a> and <a href="../downloads/SHA256SUMS" target="_self" download>checksums</a>. It contains core 0.4.1, CLI 0.1.2 and Vite 0.2.3, plus the original MIT notices. Extract it into your existing Vite project and install all three archives together. These files install directly; the command does not request these versions from the npm registry. An internet connection is required for npm to install their external dependencies.
 
 ## 1. Chrome extension
 
@@ -48,7 +48,7 @@ inspector or editor/snippet server.
 
 ## Agent integration
 
-Download the <a href="../downloads/inspekt-agent-0.1.3.zip">five-package agent bundle</a> to add daemon0.1.2 and MCP0.1.3 alongside the Vite chain. Check its SHA256SUMS and install all five files into your project:
+Download the <a href="../downloads/inspekt-agent-0.1.3.zip" target="_self" download>five-package agent bundle</a> to add daemon 0.1.2 and MCP 0.1.3 alongside the Vite chain. Check its SHA256SUMS and install all five files into your project:
 
 ```sh
 npm install -D ./aylith-inspekt-core-0.4.1.tgz ./aylith-inspekt-cli-0.1.2.tgz ./aylith-inspekt-vite-0.2.3.tgz ./aylith-inspekt-daemon-0.1.2.tgz ./aylith-inspekt-mcp-0.1.3.tgz
